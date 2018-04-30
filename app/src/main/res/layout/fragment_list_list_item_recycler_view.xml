@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_list_item_constraint_layout_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:maxHeight="100dp"
+    android:minHeight="80dp">
+
+    <ImageView
+        android:id="@+id/fragment_list_item_restaurant_image"
+        android:layout_width="107dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.976"
+        app:srcCompat="@drawable/restaurant" />
+
+    <TextView
+        android:id="@+id/fragment_list_item_restaurant_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:text="TextView"
+        app:layout_constraintBottom_toTopOf="@+id/fragment_list_item_icon_workmates_in_this_restaurant"
+        app:layout_constraintEnd_toStartOf="@+id/fragment_list_item_restaurant_image"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="spread_inside" />
+
+    <ImageView
+        android:id="@+id/fragment_list_item_icon_workmates_in_this_restaurant"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        app:layout_constraintBottom_toTopOf="@+id/fragment_list_item_rate_3_star"
+        app:layout_constraintEnd_toStartOf="@+id/fragment_list_item_number_of_workmates_in_this_restaurant"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_list_item_restaurant_distance"
+        app:srcCompat="@drawable/ic_person_black_48dp" />
+
+    <ImageView
+        android:id="@+id/fragment_list_item_rate_1_star"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/fragment_list_item_restaurant_image"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_list_item_icon_workmates_in_this_restaurant"
+        app:srcCompat="@drawable/ic_star_rate_black_18dp" />
+
+    <ImageView
+        android:id="@+id/fragment_list_item_rate_2_stars"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/fragment_list_item_rate_1_star"
+        app:srcCompat="@drawable/ic_star_rate_black_18dp" />
+
+    <ImageView
+        android:id="@+id/fragment_list_item_rate_3_star"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/fragment_list_item_rate_2_stars"
+        app:srcCompat="@drawable/ic_star_rate_black_18dp" />
+
+    <TextView
+        android:id="@+id/fragment_list_item_restaurant_name"
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="TextView"
+        app:layout_constraintBottom_toTopOf="@+id/fragment_list_item_restaurant_adress"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="spread_inside" />
+
+    <TextView
+        android:id="@+id/fragment_list_item_restaurant_adress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="TextView"
+        app:layout_constraintBottom_toTopOf="@+id/fragment_list_item_restaurant_aperture"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_list_item_restaurant_name" />
+
+    <TextView
+        android:id="@+id/fragment_list_item_restaurant_aperture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="8dp"
+        android:text="TextView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_list_item_restaurant_adress" />
+
+    <TextView
+        android:id="@+id/fragment_list_item_number_of_workmates_in_this_restaurant"
+        android:layout_width="25dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="0"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toTopOf="@+id/fragment_list_item_rate_1_star"
+        app:layout_constraintEnd_toStartOf="@+id/fragment_list_item_restaurant_image" />
+</android.support.constraint.ConstraintLayout>

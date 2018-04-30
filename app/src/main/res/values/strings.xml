@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Go4Lunch</string>
+    <string name="Auth_Activity_background_content_description">background image for this screen</string>
+    <string name="Auth_Activity_btn_login_fb">Login with Facebook</string>
+    <string name="auth_activity_btn_google">Login with Google</string>
+    <string name="auth_activity_title_desctiption">Find a nice restaurant and invite your co-workers for lunch !</string>
+    <string name="auth_activity_icon_description">lunch icon above title of screen</string>
+    <string name="auth_activity_background">background</string>
+
+
+    <!-- Menu strings -->
+    <string name="menu_bottom_nav_view_workmates">Workmates</string>
+    <string name="menu_bottom_nav_view_list_view">List view</string>
+    <string name="menu_bottom_nav_view_map_view">Map view</string>
+
+</resources>

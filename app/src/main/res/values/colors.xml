@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Main colors -->
+    <color name="colorPrimary">#ff5722</color>
+    <color name="colorPrimaryDark">#c41c00</color>
+    <color name="colorPrimaryLight">#ff8a50</color>
+    <color name="colorAccent">#00e676</color>
+    <color name="colorAccentDark">#00b248</color>
+    <color name="colorAccentLight">#66ffa6</color>
+
+    <!-- Button colors -->
+    <color name="colorFacebook">#3b5998</color>
+    <color name="colorGoogle">#DB4337</color>
+</resources>
