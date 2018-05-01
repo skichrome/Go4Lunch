@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragment_workmates_item_constraint_layout_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -10,6 +9,7 @@
 
     <ImageView
         android:id="@+id/fragment_workmates_item_profile_image"
+        android:contentDescription="@string/fragment_workmates_item_profile_image_string"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
@@ -20,13 +20,13 @@
         app:srcCompat="@drawable/ic_person_black_48dp" />
 
     <TextView
-        android:id="@+id/fragment_workmates_item_join_or_not_text_fiew"
+        android:id="@+id/fragment_workmates_item_join_or_not_text_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
         android:gravity="center"
-        android:text="TextView"
+        android:text="@string/fragment_workmates_item_join_or_not_text_view_string"
         android:textAlignment="center"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="@+id/fragment_workmates_item_profile_image"
