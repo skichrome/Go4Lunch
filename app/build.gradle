@@ -18,6 +18,11 @@ android {
     }
 }
 
+repositories {
+    // For Icepick
+    maven {url "https://clojars.org/repo/"}
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:27.1.1'
@@ -28,7 +33,7 @@ dependencies {
     // constraint layout implementation
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
 
-    //Espresso libraries
+    // Espresso libraries
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-contrib:3.0.2'
@@ -37,12 +42,19 @@ dependencies {
     implementation 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 
+    // IcePick
+    implementation 'frankiesardo:icepick:3.2.0'
+    annotationProcessor 'frankiesardo:icepick-processor:3.2.0'
+
     // RecyclerView
     implementation 'com.android.support:recyclerview-v7:27.1.1'
 
     // Glide
     implementation 'com.github.bumptech.glide:glide:4.6.1'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.6.1'
+
+    // Easy permissions (for android 6.0+)
+    implementation 'pub.devrel:easypermissions:1.1.1'
 
     // Google Map View support
     implementation 'com.google.android.gms:play-services-maps:15.0.0'
@@ -51,5 +63,5 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:15.0.0'
 }
 
-//Firebase implementation
+// Firebase implementation
 apply plugin: 'com.google.gms.google-services'

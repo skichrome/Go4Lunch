@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import butterknife.ButterKnife;
+import icepick.Icepick;
 
 /**
  * This abstract class is used to define common parts for fragments in this app
@@ -55,10 +56,27 @@ public abstract class BaseFragment extends Fragment
         View view = inflater.inflate(getFragmentLayout(), container, false);
         //bind view
         ButterKnife.bind(this, view);
+
         // Configure and update Design (Developer will implement these method instead of override onCreateView())
         this.configureFragment();
         this.updateFragment();
 
         return(view);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState)
+    {
+        super.onActivityCreated(savedInstanceState);
+        //Restore variables state with IcePick
+        Icepick.restoreInstanceState(this, savedInstanceState);
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        // Save variables state with IcePick
+        Icepick.saveInstanceState(this, outState);
     }
 }
