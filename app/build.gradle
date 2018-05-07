@@ -57,10 +57,13 @@ dependencies {
     implementation 'pub.devrel:easypermissions:1.1.1'
 
     // Google Map View support
-    implementation 'com.google.android.gms:play-services-maps:15.0.0'
+    implementation 'com.google.android.gms:play-services-maps:15.0.1'
 
     //Firebase implementation
-    implementation 'com.google.firebase:firebase-core:15.0.0'
+    implementation 'com.google.firebase:firebase-core:15.0.2'
+
+    // Google Play Service (module Places)
+    implementation 'com.google.android.gms:play-services-places:15.0.1'
 }
 
 // Firebase implementation

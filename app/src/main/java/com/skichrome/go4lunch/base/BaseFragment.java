@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import butterknife.ButterKnife;
-import icepick.Icepick;
+import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  * This abstract class is used to define common parts for fragments in this app
@@ -65,18 +65,9 @@ public abstract class BaseFragment extends Fragment
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState)
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
-        super.onActivityCreated(savedInstanceState);
-        //Restore variables state with IcePick
-        Icepick.restoreInstanceState(this, savedInstanceState);
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState)
-    {
-        super.onSaveInstanceState(outState);
-        // Save variables state with IcePick
-        Icepick.saveInstanceState(this, outState);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 }
