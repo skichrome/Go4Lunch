@@ -7,7 +7,6 @@ public interface ActivitiesCallbacks
     interface MarkersChangedListener
     {
         void getMarkerOnMap();
-
         void displayRestaurantDetailsOnMarkerClick(FormattedPlace mDetailsRestaurants);
     }
 }

@@ -18,18 +18,12 @@ import butterknife.OnClick;
 
 public class RestaurantDetailsActivity extends BaseActivity
 {
-    @BindView(R.id.activity_details_resto_name)
-    TextView textViewName;
-    @BindView(R.id.activity_details_resto_adress)
-    TextView textViewAddress;
-    @BindView(R.id.activity_details_resto_floating_btn)
-    FloatingActionButton floatingActionButton;
-    @BindView(R.id.activity_details_restaurant_container_call)
-    ConstraintLayout constraintLayoutCall;
-    @BindView(R.id.activity_details_restaurant_container_rate)
-    ConstraintLayout constraintLayoutRate;
-    @BindView(R.id.activity_details_restaurant_container_website)
-    ConstraintLayout constraintLayoutWebsite;
+    @BindView(R.id.activity_details_resto_name) TextView textViewName;
+    @BindView(R.id.activity_details_resto_adress) TextView textViewAddress;
+    @BindView(R.id.activity_details_resto_floating_btn) FloatingActionButton floatingActionButton;
+    @BindView(R.id.activity_details_restaurant_container_call) ConstraintLayout constraintLayoutCall;
+    @BindView(R.id.activity_details_restaurant_container_rate) ConstraintLayout constraintLayoutRate;
+    @BindView(R.id.activity_details_restaurant_container_website) ConstraintLayout constraintLayoutWebsite;
 
     private FormattedPlace restaurantDetails;
 

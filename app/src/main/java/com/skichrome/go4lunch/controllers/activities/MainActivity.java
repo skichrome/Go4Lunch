@@ -49,19 +49,16 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     //=========================================
 
     @BindView(R.id.activity_main_bottomNavigationView) BottomNavigationView bottomNavigationView;
-    public HashMap<String, FormattedPlace> placeHashMap;
-    @BindView(R.id.activity_toolbar)
-    Toolbar toolbar;
-    @BindView(R.id.activity_main_menu_drawer_layout)
-    DrawerLayout drawerLayout;
+    @BindView(R.id.activity_toolbar) Toolbar toolbar;
+    @BindView(R.id.activity_main_menu_drawer_layout) DrawerLayout drawerLayout;
+    @BindView(R.id.activity_main_navigation_view) NavigationView navigationView;
 
     private Fragment mapFragment;
     private Fragment listFragment;
     private Fragment workmatesFragment;
-    @BindView(R.id.activity_main_navigation_view)
-    NavigationView navigationView;
 
     private GoogleApiClient googleApiClient;
+    public HashMap<String, FormattedPlace> placeHashMap;
 
     //=========================================
     // Superclass Methods
