@@ -1,10 +1,9 @@
 package com.skichrome.go4lunch.models;
 
-import com.google.android.gms.maps.model.LatLng;
-
+import java.io.Serializable;
 import java.util.List;
 
-public class FormattedPlace
+public class FormattedPlace implements Serializable
 {
     //=========================================
     // Fields
@@ -12,9 +11,10 @@ public class FormattedPlace
 
     private final String id;
     private final String name;
-    private final String adress;
+    private final String address;
     private final String aperture;
-    private final LatLng location;
+    private final double locationLatitude;
+    private final double locationLongitude;
     private final String distance;
     private final String website;
     private final String phoneNumber;
@@ -29,9 +29,10 @@ public class FormattedPlace
 
     public FormattedPlace(String mId,
                           String mName,
-                          String mAdress,
+                          String mAddress,
                           String mAperture,
-                          LatLng mLocation,
+                          double mLocationLatitude,
+                          double mLocationLongitude,
                           String mDistance,
                           String mWebsite,
                           String mPhoneNumber,
@@ -41,9 +42,10 @@ public class FormattedPlace
     {
         this.id = mId;
         this.name = mName;
-        this.adress = mAdress;
+        this.address = mAddress;
         this.aperture = mAperture;
-        this.location = mLocation;
+        this.locationLatitude = mLocationLatitude;
+        this.locationLongitude = mLocationLongitude;
         this.distance = mDistance;
         this.website = mWebsite;
         this.phoneNumber = mPhoneNumber;
@@ -66,9 +68,9 @@ public class FormattedPlace
         return name;
     }
 
-    public String getAdress()
+    public String getAddress()
     {
-        return adress;
+        return address;
     }
 
     public String getAperture()
@@ -76,9 +78,14 @@ public class FormattedPlace
         return aperture;
     }
 
-    public LatLng getLocation()
+    public double getLocationLatitude()
     {
-        return location;
+        return locationLatitude;
+    }
+
+    public double getLocationLongitude()
+    {
+        return locationLongitude;
     }
 
     public String getDistance()
@@ -135,9 +142,8 @@ public class FormattedPlace
         return "FormattedPlace{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
-                ", adress='" + adress + '\'' +
+                ", address='" + address + '\'' +
                 ", aperture='" + aperture + '\'' +
-                ", location=" + location +
                 ", distance='" + distance + '\'' +
                 ", website='" + website + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +

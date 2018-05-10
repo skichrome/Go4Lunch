@@ -30,14 +30,14 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.base.BaseActivity;
-import com.skichrome.go4lunch.controllers.ActivitiesCallbacks;
 import com.skichrome.go4lunch.controllers.fragments.ListFragment;
 import com.skichrome.go4lunch.controllers.fragments.MapFragment;
 import com.skichrome.go4lunch.controllers.fragments.WorkmatesFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
+import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
+import com.skichrome.go4lunch.utils.RequestCodes;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 import butterknife.BindView;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -48,22 +48,19 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Fields
     //=========================================
 
-    public static final int RC_LOCATION_CODE = 412;
-    public static final String LOCATION_PERMISSION_REQUEST = Manifest.permission.ACCESS_FINE_LOCATION;
-    public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 123;
     @BindView(R.id.activity_main_bottomNavigationView) BottomNavigationView bottomNavigationView;
-
-    private Fragment mapFragment;
-    private Fragment listFragment;
-    private Fragment workmatesFragment;
-    public static boolean locationPermissionState = false;
-    public List<FormattedPlace> placeList;
+    public HashMap<String, FormattedPlace> placeHashMap;
     @BindView(R.id.activity_toolbar)
     Toolbar toolbar;
     @BindView(R.id.activity_main_menu_drawer_layout)
     DrawerLayout drawerLayout;
+
+    private Fragment mapFragment;
+    private Fragment listFragment;
+    private Fragment workmatesFragment;
     @BindView(R.id.activity_main_navigation_view)
     NavigationView navigationView;
+
     private GoogleApiClient googleApiClient;
 
     //=========================================
@@ -165,7 +162,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
             Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
                     .setFilter(filter)
                     .build(this);
-            startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+            startActivityForResult(intent, RequestCodes.PLACE_AUTOCOMPLETE_REQUEST_CODE);
         }
         catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException mE)
         {
@@ -260,7 +257,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE)
+        if (requestCode == RequestCodes.PLACE_AUTOCOMPLETE_REQUEST_CODE)
         {
             if (resultCode == RESULT_OK)
             {
@@ -305,22 +302,21 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
                     @Override
                     public void onResult(@NonNull PlaceLikelihoodBuffer likelyPlaces)
                     {
-                        placeList = new ArrayList<>();
+                        placeHashMap = new HashMap<>();
 
                         for (PlaceLikelihood placeLikelihood : likelyPlaces)
                         {
-                            if (placeLikelihood.getPlace().getPlaceTypes().contains(Place.TYPE_RESTAURANT))
+                            if (placeLikelihood.getPlace().getPlaceTypes().size(/*contains(Place.TYPE_RESTAURANT)*/) != 0)
                             {
                                 Place tempPlace = placeLikelihood.getPlace();
-
-                                Log.e("GOOGLE API", "onResult: " + placeLikelihood.getPlace().getName());
 
                                 FormattedPlace place = new FormattedPlace(
                                         tempPlace.getId(),
                                         tempPlace.getName().toString(),
                                         tempPlace.getAddress() != null ? tempPlace.getAddress().toString() : null,
                                         null,
-                                        tempPlace.getLatLng(),
+                                        tempPlace.getLatLng().latitude,
+                                        tempPlace.getLatLng().longitude,
                                         null,
                                         tempPlace.getWebsiteUri() != null ? tempPlace.getWebsiteUri().toString() : null,
                                         tempPlace.getPhoneNumber() != null ? tempPlace.getPhoneNumber().toString() : null,
@@ -328,11 +324,11 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
                                         null,
                                         null);
 
-                                placeList.add(place);
+                                placeHashMap.put(tempPlace.getName().toString(), place);
                             }
                         }
                         likelyPlaces.release();
-                        MapFragment.updateMarkerOnMap(placeList);
+                        MapFragment.updateMarkerOnMap(placeHashMap);
                     }
                 });
             }
@@ -356,11 +352,11 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     private void askUserToGrandPermission()
     {
         // Check with EasyPermissions if tha app have access to the location
-        if (!EasyPermissions.hasPermissions(this, LOCATION_PERMISSION_REQUEST))
-            EasyPermissions.requestPermissions(this, getString(R.string.map_fragment_easy_permission_location_user_request), RC_LOCATION_CODE, LOCATION_PERMISSION_REQUEST);
+        if (!EasyPermissions.hasPermissions(this, RequestCodes.LOCATION_PERMISSION_REQUEST))
+            EasyPermissions.requestPermissions(this, getString(R.string.map_fragment_easy_permission_location_user_request), RequestCodes.RC_LOCATION_CODE, RequestCodes.LOCATION_PERMISSION_REQUEST);
         else
         {
-            locationPermissionState = true;
+            RequestCodes.setLocationPermissionState();
             Log.i("EasyPerm in activity", "askUserToEnableLocationPermission: Location Access granted");
         }
     }
@@ -373,5 +369,13 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     public void getMarkerOnMap()
     {
         this.getPlacesOnGoogleAPI();
+    }
+
+    @Override
+    public void displayRestaurantDetailsOnMarkerClick(FormattedPlace mDetailsRestaurants)
+    {
+        Intent intent = new Intent(this, RestaurantDetailsActivity.class);
+        intent.putExtra(RequestCodes.ACTIVITY_DETAILS_CODE, mDetailsRestaurants);
+        startActivity(intent);
     }
 }

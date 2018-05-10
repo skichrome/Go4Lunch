@@ -16,27 +16,26 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.base.BaseFragment;
-import com.skichrome.go4lunch.controllers.ActivitiesCallbacks;
 import com.skichrome.go4lunch.models.FormattedPlace;
+import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
+import com.skichrome.go4lunch.utils.RequestCodes;
 
 import java.lang.ref.WeakReference;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import butterknife.OnClick;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
-import static com.skichrome.go4lunch.controllers.activities.MainActivity.LOCATION_PERMISSION_REQUEST;
-import static com.skichrome.go4lunch.controllers.activities.MainActivity.RC_LOCATION_CODE;
-import static com.skichrome.go4lunch.controllers.activities.MainActivity.locationPermissionState;
-
 /**
  * This Fragment is used to display a mapView with map api, it will display some restaurants around the user mainly
  */
-public class MapFragment extends BaseFragment implements OnMapReadyCallback
+public class MapFragment extends BaseFragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener
 {
     //=========================================
     // Fields
@@ -45,6 +44,8 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback
     static WeakReference<Context> contextWeakReference;
     private static GoogleMap gMap;
     private LatLng lastKnownLocation;
+    private static HashMap<String, FormattedPlace> placesHashMap;
+    private Marker lastMarkerClicked;
     private ActivitiesCallbacks.MarkersChangedListener markerCallback;
 
     //=========================================
@@ -76,7 +77,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback
 
         askUserToGrandPermission();
 
-        if (locationPermissionState)
+        if (RequestCodes.isLocationPermissionState())
         {
             @SuppressLint("MissingPermission") Location location = locationManager.getLastKnownLocation(provider);
 
@@ -111,14 +112,20 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback
     // GMap Methods
     //=========================================
 
-    public static void updateMarkerOnMap(List<FormattedPlace> mPlaces)
+    public static void updateMarkerOnMap(HashMap<String, FormattedPlace> mPlaces)
     {
-        if (mPlaces != null)
+        if (mPlaces.size() != 0)
         {
+            placesHashMap = mPlaces;
             gMap.clear();
-            for (FormattedPlace place : mPlaces)
-                gMap.addMarker(new MarkerOptions().position(place.getLocation()).title(place.getName()).icon(BitmapDescriptorFactory.fromResource(R.drawable.lunch_marker_nobody)));
-            Log.e("MARKER METHOD", "updateMarkerOnMap: size of markers list" + mPlaces.size());
+
+            for (Map.Entry<String, FormattedPlace> place : mPlaces.entrySet())
+            {
+                FormattedPlace placeValue = place.getValue();
+                LatLng location = new LatLng(placeValue.getLocationLatitude(), placeValue.getLocationLongitude());
+                gMap.addMarker(new MarkerOptions().position(location).title(placeValue.getName()).icon(BitmapDescriptorFactory.fromResource(R.drawable.lunch_marker_nobody)));
+            }
+            Log.e("MARKER METHOD", "updateMarkerOnMap: size of markers list : " + mPlaces.size());
         }
         else
             Toast.makeText(contextWeakReference.get(), "No restaurants detected near you ...", Toast.LENGTH_SHORT).show();
@@ -131,13 +138,13 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback
     private static void askUserToGrandPermission()
     {
         // Check with EasyPermissions if tha app have access to the location
-        if (!EasyPermissions.hasPermissions(contextWeakReference.get(), LOCATION_PERMISSION_REQUEST))
+        if (!EasyPermissions.hasPermissions(contextWeakReference.get(), RequestCodes.LOCATION_PERMISSION_REQUEST))
         {
-            EasyPermissions.requestPermissions((Activity) contextWeakReference.get(), contextWeakReference.get().getString(R.string.map_fragment_easy_permission_location_user_request), RC_LOCATION_CODE, LOCATION_PERMISSION_REQUEST);
+            EasyPermissions.requestPermissions((Activity) contextWeakReference.get(), contextWeakReference.get().getString(R.string.map_fragment_easy_permission_location_user_request), RequestCodes.RC_LOCATION_CODE, RequestCodes.LOCATION_PERMISSION_REQUEST);
         }
         else
         {
-            locationPermissionState = true;
+            RequestCodes.setLocationPermissionState();
             Log.i("EasyPerm in fragment", "askUserToEnableLocationPermission: Location Access granted");
         }
     }
@@ -154,10 +161,10 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback
     }
 
     @OnClick(R.id.fragment_map_floating_action_btn)
-    @AfterPermissionGranted(RC_LOCATION_CODE)
+    @AfterPermissionGranted(RequestCodes.RC_LOCATION_CODE)
     public void onClickFloatingActionBtn()
     {
-        if (locationPermissionState)
+        if (RequestCodes.isLocationPermissionState())
         {
             getLastKnownLocation();
             markerCallback.getMarkerOnMap();
@@ -173,10 +180,11 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback
         gMap = mGoogleMap;
         gMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         gMap.setIndoorEnabled(true);
+        gMap.setOnMarkerClickListener(this);
 
         askUserToGrandPermission();
 
-        if (locationPermissionState)
+        if (RequestCodes.isLocationPermissionState())
         {
             gMap.setMyLocationEnabled(true);
             gMap.getUiSettings().setMyLocationButtonEnabled(false); // delete default button
@@ -192,6 +200,22 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback
         this.onClickFloatingActionBtn();
     }
 
+    @Override
+    public boolean onMarkerClick(Marker mMarker)
+    {
+        // Allow user to see on which marked he has clicked before display restaurant details
+        if (mMarker.equals(lastMarkerClicked))
+        {
+            FormattedPlace restaurantDetails = placesHashMap.get(mMarker.getTitle());
+            markerCallback.displayRestaurantDetailsOnMarkerClick(restaurantDetails);
+        }
+        else
+        {
+            mMarker.showInfoWindow();
+            lastMarkerClicked = mMarker;
+        }
+        return true;
+    }
 
     //=========================================
     // Permission Methods

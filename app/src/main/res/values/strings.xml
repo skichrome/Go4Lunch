@@ -41,4 +41,13 @@
 
     <string name="map_fragment_easy_permission_location_user_request">Autoriser l\'accès à la position précise ?</string>
 
+    <!-- Activity Details Restaurant strings -->
+    <string name="activity_details_resto_main_picture_content_desc">picture downloaded from google client</string>
+    <string name="activity_details_restaurant_content_desc_phone_icon">phone icon</string>
+    <string name="activity_details_restaurant_content_desc_rate_icon">rate_icon</string>
+    <string name="activity_details_restaurant_content_desc_website_icon">website icon</string>
+    <string name="activity_details_resto_string_call">Call</string>
+    <string name="activity_details_resto_string_rate">Rate</string>
+    <string name="activity_details_resto_string_website">Website</string>
+
 </resources>
