@@ -41,10 +41,11 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     // Fields
     //=========================================
 
-    static WeakReference<Context> contextWeakReference;
+    private static WeakReference<Context> contextWeakReference;
     private static GoogleMap gMap;
-    private LatLng lastKnownLocation;
     private static HashMap<String, FormattedPlace> placesHashMap;
+
+    private LatLng lastKnownLocation;
     private Marker lastMarkerClicked;
     private ActivitiesCallbacks.MarkersChangedListener markerCallback;
 
@@ -62,10 +63,38 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     //=========================================
 
     @Override
+    protected void configureFragment()
+    {
+        this.configureMapApi();
+        this.createCallbackToParentActivity();
+    }
+
+    @Override
     protected int getFragmentLayout()
     {
         return R.layout.fragment_map;
     }
+
+    //=========================================
+    // Floating action btn Method
+    //=========================================
+
+    @OnClick(R.id.fragment_map_floating_action_btn)
+    @AfterPermissionGranted(RequestCodes.RC_LOCATION_CODE)
+    public void onClickFloatingActionBtn()
+    {
+        if (RequestCodes.isLocationPermissionState())
+        {
+            getLastKnownLocation();
+            markerCallback.getMarkerOnMap();
+        }
+        else
+            askUserToGrandPermission();
+    }
+
+    //=========================================
+    // Location Method
+    //=========================================
 
     private static void getLastKnownLocation()
     {
@@ -88,10 +117,9 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         }
     }
 
-    @Override
-    protected void updateFragment()
-    {
-    }
+    //=========================================
+    // Methods
+    //=========================================
 
     private void configureMapApi()
     {
@@ -99,41 +127,10 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         mapFragment.getMapAsync(this);
     }
 
-    //=========================================
-    // Floating action btn Method
-    //=========================================
-
     public static void setContextWeakReference(Context mContext)
     {
         contextWeakReference = new WeakReference<>(mContext);
     }
-
-    //=========================================
-    // GMap Methods
-    //=========================================
-
-    public static void updateMarkerOnMap(HashMap<String, FormattedPlace> mPlaces)
-    {
-        if (mPlaces.size() != 0)
-        {
-            placesHashMap = mPlaces;
-            gMap.clear();
-
-            for (Map.Entry<String, FormattedPlace> place : mPlaces.entrySet())
-            {
-                FormattedPlace placeValue = place.getValue();
-                LatLng location = new LatLng(placeValue.getLocationLatitude(), placeValue.getLocationLongitude());
-                gMap.addMarker(new MarkerOptions().position(location).title(placeValue.getName()).icon(BitmapDescriptorFactory.fromResource(R.drawable.lunch_marker_nobody)));
-            }
-            Log.e("MARKER METHOD", "updateMarkerOnMap: size of markers list : " + mPlaces.size());
-        }
-        else
-            Toast.makeText(contextWeakReference.get(), "No restaurants detected near you ...", Toast.LENGTH_SHORT).show();
-    }
-
-    //=========================================
-    // Methods
-    //=========================================
 
     private static void askUserToGrandPermission()
     {
@@ -149,29 +146,21 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         }
     }
 
+    private void createCallbackToParentActivity()
+    {
+        try
+        {
+            markerCallback = (ActivitiesCallbacks.MarkersChangedListener) getActivity();
+        }
+        catch (ClassCastException e)
+        {
+            Log.e("--- CALLBACK ---", "createCallbackToParentActivity: ", e);
+        }
+    }
+
     //=========================================
     // Callbacks Methods
     //=========================================
-
-    @Override
-    protected void configureFragment()
-    {
-        this.configureMapApi();
-        this.createCallbackToParentActivity();
-    }
-
-    @OnClick(R.id.fragment_map_floating_action_btn)
-    @AfterPermissionGranted(RequestCodes.RC_LOCATION_CODE)
-    public void onClickFloatingActionBtn()
-    {
-        if (RequestCodes.isLocationPermissionState())
-        {
-            getLastKnownLocation();
-            markerCallback.getMarkerOnMap();
-        }
-        else
-            askUserToGrandPermission();
-    }
 
     @SuppressLint("MissingPermission")
     @Override
@@ -200,6 +189,25 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         this.onClickFloatingActionBtn();
     }
 
+    public static void updateMarkerOnMap(HashMap<String, FormattedPlace> mPlaces)
+    {
+        if (mPlaces.size() != 0)
+        {
+            placesHashMap = mPlaces;
+            gMap.clear();
+
+            for (Map.Entry<String, FormattedPlace> place : mPlaces.entrySet())
+            {
+                FormattedPlace placeValue = place.getValue();
+                LatLng location = new LatLng(placeValue.getLocationLatitude(), placeValue.getLocationLongitude());
+                gMap.addMarker(new MarkerOptions().position(location).title(placeValue.getName()).icon(BitmapDescriptorFactory.fromResource(R.drawable.lunch_marker_nobody)));
+            }
+            Log.e("MARKER METHOD", "updateMarkerOnMap: size of markers list : " + mPlaces.size());
+        }
+        else
+            Toast.makeText(contextWeakReference.get(), "No restaurants detected near you ...", Toast.LENGTH_SHORT).show();
+    }
+
     @Override
     public boolean onMarkerClick(Marker mMarker)
     {
@@ -215,21 +223,5 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
             lastMarkerClicked = mMarker;
         }
         return true;
-    }
-
-    //=========================================
-    // Permission Methods
-    //=========================================
-
-    private void createCallbackToParentActivity()
-    {
-        try
-        {
-            markerCallback = (ActivitiesCallbacks.MarkersChangedListener) getActivity();
-        }
-        catch (ClassCastException e)
-        {
-            Log.e("--- CALLBACK ---", "createCallbackToParentActivity: ", e);
-        }
     }
 }

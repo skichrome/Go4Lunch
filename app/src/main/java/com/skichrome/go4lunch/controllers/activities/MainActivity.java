@@ -57,7 +57,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     private Fragment listFragment;
     private Fragment workmatesFragment;
 
-    private GoogleApiClient googleApiClient;
+    public static GoogleApiClient googleApiClient;
     public HashMap<String, FormattedPlace> placeHashMap;
 
     //=========================================
@@ -238,6 +238,8 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         if (listFragment == null)
             listFragment = ListFragment.newInstance();
         displayFragment(listFragment);
+
+        this.getPlacesOnGoogleAPI(RequestCodes.ID_LIST_FRAGMENT);
     }
 
     private void configureWorkmatesFragment()
@@ -284,9 +286,9 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Google Place Api Methods
     //=========================================
 
-    private void getPlacesOnGoogleAPI()
+    private void getPlacesOnGoogleAPI(final int mFragID)
     {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
             this.askUserToGrandPermission();
         else
         {
@@ -310,13 +312,13 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
                                 FormattedPlace place = new FormattedPlace(
                                         tempPlace.getId(),
                                         tempPlace.getName().toString(),
-                                        tempPlace.getAddress() != null ? tempPlace.getAddress().toString() : null,
-                                        null,
+                                        tempPlace.getAddress() != null ? tempPlace.getAddress().toString() : "",
+                                        "-",
                                         tempPlace.getLatLng().latitude,
                                         tempPlace.getLatLng().longitude,
-                                        null,
-                                        tempPlace.getWebsiteUri() != null ? tempPlace.getWebsiteUri().toString() : null,
-                                        tempPlace.getPhoneNumber() != null ? tempPlace.getPhoneNumber().toString() : null,
+                                        "-",
+                                        tempPlace.getWebsiteUri() != null ? tempPlace.getWebsiteUri().toString() : "",
+                                        tempPlace.getPhoneNumber() != null ? tempPlace.getPhoneNumber().toString() : "",
                                         null,
                                         null,
                                         null);
@@ -325,7 +327,23 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
                             }
                         }
                         likelyPlaces.release();
-                        MapFragment.updateMarkerOnMap(placeHashMap);
+
+                        switch (mFragID)
+                        {
+                            case RequestCodes.ID_MAP_FRAGMENT :
+                                MapFragment.updateMarkerOnMap(placeHashMap);
+                                break;
+
+                            case RequestCodes.ID_LIST_FRAGMENT :
+                                ListFragment.updatePlacesHashMap(placeHashMap);
+                                break;
+
+                                case RequestCodes.ID_WORKMATES_FRAGMENT :
+                                break;
+
+                            default:
+                                break;
+                        }
                     }
                 });
             }
@@ -365,7 +383,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     public void getMarkerOnMap()
     {
-        this.getPlacesOnGoogleAPI();
+        this.getPlacesOnGoogleAPI(RequestCodes.ID_MAP_FRAGMENT);
     }
 
     @Override

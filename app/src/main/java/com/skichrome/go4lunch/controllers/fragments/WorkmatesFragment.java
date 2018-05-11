@@ -35,11 +35,6 @@ public class WorkmatesFragment extends BaseFragment
     {
     }
 
-    @Override
-    protected void updateFragment()
-    {
-    }
-
     //=========================================
     // Configuration Methods
     //=========================================

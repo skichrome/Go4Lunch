@@ -9,6 +9,15 @@ import com.skichrome.go4lunch.controllers.activities.MainActivity;
  */
 public class RequestCodes
 {
+
+    //=========================================
+    // Fragments
+    //=========================================
+
+    public static final int ID_MAP_FRAGMENT = 10;
+    public static final int ID_LIST_FRAGMENT = 20;
+    public static final int ID_WORKMATES_FRAGMENT = 30;
+
     //=========================================
     // Main Activity
     //=========================================

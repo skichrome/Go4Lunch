@@ -12,14 +12,14 @@ public class FormattedPlace implements Serializable
     private final String id;
     private final String name;
     private final String address;
-    private final String aperture;
     private final double locationLatitude;
     private final double locationLongitude;
-    private final String distance;
     private final String website;
     private final String phoneNumber;
-    private final String imageUrl;
 
+    private String distance;
+    private String aperture;
+    private String imageUrl;
     private String rating;
     private List<String> workmates;
 
@@ -113,23 +113,48 @@ public class FormattedPlace implements Serializable
         return rating;
     }
 
-    public void setRating(String mRating)
+    public List<String> getWorkmates()
     {
-        rating = mRating;
+        return workmates;
+    }
+
+    public int getNumberOfWorkmates()
+    {
+        return workmates == null ? 0 : workmates.size();
     }
 
     //=========================================
     // Setters
     //=========================================
 
-    public List<String> getWorkmates()
+    public void setImageUrl(String mImageUrl)
     {
-        return workmates;
+        imageUrl = mImageUrl;
+    }
+
+    public void setDistance(String mDistance)
+    {
+        distance = mDistance;
+    }
+
+    public void setAperture(String mAperture)
+    {
+        aperture = mAperture;
+    }
+
+    public void setRating(String mRating)
+    {
+        rating = mRating;
     }
 
     public void setWorkmates(List<String> mWorkmates)
     {
         workmates = mWorkmates;
+    }
+
+    public void addWorkMate(String mWorkmate)
+    {
+        if (workmates != null) workmates.add(mWorkmate);
     }
 
     //=========================================
@@ -143,13 +168,15 @@ public class FormattedPlace implements Serializable
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", address='" + address + '\'' +
+                ", latitude='" + locationLatitude + '\'' +
+                ", longitude='" + locationLongitude + '\'' +
                 ", aperture='" + aperture + '\'' +
                 ", distance='" + distance + '\'' +
                 ", website='" + website + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", imageUrl='" + imageUrl + '\'' +
                 ", rating='" + rating + '\'' +
-                ", workmates=" + workmates +
+                ", workmates=" + workmates.toString() +
                 '}';
     }
 }

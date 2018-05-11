@@ -28,10 +28,6 @@ public abstract class BaseFragment extends Fragment
      * Used to configure the design, for example here will be executed the http Request, the RecyclerView will be configured here
      */
     protected abstract void configureFragment();
-    /**
-     * configure refresh on user swipe down on top of recyclerView
-     */
-    protected abstract void updateFragment ();
 
     //=========================================
     // Empty Constructor
@@ -59,7 +55,6 @@ public abstract class BaseFragment extends Fragment
 
         // Configure and update Design (Developer will implement these method instead of override onCreateView())
         this.configureFragment();
-        this.updateFragment();
 
         return(view);
     }
