@@ -72,10 +72,15 @@ public class RestaurantDetailsActivity extends BaseActivity
         switch (Integer.valueOf(mConstraintLayout.getTag().toString()))
         {
             case 10:
-                intent = new Intent(Intent.ACTION_DIAL);
-                intent.setData(Uri.parse("tel:" + restaurantDetails.getPhoneNumber()));
-                if (intent.resolveActivity(getPackageManager()) != null)
-                    startActivity(intent);
+                if (restaurantDetails.getPhoneNumber() == null)
+                    Toast.makeText(this, "This place does not have a website...", Toast.LENGTH_SHORT).show();
+                else
+                {
+                    intent = new Intent(Intent.ACTION_DIAL);
+                    intent.setData(Uri.parse("tel:" + restaurantDetails.getPhoneNumber()));
+                    if (intent.resolveActivity(getPackageManager()) != null)
+                        startActivity(intent);
+                }
                 break;
 
             case 20:
@@ -83,9 +88,15 @@ public class RestaurantDetailsActivity extends BaseActivity
                 break;
 
             case 30:
-                intent = new Intent(Intent.ACTION_VIEW, Uri.parse(restaurantDetails.getWebsite()));
-                if (intent.resolveActivity(getPackageManager()) != null)
-                    startActivity(intent);
+                if (restaurantDetails.getWebsite().equals(""))
+                    Toast.makeText(this, "This place does not have a website...", Toast.LENGTH_SHORT).show();
+                else
+                {
+                    intent = new Intent(Intent.ACTION_VIEW, Uri.parse(restaurantDetails.getWebsite()));
+                    if (intent.resolveActivity(getPackageManager()) != null)
+                        startActivity(intent);
+                }
+
                 break;
 
             default:

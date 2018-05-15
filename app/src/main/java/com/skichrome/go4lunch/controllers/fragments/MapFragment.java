@@ -1,12 +1,10 @@
 package com.skichrome.go4lunch.controllers.fragments;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -24,7 +22,6 @@ import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
 import com.skichrome.go4lunch.utils.RequestCodes;
 
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,9 +38,8 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     // Fields
     //=========================================
 
-    private static WeakReference<Context> contextWeakReference;
-    private static GoogleMap gMap;
-    private static HashMap<String, FormattedPlace> placesHashMap;
+    private GoogleMap gMap;
+    private HashMap<String, FormattedPlace> placesHashMap;
 
     private LatLng lastKnownLocation;
     private Marker lastMarkerClicked;
@@ -53,7 +49,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     // New Instance method
     //=========================================
 
-    public static Fragment newInstance()
+    public static MapFragment newInstance()
     {
         return new MapFragment();
     }
@@ -96,9 +92,9 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     // Location Method
     //=========================================
 
-    private static void getLastKnownLocation()
+    private void getLastKnownLocation()
     {
-        LocationManager locationManager = (LocationManager) contextWeakReference.get().getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 
         // Get last known Location
         Criteria criteria = new Criteria();
@@ -113,7 +109,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
             if (location != null)
                 gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
             else
-                Toast.makeText(contextWeakReference.get(), "No location detected, have you enabled location in settings ? If yes, just wait less than a minute before re-try ;)", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "No location detected, have you enabled location in settings ? If yes, just wait less than a minute before re-try ;)", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -127,17 +123,12 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         mapFragment.getMapAsync(this);
     }
 
-    public static void setContextWeakReference(Context mContext)
-    {
-        contextWeakReference = new WeakReference<>(mContext);
-    }
-
-    private static void askUserToGrandPermission()
+    private void askUserToGrandPermission()
     {
         // Check with EasyPermissions if tha app have access to the location
-        if (!EasyPermissions.hasPermissions(contextWeakReference.get(), RequestCodes.LOCATION_PERMISSION_REQUEST))
+        if (!EasyPermissions.hasPermissions(getContext(), RequestCodes.LOCATION_PERMISSION_REQUEST))
         {
-            EasyPermissions.requestPermissions((Activity) contextWeakReference.get(), contextWeakReference.get().getString(R.string.map_fragment_easy_permission_location_user_request), RequestCodes.RC_LOCATION_CODE, RequestCodes.LOCATION_PERMISSION_REQUEST);
+            EasyPermissions.requestPermissions(getActivity(), getContext().getString(R.string.map_fragment_easy_permission_location_user_request), RequestCodes.RC_LOCATION_CODE, RequestCodes.LOCATION_PERMISSION_REQUEST);
         }
         else
         {
@@ -189,7 +180,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         this.onClickFloatingActionBtn();
     }
 
-    public static void updateMarkerOnMap(HashMap<String, FormattedPlace> mPlaces)
+    public void updateMarkerOnMap(HashMap<String, FormattedPlace> mPlaces)
     {
         if (mPlaces.size() != 0)
         {
@@ -205,7 +196,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
             Log.e("MARKER METHOD", "updateMarkerOnMap: size of markers list : " + mPlaces.size());
         }
         else
-            Toast.makeText(contextWeakReference.get(), "No restaurants detected near you ...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "No restaurants detected near you ...", Toast.LENGTH_SHORT).show();
     }
 
     @Override

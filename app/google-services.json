@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "937477908563-5g1sv3oh7bs8ae33kb2g3264led7qgi1.apps.googleusercontent.com",
+          "client_id": "937477908563-9p7tc3052kk6q7pdroig1ue1us4ftp16.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.skichrome.go4lunch",
-            "certificate_hash": "838fc0366969e08e53c86d7e30d9caa6aaf4350d"
+            "certificate_hash": "199735038163544e666ad9ad819654d2cc4886ff"
           }
         },
         {
@@ -29,7 +29,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDyuZPn-Pa0oLjfYl5_OfGWCJFoWyrIpgw"
+          "current_key": "AIzaSyC6CmTxzP3TKIAq30jCROqhxUFHdvOArrU"
         }
       ],
       "services": {

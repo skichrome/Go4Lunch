@@ -1,10 +1,10 @@
 package com.skichrome.go4lunch.controllers.fragments;
 
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.base.BaseFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
@@ -23,15 +23,17 @@ public class ListFragment extends BaseFragment
 
     @BindView(R.id.fragment_list_recycler_view_container) RecyclerView recyclerView;
 
-    private static ArrayList<FormattedPlace> placesList;
-    private static RVAdapter adapter;
+    private ArrayList<FormattedPlace> placesList;
+    private RVAdapter adapter;
+    private static GoogleApiClient googleApiClient;
 
     //=========================================
     // New Instance method
     //=========================================
 
-    public static Fragment newInstance()
+    public static ListFragment newInstance(GoogleApiClient mGoogleApiClient)
     {
+        googleApiClient = mGoogleApiClient;
         return new ListFragment();
     }
 
@@ -57,16 +59,16 @@ public class ListFragment extends BaseFragment
 
     private void configureRecyclerView()
     {
-        placesList = new ArrayList<>();
+        this.placesList = new ArrayList<>();
 
-        adapter = new RVAdapter(placesList, Glide.with(this));
-        this.recyclerView.setAdapter(adapter);
+        this.adapter = new RVAdapter(this.placesList, Glide.with(this));
+        this.recyclerView.setAdapter(this.adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }
 
-    public static void updatePlacesHashMap(HashMap<String, FormattedPlace> mPlaceHashMap)
+    public void updatePlacesHashMap(HashMap<String, FormattedPlace> mPlaceHashMap)
     {
-        placesList.addAll(mPlaceHashMap.values());
-        adapter.notifyDataSetChanged();
+        this.placesList.addAll(mPlaceHashMap.values());
+        this.adapter.notifyDataSetChanged();
     }
 }

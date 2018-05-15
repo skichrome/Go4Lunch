@@ -1,7 +1,5 @@
 package com.skichrome.go4lunch.controllers.fragments;
 
-import android.support.v4.app.Fragment;
-
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.base.BaseFragment;
 
@@ -15,7 +13,7 @@ public class WorkmatesFragment extends BaseFragment
     // New Instance method
     //=========================================
 
-    public static Fragment newInstance()
+    public static WorkmatesFragment newInstance()
     {
         return new WorkmatesFragment();
     }

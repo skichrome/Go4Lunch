@@ -4,29 +4,22 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.places.AutocompleteFilter;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.PlaceLikelihood;
-import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
-import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.base.BaseActivity;
@@ -35,30 +28,32 @@ import com.skichrome.go4lunch.controllers.fragments.MapFragment;
 import com.skichrome.go4lunch.controllers.fragments.WorkmatesFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
+import com.skichrome.go4lunch.utils.FireBaseAuthentication;
+import com.skichrome.go4lunch.utils.MapMethods;
 import com.skichrome.go4lunch.utils.RequestCodes;
 
 import java.util.HashMap;
 
 import butterknife.BindView;
-import pub.devrel.easypermissions.EasyPermissions;
 
-public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener, ActivitiesCallbacks.MarkersChangedListener
+public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener, ActivitiesCallbacks.MarkersChangedListener
 {
     //=========================================
     // Fields
     //=========================================
 
+    @BindView(R.id.main_activity_constraint_layout_container) ConstraintLayout constraintLayout;
     @BindView(R.id.activity_main_bottomNavigationView) BottomNavigationView bottomNavigationView;
     @BindView(R.id.activity_toolbar) Toolbar toolbar;
     @BindView(R.id.activity_main_menu_drawer_layout) DrawerLayout drawerLayout;
     @BindView(R.id.activity_main_navigation_view) NavigationView navigationView;
 
-    private Fragment mapFragment;
-    private Fragment listFragment;
-    private Fragment workmatesFragment;
+    private MapFragment mapFragment;
+    private ListFragment listFragment;
+    private WorkmatesFragment workmatesFragment;
 
-    public static GoogleApiClient googleApiClient;
-    public HashMap<String, FormattedPlace> placeHashMap;
+    private FireBaseAuthentication fireBaseAuthentication = new FireBaseAuthentication(this);
+    private MapMethods mapMethods = new MapMethods(this);
 
     //=========================================
     // Superclass Methods
@@ -73,21 +68,20 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     protected void configureActivity()
     {
-        MapFragment.setContextWeakReference(this);
+        if (!isCurrentUserLogged())
+            fireBaseAuthentication.startSignInActivity();
 
         this.configureBottomNavigationView();
         this.configureToolBar();
         this.configureMenuDrawer();
         this.configureNavigationView();
         this.configureMapFragment();
-
-        this.configureGoogleApiClient();
+        mapMethods.configureGoogleApiClient();
     }
 
     //=========================================
     // Configuration Methods
     //=========================================
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -118,6 +112,10 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
     }
 
+    //=========================================
+    // Listeners Methods
+    //=========================================
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
@@ -129,41 +127,6 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
 
             default:
                 return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private void configureGoogleApiClient()
-    {
-        googleApiClient = new GoogleApiClient
-                .Builder(this)
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
-                .enableAutoManage(this, this)
-                .build();
-    }
-
-    //=========================================
-    // Listeners Methods
-    //=========================================
-
-    private void launchPlaceAutocompleteActivity()
-    {
-        try
-        {
-            // Define a research filter for possible places
-            AutocompleteFilter filter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
-                    .build();
-
-            // Create an intent and start an activity with request code
-            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
-                    .setFilter(filter)
-                    .build(this);
-            startActivityForResult(intent, RequestCodes.PLACE_AUTOCOMPLETE_REQUEST_CODE);
-        }
-        catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException mE)
-        {
-            mE.printStackTrace();
         }
     }
 
@@ -193,14 +156,13 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
                 break;
 
             case R.id.activity_main_menu_drawer_logout:
+                fireBaseAuthentication.logoutFromFirebase();
                 break;
 
             default:
-                    return false;
+                return false;
         }
-
         drawerLayout.closeDrawer(GravityCompat.START);
-
         return true;
     }
 
@@ -236,10 +198,10 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     private void configureListFragment()
     {
         if (listFragment == null)
-            listFragment = ListFragment.newInstance();
+            listFragment = ListFragment.newInstance(mapMethods.getGoogleApiClient());
         displayFragment(listFragment);
 
-        this.getPlacesOnGoogleAPI(RequestCodes.ID_LIST_FRAGMENT);
+        mapMethods.getNearbyPlaces(RequestCodes.ID_LIST_FRAGMENT);
     }
 
     private void configureWorkmatesFragment()
@@ -253,127 +215,73 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Place Autocomplete Methods
     //=========================================
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    private void launchPlaceAutocompleteActivity()
     {
-        if (requestCode == RequestCodes.PLACE_AUTOCOMPLETE_REQUEST_CODE)
+        try
         {
-            if (resultCode == RESULT_OK)
-            {
-                Place place = PlaceAutocomplete.getPlace(this, data);
-                Log.d("Place Autocomplete", "onActivityResult: User typed this : " + place.getName());
-            }
-            if (resultCode == PlaceAutocomplete.RESULT_ERROR)
-                Log.e("Place Autocomplete", "onActivityResult: Place autocomplete error ! \n\n" + PlaceAutocomplete.getStatus(this, data).getStatusMessage());
-            if (resultCode == RESULT_CANCELED)
-                Log.i("Place Autocomplete", "onActivityResult: User canceled !");
+            // Define a research filter for possible places
+            AutocompleteFilter filter = new AutocompleteFilter.Builder()
+                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
+                    .build();
+
+            // Create an intent and start an activity with request code
+            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
+                    .setFilter(filter)
+                    .build(this);
+            startActivityForResult(intent, RequestCodes.PLACE_AUTOCOMPLETE_REQUEST_CODE);
         }
-        super.onActivityResult(requestCode, resultCode, data);
+        catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException mE)
+        {
+            mE.printStackTrace();
+        }
     }
 
     @Override
     public void onPause()
     {
         super.onPause();
-        if (googleApiClient != null && googleApiClient.isConnected())
-        {
-            googleApiClient.stopAutoManage(this);
-            googleApiClient.disconnect();
-        }
-    }
-
-    //=========================================
-    // Google Place Api Methods
-    //=========================================
-
-    private void getPlacesOnGoogleAPI(final int mFragID)
-    {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-            this.askUserToGrandPermission();
-        else
-        {
-            try
-            {
-                PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi.getCurrentPlace(googleApiClient, null);
-
-                result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>()
-                {
-                    @Override
-                    public void onResult(@NonNull PlaceLikelihoodBuffer likelyPlaces)
-                    {
-                        placeHashMap = new HashMap<>();
-
-                        for (PlaceLikelihood placeLikelihood : likelyPlaces)
-                        {
-                            if (placeLikelihood.getPlace().getPlaceTypes().size(/*contains(Place.TYPE_RESTAURANT)*/) != 0)
-                            {
-                                Place tempPlace = placeLikelihood.getPlace();
-
-                                FormattedPlace place = new FormattedPlace(
-                                        tempPlace.getId(),
-                                        tempPlace.getName().toString(),
-                                        tempPlace.getAddress() != null ? tempPlace.getAddress().toString() : "",
-                                        "-",
-                                        tempPlace.getLatLng().latitude,
-                                        tempPlace.getLatLng().longitude,
-                                        "-",
-                                        tempPlace.getWebsiteUri() != null ? tempPlace.getWebsiteUri().toString() : "",
-                                        tempPlace.getPhoneNumber() != null ? tempPlace.getPhoneNumber().toString() : "",
-                                        null,
-                                        null,
-                                        null);
-
-                                placeHashMap.put(tempPlace.getName().toString(), place);
-                            }
-                        }
-                        likelyPlaces.release();
-
-                        switch (mFragID)
-                        {
-                            case RequestCodes.ID_MAP_FRAGMENT :
-                                MapFragment.updateMarkerOnMap(placeHashMap);
-                                break;
-
-                            case RequestCodes.ID_LIST_FRAGMENT :
-                                ListFragment.updatePlacesHashMap(placeHashMap);
-                                break;
-
-                                case RequestCodes.ID_WORKMATES_FRAGMENT :
-                                break;
-
-                            default:
-                                break;
-                        }
-                    }
-                });
-            }
-            catch (SecurityException e)
-            {
-                Log.e("ERROR", "getPlacesOnGoogleAPI: ", e);
-            }
-        }
+        mapMethods.disconnectFromGoogleApiClient();
     }
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult mConnectionResult)
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        Log.e("ERROR", "onConnectionFailed: ERROR " + mConnectionResult.getErrorMessage());
+        super.onActivityResult(requestCode, resultCode, data);
+        fireBaseAuthentication.handleResponseAfterSignIn(requestCode, resultCode, data);
     }
 
     //=========================================
-    // Permission Methods
+    // Update Method
     //=========================================
 
-    private void askUserToGrandPermission()
+    public void updatePlacesHashMap(int mFragID, HashMap<String, FormattedPlace> mFormattedPlaceHashMap)
     {
-        // Check with EasyPermissions if tha app have access to the location
-        if (!EasyPermissions.hasPermissions(this, RequestCodes.LOCATION_PERMISSION_REQUEST))
-            EasyPermissions.requestPermissions(this, getString(R.string.map_fragment_easy_permission_location_user_request), RequestCodes.RC_LOCATION_CODE, RequestCodes.LOCATION_PERMISSION_REQUEST);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+            mapMethods.askUserToGrandPermission();
         else
         {
-            RequestCodes.setLocationPermissionState();
-            Log.i("EasyPerm in activity", "askUserToEnableLocationPermission: Location Access granted");
+            switch (mFragID)
+            {
+                case RequestCodes.ID_MAP_FRAGMENT:
+                    mapFragment.updateMarkerOnMap(mFormattedPlaceHashMap);
+                    break;
+
+                case RequestCodes.ID_LIST_FRAGMENT:
+                    listFragment.updatePlacesHashMap(mFormattedPlaceHashMap);
+                    break;
+
+                case RequestCodes.ID_WORKMATES_FRAGMENT:
+                    break;
+
+                default:
+                    break;
+            }
         }
+    }
+
+    public void showSnackBarMessage(String mMessage)
+    {
+        Snackbar.make(this.constraintLayout, mMessage, Snackbar.LENGTH_SHORT).show();
     }
 
     //=========================================
@@ -383,7 +291,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     public void getMarkerOnMap()
     {
-        this.getPlacesOnGoogleAPI(RequestCodes.ID_MAP_FRAGMENT);
+        mapMethods.getNearbyPlaces(RequestCodes.ID_MAP_FRAGMENT);
     }
 
     @Override

@@ -19,6 +19,19 @@ public class RequestCodes
     public static final int ID_WORKMATES_FRAGMENT = 30;
 
     //=========================================
+    // Start Activity
+    //=========================================
+
+    public static final int RC_SIGN_IN = 1234;
+
+    //=========================================
+    // Firebase
+    //=========================================
+
+    public static final int SIGN_OUT_TASK = 10;
+    public static final int DELETE_USER_TASK = 20;
+
+    //=========================================
     // Main Activity
     //=========================================
 
@@ -29,12 +42,12 @@ public class RequestCodes
     /**
      * Code used for EasyPermissions to authorise location in the app
      */
-    public static final int RC_LOCATION_CODE = 412;
+    public static final int RC_LOCATION_CODE = 4123;
 
     /**
      * Used as an identifier in intent for Place Autocomplete widget in {@link MainActivity#launchPlaceAutocompleteActivity()}
      */
-    public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 412;
+    public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 4124;
 
     /**
      * Used to store data in intent to launch {@link com.skichrome.go4lunch.controllers.activities.RestaurantDetailsActivity} and store a map contains all details about a restaurant

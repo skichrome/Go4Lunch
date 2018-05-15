@@ -16,13 +16,14 @@
         android:theme="@style/AppTheme" >
 
         <activity android:name=".controllers.activities.MainActivity">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <action android:name="android.intent.action.VIEW" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.VIEW" />
 
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
+
         <activity android:name=".controllers.activities.RestaurantDetailsActivity" />
 
         <meta-data

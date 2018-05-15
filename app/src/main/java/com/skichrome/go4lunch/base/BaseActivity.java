@@ -5,6 +5,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import butterknife.ButterKnife;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -47,5 +50,20 @@ public abstract class BaseActivity extends AppCompatActivity
     {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    //=========================================
+    // Utils
+    //=========================================
+
+    @Nullable
+    protected FirebaseUser getCurrentUser()
+    {
+        return FirebaseAuth.getInstance().getCurrentUser();
+    }
+
+    public Boolean isCurrentUserLogged()
+    {
+        return (this.getCurrentUser() != null);
     }
 }
