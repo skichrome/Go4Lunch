@@ -50,8 +50,8 @@ class RVViewHolder extends RecyclerView.ViewHolder
         this.textViewNumberOfWorkMates.setText("(" + mPlace.getNumberOfWorkmates() + ")");
         this.textViewAperture.setText(mPlace.getAperture());
 
-        if (mPlace.getImageUrl() != null)
-            mGlide.load(mPlace.getImageUrl()).into(imageViewRestaurantImg);
+        if (mPlace.getPhoto() != null)
+            mGlide.load(mPlace.getPhoto()).into(imageViewRestaurantImg);
         else
             imageViewRestaurantImg.destroyDrawingCache();
     }

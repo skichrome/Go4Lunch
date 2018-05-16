@@ -47,31 +47,30 @@ public class FireBaseAuthentication
                         .createSignInIntentBuilder()
                         .setTheme(R.style.LoginTheme)
                         .setAvailableProviders(
-                                Arrays.asList(new AuthUI.IdpConfig.EmailBuilder().build(),      // EMAIL
-                                        new AuthUI.IdpConfig.GoogleBuilder().build(),           // GOOGLE
-                                        new AuthUI.IdpConfig.FacebookBuilder().build()))        // FACEBOOK
+                                Arrays.asList(new AuthUI.IdpConfig.EmailBuilder().build(),          // EMAIL
+                                        new AuthUI.IdpConfig.GoogleBuilder().build(),               // GOOGLE
+                                        new AuthUI.IdpConfig.FacebookBuilder().build()))            // FACEBOOK
                         .setIsSmartLockEnabled(false, true)
-                        .setLogo(R.drawable.lunch)
+                        .setLogo(R.drawable.lunch_logo_makers)
                         .build(),
                 RequestCodes.RC_SIGN_IN);
     }
 
     // manage activities results cases
-    public void handleResponseAfterSignIn(int mRequestCode, int mResultCode, Intent mData)
+    public void onActivityResult(int mRequestCode, int mResultCode, Intent mData)
     {
         IdpResponse response = IdpResponse.fromResultIntent(mData);
 
         if (mRequestCode == RequestCodes.RC_SIGN_IN)
         {
             if (mResultCode == Activity.RESULT_OK)
-            { // SUCCESS
-                mainActivity.showSnackBarMessage("Login successful");
-            }
-            else
-            { // ERRORS
+                mainActivity.showSnackBarMessage("Login successful");       // SUCCESS
+            else                                                                      // ERRORS
+            {
                 if (response == null)
                 {
                     mainActivity.showSnackBarMessage("Login canceled");
+                    mainActivity.finish();
                 }
                 else if (response.getError().getErrorCode() == ErrorCodes.NO_NETWORK)
                 {
@@ -104,7 +103,6 @@ public class FireBaseAuthentication
     AuthUI.getInstance()
             .signOut(mainActivity)
             .addOnSuccessListener(mainActivity, this.updateUIAfterRESTRequestsCompleted(RequestCodes.SIGN_OUT_TASK));
-    mainActivity.finish();
     }
 
     public void deleteAccountFromFirebase()
@@ -127,7 +125,7 @@ public class FireBaseAuthentication
                 switch (origin)
                 {
                     case SIGN_OUT_TASK:
-                        mainActivity.finish();
+                        mainActivity.recreate();
                         break;
                     case DELETE_USER_TASK:
                         mainActivity.finish();

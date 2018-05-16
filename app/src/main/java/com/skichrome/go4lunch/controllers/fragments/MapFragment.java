@@ -1,13 +1,12 @@
 package com.skichrome.go4lunch.controllers.fragments;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -16,18 +15,19 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.base.BaseFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
 import com.skichrome.go4lunch.utils.RequestCodes;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
 import butterknife.OnClick;
 import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  * This Fragment is used to display a mapView with map api, it will display some restaurants around the user mainly
@@ -41,9 +41,9 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     private GoogleMap gMap;
     private HashMap<String, FormattedPlace> placesHashMap;
 
-    private LatLng lastKnownLocation;
-    private Marker lastMarkerClicked;
-    private ActivitiesCallbacks.MarkersChangedListener markerCallback;
+    private FusedLocationProviderClient mLocationClient;
+    //private Marker lastMarkerClicked;
+    private WeakReference<ActivitiesCallbacks.MarkersChangedListener> markerCallback;
 
     //=========================================
     // New Instance method
@@ -61,8 +61,9 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     @Override
     protected void configureFragment()
     {
+        this.markerCallback = new WeakReference<>((ActivitiesCallbacks.MarkersChangedListener) getActivity());
+        this.mLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         this.configureMapApi();
-        this.createCallbackToParentActivity();
     }
 
     @Override
@@ -79,38 +80,28 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     @AfterPermissionGranted(RequestCodes.RC_LOCATION_CODE)
     public void onClickFloatingActionBtn()
     {
-        if (RequestCodes.isLocationPermissionState())
-        {
-            getLastKnownLocation();
-            markerCallback.getMarkerOnMap();
-        }
-        else
-            askUserToGrandPermission();
+        this.getLastKnownLocation();
     }
 
     //=========================================
     // Location Method
     //=========================================
 
+    @SuppressLint("MissingPermission")
     private void getLastKnownLocation()
     {
-        LocationManager locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-
-        // Get last known Location
-        Criteria criteria = new Criteria();
-        String provider = locationManager.getBestProvider(criteria, false);
-
-        askUserToGrandPermission();
-
-        if (RequestCodes.isLocationPermissionState())
+        mLocationClient.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>()
         {
-            @SuppressLint("MissingPermission") Location location = locationManager.getLastKnownLocation(provider);
-
-            if (location != null)
-                gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
-            else
-                Toast.makeText(getContext(), "No location detected, have you enabled location in settings ? If yes, just wait less than a minute before re-try ;)", Toast.LENGTH_SHORT).show();
-        }
+            @Override
+            public void onSuccess(Location location)
+            {
+                // Got last known location. In some rare situations this can be null.
+                if (location != null)
+                    gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+                else
+                    Toast.makeText(getContext(), "No location detected, have you enabled location in settings ?", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     //=========================================
@@ -123,32 +114,6 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         mapFragment.getMapAsync(this);
     }
 
-    private void askUserToGrandPermission()
-    {
-        // Check with EasyPermissions if tha app have access to the location
-        if (!EasyPermissions.hasPermissions(getContext(), RequestCodes.LOCATION_PERMISSION_REQUEST))
-        {
-            EasyPermissions.requestPermissions(getActivity(), getContext().getString(R.string.map_fragment_easy_permission_location_user_request), RequestCodes.RC_LOCATION_CODE, RequestCodes.LOCATION_PERMISSION_REQUEST);
-        }
-        else
-        {
-            RequestCodes.setLocationPermissionState();
-            Log.i("EasyPerm in fragment", "askUserToEnableLocationPermission: Location Access granted");
-        }
-    }
-
-    private void createCallbackToParentActivity()
-    {
-        try
-        {
-            markerCallback = (ActivitiesCallbacks.MarkersChangedListener) getActivity();
-        }
-        catch (ClassCastException e)
-        {
-            Log.e("--- CALLBACK ---", "createCallbackToParentActivity: ", e);
-        }
-    }
-
     //=========================================
     // Callbacks Methods
     //=========================================
@@ -157,34 +122,24 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     @Override
     public void onMapReady(GoogleMap mGoogleMap)
     {
+        markerCallback.get().getMarkerOnMap();
+
         gMap = mGoogleMap;
         gMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         gMap.setIndoorEnabled(true);
         gMap.setOnMarkerClickListener(this);
 
-        askUserToGrandPermission();
+        gMap.setMyLocationEnabled(true);
+        gMap.getUiSettings().setMyLocationButtonEnabled(false); // delete default button
 
-        if (RequestCodes.isLocationPermissionState())
-        {
-            gMap.setMyLocationEnabled(true);
-            gMap.getUiSettings().setMyLocationButtonEnabled(false); // delete default button
-        }
-
-        // First LatLng point configuration (this default point is Chamonix in Haute-Savoie or Paris for second line)
-        if (lastKnownLocation == null)
-        {
-            //this.lastKnownLocation = new LatLng(45.9167, 6.8667);
-            this.lastKnownLocation = new LatLng(48.866667, 2.333333);
-        }
-
-        this.onClickFloatingActionBtn();
+        this.getLastKnownLocation();
     }
 
     public void updateMarkerOnMap(HashMap<String, FormattedPlace> mPlaces)
     {
         if (mPlaces.size() != 0)
         {
-            placesHashMap = mPlaces;
+            this.placesHashMap = mPlaces;
             gMap.clear();
 
             for (Map.Entry<String, FormattedPlace> place : mPlaces.entrySet())
@@ -202,17 +157,8 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     @Override
     public boolean onMarkerClick(Marker mMarker)
     {
-        // Allow user to see on which marked he has clicked before display restaurant details
-        if (mMarker.equals(lastMarkerClicked))
-        {
-            FormattedPlace restaurantDetails = placesHashMap.get(mMarker.getTitle());
-            markerCallback.displayRestaurantDetailsOnMarkerClick(restaurantDetails);
-        }
-        else
-        {
-            mMarker.showInfoWindow();
-            lastMarkerClicked = mMarker;
-        }
+        FormattedPlace restaurantDetails = placesHashMap.get(mMarker.getTitle());
+        markerCallback.get().displayRestaurantDetailsOnMarkerClick(restaurantDetails);
         return true;
     }
 }

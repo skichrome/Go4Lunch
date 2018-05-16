@@ -73,6 +73,24 @@ dependencies {
 
     // Google Play Service (module Places)
     implementation 'com.google.android.gms:play-services-places:15.0.1'
+
+    // Google Play Service (module Location and activity recognition)
+    implementation'com.google.android.gms:play-services-location:15.0.1'
+
+    // Used for web request
+    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
+
+    // Used for reactive programming
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.7'
+
+    // used to combine two lines on top
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
+
+    // Multidex support (more than 64k methods) if there is some compilation problem enable or disable this library
+    //implementation 'com.android.support:multidex:1.0.3'
 }
 
 // Firebase implementation

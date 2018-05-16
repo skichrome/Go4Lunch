@@ -1,5 +1,7 @@
 package com.skichrome.go4lunch.models;
 
+import android.graphics.Bitmap;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -14,14 +16,15 @@ public class FormattedPlace implements Serializable
     private final String address;
     private final double locationLatitude;
     private final double locationLongitude;
-    private final String website;
-    private final String phoneNumber;
 
+    private String photoReference;
+    private String website;
+    private String phoneNumber;
     private String distance;
     private String aperture;
-    private String imageUrl;
     private String rating;
     private List<String> workmates;
+    private Bitmap photo;
 
     //=========================================
     // Constructor
@@ -30,26 +33,20 @@ public class FormattedPlace implements Serializable
     public FormattedPlace(String mId,
                           String mName,
                           String mAddress,
-                          String mAperture,
+                          String mPhoneNumber,
+                          String mWebsite,
                           double mLocationLatitude,
                           double mLocationLongitude,
-                          String mDistance,
-                          String mWebsite,
-                          String mPhoneNumber,
-                          String mImageUrl,
                           String mRating,
                           List<String> mWorkmates)
     {
         this.id = mId;
         this.name = mName;
         this.address = mAddress;
-        this.aperture = mAperture;
+        this.phoneNumber = mPhoneNumber;
+        this.website = mWebsite;
         this.locationLatitude = mLocationLatitude;
         this.locationLongitude = mLocationLongitude;
-        this.distance = mDistance;
-        this.website = mWebsite;
-        this.phoneNumber = mPhoneNumber;
-        this.imageUrl = mImageUrl;
         this.rating = mRating;
         this.workmates = mWorkmates;
     }
@@ -71,6 +68,11 @@ public class FormattedPlace implements Serializable
     public String getAddress()
     {
         return address;
+    }
+
+    public String getPhotoReference()
+    {
+        return photoReference;
     }
 
     public String getAperture()
@@ -103,11 +105,6 @@ public class FormattedPlace implements Serializable
         return phoneNumber;
     }
 
-    public String getImageUrl()
-    {
-        return imageUrl;
-    }
-
     public String getRating()
     {
         return rating;
@@ -123,13 +120,18 @@ public class FormattedPlace implements Serializable
         return workmates == null ? 0 : workmates.size();
     }
 
+    public Bitmap getPhoto()
+    {
+        return photo;
+    }
+
     //=========================================
     // Setters
     //=========================================
 
-    public void setImageUrl(String mImageUrl)
+    public void setPhotoReference(String mPhotoReference)
     {
-        imageUrl = mImageUrl;
+        photoReference = mPhotoReference;
     }
 
     public void setDistance(String mDistance)
@@ -152,9 +154,9 @@ public class FormattedPlace implements Serializable
         workmates = mWorkmates;
     }
 
-    public void addWorkMate(String mWorkmate)
+    public void setPhoto(Bitmap mPhoto)
     {
-        if (workmates != null) workmates.add(mWorkmate);
+        photo = mPhoto;
     }
 
     //=========================================
@@ -174,9 +176,9 @@ public class FormattedPlace implements Serializable
                 ", distance='" + distance + '\'' +
                 ", website='" + website + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
-                ", imageUrl='" + imageUrl + '\'' +
+                ", imageUrl='" + photoReference + '\'' +
                 ", rating='" + rating + '\'' +
-                ", workmates=" + workmates.toString() +
+                ", workmates=" + getNumberOfWorkmates() +
                 '}';
     }
 }

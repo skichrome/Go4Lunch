@@ -8,7 +8,6 @@
     <!-- Images descriptions -->
     <string name="start_activity_background">background</string>
     <string name="start_activity_background_content_description">background image for this screen</string>
-    <string name="start_activity_title_description">Find a nice restaurant and invite your co-workers for lunch !</string>
     <string name="start_activity_icon_description">lunch icon above title of screen</string>
 
     <string name="activity_main_nav_drawer_header_string_image_desc">background of nav drawer header</string>

@@ -5,27 +5,39 @@ import android.net.Uri;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.base.BaseActivity;
 import com.skichrome.go4lunch.models.FormattedPlace;
+import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
+import com.skichrome.go4lunch.utils.GetPhotoOnGoogleApiAsyncTask;
+import com.skichrome.go4lunch.utils.MapMethods;
 import com.skichrome.go4lunch.utils.RequestCodes;
 
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class RestaurantDetailsActivity extends BaseActivity
+public class RestaurantDetailsActivity extends BaseActivity implements ActivitiesCallbacks.AsynctaskListeners, ActivitiesCallbacks.RxJavaListeners
 {
     @BindView(R.id.activity_details_resto_name) TextView textViewName;
     @BindView(R.id.activity_details_resto_adress) TextView textViewAddress;
+    @BindView(R.id.activity_details_resto_picture) ImageView imageViewPicture;
     @BindView(R.id.activity_details_resto_floating_btn) FloatingActionButton floatingActionButton;
     @BindView(R.id.activity_details_restaurant_container_call) ConstraintLayout constraintLayoutCall;
     @BindView(R.id.activity_details_restaurant_container_rate) ConstraintLayout constraintLayoutRate;
     @BindView(R.id.activity_details_restaurant_container_website) ConstraintLayout constraintLayoutWebsite;
+    @BindView(R.id.activity_details_progress_bar) ProgressBar progressBar;
 
     private FormattedPlace restaurantDetails;
+    private MapMethods mapMethods = new MapMethods(this);
+
+    GetPhotoOnGoogleApiAsyncTask asyncTask;
 
     @Override
     protected int getActivityLayout()
@@ -36,8 +48,15 @@ public class RestaurantDetailsActivity extends BaseActivity
     @Override
     protected void configureActivity()
     {
+        this.progressBar.setVisibility(View.VISIBLE);
         this.getDataFromBundle();
         this.updateUIElements();
+        this.getPlaceDetails();
+    }
+
+    @Override
+    protected void updateActivityWithPermissionGranted()
+    {
     }
 
     private void getDataFromBundle()
@@ -57,6 +76,8 @@ public class RestaurantDetailsActivity extends BaseActivity
         this.textViewName.setText(restaurantDetails.getName());
         this.textViewAddress.setText(restaurantDetails.getAddress());
 
+        if (restaurantDetails.getPhoto() != null)
+            Glide.with(this).load(restaurantDetails.getPhoto()).into(imageViewPicture);
     }
 
     @OnClick(R.id.activity_details_resto_floating_btn)
@@ -88,7 +109,7 @@ public class RestaurantDetailsActivity extends BaseActivity
                 break;
 
             case 30:
-                if (restaurantDetails.getWebsite().equals(""))
+                if (restaurantDetails.getWebsite() == null)
                     Toast.makeText(this, "This place does not have a website...", Toast.LENGTH_SHORT).show();
                 else
                 {
@@ -103,4 +124,39 @@ public class RestaurantDetailsActivity extends BaseActivity
                 break;
         }
     }
+
+    //=========================================
+    // AsyncTask Methods
+    //=========================================
+
+    private void getPlaceDetails()
+    {
+        mapMethods.getPlaceDetails(getString(R.string.google_place_api_key), restaurantDetails);
+    }
+
+    @Override
+    public void onComplete(FormattedPlace mPlace)
+    {
+        asyncTask = new GetPhotoOnGoogleApiAsyncTask(this, mPlace, getString(R.string.google_place_api_key));
+        asyncTask.execute();
+    }
+
+    @Override
+    public void onPreExecute()
+    {
+    }
+
+    @Override
+    public void doInBackground()
+    {
+    }
+
+    @Override
+    public void onPostExecute(FormattedPlace mPlace)
+    {
+        this.restaurantDetails = mPlace;
+        this.updateUIElements();
+        this.progressBar.setVisibility(View.INVISIBLE);
+    }
+
 }

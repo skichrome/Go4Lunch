@@ -1,14 +1,11 @@
 package com.skichrome.go4lunch.controllers.activities;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -16,11 +13,12 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.location.places.AutocompleteFilter;
-import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.base.BaseActivity;
 import com.skichrome.go4lunch.controllers.fragments.ListFragment;
@@ -32,11 +30,12 @@ import com.skichrome.go4lunch.utils.FireBaseAuthentication;
 import com.skichrome.go4lunch.utils.MapMethods;
 import com.skichrome.go4lunch.utils.RequestCodes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import butterknife.BindView;
 
-public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener, ActivitiesCallbacks.MarkersChangedListener
+public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener, ActivitiesCallbacks.MarkersChangedListener, ActivitiesCallbacks.ListFragmentCallback
 {
     //=========================================
     // Fields
@@ -68,15 +67,42 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     protected void configureActivity()
     {
-        if (!isCurrentUserLogged())
-            fireBaseAuthentication.startSignInActivity();
-
-        this.configureBottomNavigationView();
+        mapMethods.askUserToGrandPermission();
         this.configureToolBar();
         this.configureMenuDrawer();
         this.configureNavigationView();
+    }
+
+    @Override
+    protected void updateActivityWithPermissionGranted()
+    {
+        this.configureBottomNavigationView();
         this.configureMapFragment();
         mapMethods.configureGoogleApiClient();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        if (isCurrentUserLogged())
+            this.updateDrawerFields();
+        else
+            fireBaseAuthentication.startSignInActivity();
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        mapMethods.disconnectFromGoogleApiClient();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+        fireBaseAuthentication.onActivityResult(requestCode, resultCode, data);
     }
 
     //=========================================
@@ -122,7 +148,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         switch (item.getItemId())
         {
             case R.id.activity_main_menu_search:
-                this.launchPlaceAutocompleteActivity();
+                mapMethods.launchPlaceAutocompleteActivity();
                 return true;
 
             default:
@@ -166,9 +192,6 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         return true;
     }
 
-    /**
-     * Take care of popping the fragment back stack or finishing the activity as appropriate.
-     */
     @Override
     public void onBackPressed()
     {
@@ -198,10 +221,8 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     private void configureListFragment()
     {
         if (listFragment == null)
-            listFragment = ListFragment.newInstance(mapMethods.getGoogleApiClient());
+            listFragment = ListFragment.newInstance();
         displayFragment(listFragment);
-
-        mapMethods.getNearbyPlaces(RequestCodes.ID_LIST_FRAGMENT);
     }
 
     private void configureWorkmatesFragment()
@@ -212,76 +233,47 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     }
 
     //=========================================
-    // Place Autocomplete Methods
-    //=========================================
-
-    private void launchPlaceAutocompleteActivity()
-    {
-        try
-        {
-            // Define a research filter for possible places
-            AutocompleteFilter filter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
-                    .build();
-
-            // Create an intent and start an activity with request code
-            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
-                    .setFilter(filter)
-                    .build(this);
-            startActivityForResult(intent, RequestCodes.PLACE_AUTOCOMPLETE_REQUEST_CODE);
-        }
-        catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException mE)
-        {
-            mE.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onPause()
-    {
-        super.onPause();
-        mapMethods.disconnectFromGoogleApiClient();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-        fireBaseAuthentication.handleResponseAfterSignIn(requestCode, resultCode, data);
-    }
-
-    //=========================================
     // Update Method
     //=========================================
 
     public void updatePlacesHashMap(int mFragID, HashMap<String, FormattedPlace> mFormattedPlaceHashMap)
     {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-            mapMethods.askUserToGrandPermission();
-        else
+        switch (mFragID)
         {
-            switch (mFragID)
-            {
-                case RequestCodes.ID_MAP_FRAGMENT:
-                    mapFragment.updateMarkerOnMap(mFormattedPlaceHashMap);
-                    break;
+            case RequestCodes.ID_MAP_FRAGMENT:
+                mapFragment.updateMarkerOnMap(mFormattedPlaceHashMap);
+                break;
 
-                case RequestCodes.ID_LIST_FRAGMENT:
-                    listFragment.updatePlacesHashMap(mFormattedPlaceHashMap);
-                    break;
+            case RequestCodes.ID_LIST_FRAGMENT:
+                ArrayList<FormattedPlace> places = new ArrayList<>(mFormattedPlaceHashMap.values());
+                listFragment.updatePlacesList(places);
+                break;
 
-                case RequestCodes.ID_WORKMATES_FRAGMENT:
-                    break;
+            case RequestCodes.ID_WORKMATES_FRAGMENT:
+                break;
 
-                default:
-                    break;
-            }
+            default:
+                break;
         }
     }
 
     public void showSnackBarMessage(String mMessage)
     {
         Snackbar.make(this.constraintLayout, mMessage, Snackbar.LENGTH_SHORT).show();
+    }
+
+    private void updateDrawerFields()
+    {
+        View headerView = navigationView.getHeaderView(0);
+        TextView name = headerView.findViewById(R.id.nav_drawer_header_username);
+        TextView email = headerView.findViewById(R.id.nav_drawer_header_email);
+        ImageView profilePicture = headerView.findViewById(R.id.nav_drawer_header_user_image_profile);
+
+        name.setText(getCurrentUser().getDisplayName());
+        email.setText(getCurrentUser().getEmail());
+
+        if (getCurrentUser().getPhotoUrl() != null)
+            Glide.with(headerView).load(getCurrentUser().getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(profilePicture);
     }
 
     //=========================================
@@ -292,6 +284,12 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     public void getMarkerOnMap()
     {
         mapMethods.getNearbyPlaces(RequestCodes.ID_MAP_FRAGMENT);
+    }
+
+    @Override
+    public void updatePlaceList()
+    {
+        mapMethods.getNearbyPlaces(RequestCodes.ID_LIST_FRAGMENT);
     }
 
     @Override

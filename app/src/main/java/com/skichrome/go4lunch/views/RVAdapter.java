@@ -10,7 +10,7 @@ import com.bumptech.glide.RequestManager;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.models.FormattedPlace;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class RVAdapter extends RecyclerView.Adapter<RVViewHolder>
 {
@@ -18,14 +18,14 @@ public class RVAdapter extends RecyclerView.Adapter<RVViewHolder>
     // Fields
     //=========================================
 
-    private ArrayList<FormattedPlace> placeList;
+    private List<FormattedPlace> placeList;
     private RequestManager glide;
 
     //=========================================
     // Constructor
     //=========================================
 
-    public RVAdapter(ArrayList<FormattedPlace> mPlaceList, RequestManager mGlide)
+    public RVAdapter(List<FormattedPlace> mPlaceList, RequestManager mGlide)
     {
         this.placeList = mPlaceList;
         this.glide = mGlide;

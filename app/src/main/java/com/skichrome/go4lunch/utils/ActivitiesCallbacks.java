@@ -4,9 +4,24 @@ import com.skichrome.go4lunch.models.FormattedPlace;
 
 public interface ActivitiesCallbacks
 {
+    interface ListFragmentCallback
+    {
+        void updatePlaceList();
+    }
     interface MarkersChangedListener
     {
         void getMarkerOnMap();
         void displayRestaurantDetailsOnMarkerClick(FormattedPlace mDetailsRestaurants);
+    }
+    interface AsynctaskListeners
+    {
+        void onPreExecute();
+        void doInBackground();
+        void onPostExecute(FormattedPlace mPlace);
+    }
+
+    interface RxJavaListeners
+    {
+        void onComplete(FormattedPlace mPlace);
     }
 }
