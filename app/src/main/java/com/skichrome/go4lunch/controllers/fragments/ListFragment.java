@@ -17,6 +17,7 @@ import com.skichrome.go4lunch.base.BaseFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
 import com.skichrome.go4lunch.utils.GetPhotoOnGoogleApiAsyncTask;
+import com.skichrome.go4lunch.utils.ItemClickSupportOnRecyclerView;
 import com.skichrome.go4lunch.utils.MapMethods;
 import com.skichrome.go4lunch.views.RVAdapter;
 
@@ -38,6 +39,7 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
     private List<FormattedPlace> placesList;
     private ArrayList<FormattedPlace> placesListDetails;
     private RVAdapter adapter;
+    private WeakReference<ActivitiesCallbacks.ListFragmentCallback> callback;
 
     private FusedLocationProviderClient mLocationClient;
     private MapMethods mapMethods = new MapMethods(this);
@@ -67,8 +69,10 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
         this.mLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         this.progressBar.setVisibility(View.VISIBLE);
         this.configureRecyclerView();
-        WeakReference<ActivitiesCallbacks.ListFragmentCallback> callback = new WeakReference<>((ActivitiesCallbacks.ListFragmentCallback) getActivity());
+
+        callback = new WeakReference<>((ActivitiesCallbacks.ListFragmentCallback) getActivity());
         callback.get().updatePlaceList();
+        this.configureOnClickRV();
     }
 
     //=========================================
@@ -115,9 +119,22 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }
 
+    private void configureOnClickRV()
+    {
+        ItemClickSupportOnRecyclerView.addTo(recyclerView, R.layout.fragment_list_list_item_recycler_view)
+                .setOnItemClickListener(new ItemClickSupportOnRecyclerView.OnItemClickListener()
+                {
+                    @Override
+                    public void onItemClicked(RecyclerView recyclerView, int position, View v)
+                    {
+                        callback.get().onClickRecyclerView(adapter.getClickedPlace(position));
+                    }
+                });
+    }
+
     public void updatePlacesList(ArrayList<FormattedPlace> mPlaces)
     {
-        placesList.addAll(mPlaces);
+        this.placesList.addAll(mPlaces);
         adapter.notifyDataSetChanged();
         this.getLastKnownLocation();
 
@@ -152,7 +169,8 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
     public void onPostExecute(FormattedPlace mPlace)
     {
         this.placesListDetails.add(mPlace);
-        this.placesList = placesListDetails;
+        this.placesList = new ArrayList<>();
+        this.placesList.addAll(placesListDetails);
         this.adapter.notifyDataSetChanged();
         this.progressBar.setVisibility(View.INVISIBLE);
     }

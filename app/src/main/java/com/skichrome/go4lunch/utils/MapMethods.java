@@ -168,6 +168,7 @@ public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
 
                 if (mMainGooglePlaceSearch.getResult() != null && mMainGooglePlaceSearch.getResult().getPhotos() != null)
                 {
+                    Log.e("--- PLACE ID ---", "onNext: " + mPlace.getId());
                     mPlace.setPhotoReference(mMainGooglePlaceSearch.getResult().getPhotos().get(0).getPhotoReference());
 
                     if (mMainGooglePlaceSearch.getResult().getOpeningHours() != null && mMainGooglePlaceSearch.getResult().getOpeningHours().getOpenNow())
@@ -195,17 +196,25 @@ public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
     public String convertAperture(List<String> mOpeningHours, int mDayCalendar)
     {
         String currentOpeningHours;
+        int correctedIndex;
+
         switch (mDayCalendar)
         {
             case 1:
-                currentOpeningHours = mOpeningHours.get(6);
+                correctedIndex = 6;
                 break;
 
             default:
-                currentOpeningHours = mOpeningHours.get(mDayCalendar - 2);
+                correctedIndex = mDayCalendar - 2;
                 break;
         }
-        return currentOpeningHours.replaceAll("[a-z]","").replace(": ", "");
+
+        currentOpeningHours = mOpeningHours.get(correctedIndex);
+
+        if (!mOpeningHours.get(correctedIndex).contains("0"))
+            return "Closed Today";
+
+        return currentOpeningHours.replaceAll("[a-zA-Z]+","").replace(": ", "");
     }
 
     // ------------------------

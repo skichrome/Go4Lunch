@@ -56,4 +56,9 @@ public class RVAdapter extends RecyclerView.Adapter<RVViewHolder>
     {
         return placeList.size();
     }
+
+    public FormattedPlace getClickedPlace(int mPosition)
+    {
+        return this.placeList.get(mPosition);
+    }
 }

@@ -7,12 +7,15 @@ public interface ActivitiesCallbacks
     interface ListFragmentCallback
     {
         void updatePlaceList();
+        void onClickRecyclerView(FormattedPlace mPlace);
     }
+
     interface MarkersChangedListener
     {
         void getMarkerOnMap();
         void displayRestaurantDetailsOnMarkerClick(FormattedPlace mDetailsRestaurants);
     }
+
     interface AsynctaskListeners
     {
         void onPreExecute();

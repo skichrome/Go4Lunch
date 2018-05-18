@@ -77,8 +77,8 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     protected void updateActivityWithPermissionGranted()
     {
-        this.configureMapFragment();
         mapMethods.configureGoogleApiClient();
+        this.configureMapFragment();
     }
 
     @Override
@@ -119,6 +119,8 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     private void configureToolBar()
     {
         setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setElevation(4);
     }
 
     private void configureNavigationView()
@@ -300,7 +302,18 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     }
 
     @Override
+    public void onClickRecyclerView(FormattedPlace mPlace)
+    {
+        this.startRestaurantDetailsActivity(mPlace);
+    }
+
+    @Override
     public void displayRestaurantDetailsOnMarkerClick(FormattedPlace mDetailsRestaurants)
+    {
+        this.startRestaurantDetailsActivity(mDetailsRestaurants);
+    }
+
+    private void startRestaurantDetailsActivity(FormattedPlace mDetailsRestaurants)
     {
         Intent intent = new Intent(this, RestaurantDetailsActivity.class);
         intent.putExtra(RequestCodes.ACTIVITY_DETAILS_CODE, mDetailsRestaurants);
