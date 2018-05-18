@@ -12,7 +12,6 @@ import retrofit2.http.Query;
 public interface GoogleApiService
 {
     String baseUrl = "https://maps.googleapis.com/maps/api/place/";
-    String maxWidth = "&maxwidth=800";
 
     @GET("details/json")
     Observable<MainGooglePlaceSearch> getPlaceDetails(@Query("key") String mKey,

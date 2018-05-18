@@ -1,11 +1,17 @@
 package com.skichrome.go4lunch.controllers.fragments;
 
+import android.annotation.SuppressLint;
+import android.location.Location;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.base.BaseFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
@@ -33,7 +39,7 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
     private ArrayList<FormattedPlace> placesListDetails;
     private RVAdapter adapter;
 
-    private WeakReference<ActivitiesCallbacks.ListFragmentCallback> callback;
+    private FusedLocationProviderClient mLocationClient;
     private MapMethods mapMethods = new MapMethods(this);
 
     //=========================================
@@ -58,10 +64,43 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
     @Override
     protected void configureFragment()
     {
-        this.callback = new WeakReference<>((ActivitiesCallbacks.ListFragmentCallback) getActivity());
+        this.mLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         this.progressBar.setVisibility(View.VISIBLE);
         this.configureRecyclerView();
+        WeakReference<ActivitiesCallbacks.ListFragmentCallback> callback = new WeakReference<>((ActivitiesCallbacks.ListFragmentCallback) getActivity());
         callback.get().updatePlaceList();
+    }
+
+    //=========================================
+    // Location Method
+    //=========================================
+
+    @SuppressLint("MissingPermission")
+    private void getLastKnownLocation()
+    {
+        mLocationClient.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>()
+        {
+            @Override
+            public void onSuccess(Location location)
+            {
+                // Got last known location. In some rare situations this can be null.
+                if (location != null)
+                {
+                    for (FormattedPlace place : placesList)
+                    {
+                        Location placeLocation = new Location("placeLocation");
+                        placeLocation.setLatitude(place.getLocationLatitude());
+                        placeLocation.setLongitude(place.getLocationLongitude());
+
+                        int distance = (int) location.distanceTo(placeLocation);
+                        place.setDistance(distance + "m");
+                    }
+                    adapter.notifyDataSetChanged();
+                }
+                else
+                    Toast.makeText(getContext(), R.string.toast_frag_no_location, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     //=========================================
@@ -80,14 +119,12 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
     {
         placesList.addAll(mPlaces);
         adapter.notifyDataSetChanged();
+        this.getLastKnownLocation();
 
-        progressBar.setVisibility(View.INVISIBLE);/* TODO Remove this line after debugging */
-
-        /*
         this.placesListDetails = new ArrayList<>();
         for (FormattedPlace place : placesList)
             mapMethods.getPlaceDetails(getString(R.string.google_place_api_key), place);
-        */
+
     }
 
     //=========================================
@@ -114,9 +151,9 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
     @Override
     public void onPostExecute(FormattedPlace mPlace)
     {
-        //this.placesListDetails.add(mPlace);
-        //this.placesList = placesListDetails;
-        //this.adapter.notifyDataSetChanged();
-        //this.progressBar.setVisibility(View.INVISIBLE);
+        this.placesListDetails.add(mPlace);
+        this.placesList = placesListDetails;
+        this.adapter.notifyDataSetChanged();
+        this.progressBar.setVisibility(View.INVISIBLE);
     }
 }

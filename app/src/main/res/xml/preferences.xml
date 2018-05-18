@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="@string/settings_category_basic">
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="switch_preference_1"
+            android:summary="@string/settings_notification_summary"
+            android:title="@string/settings_notification_title" />
+        <EditTextPreference
+            android:key="edit_text_preference_1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/settings_pseudo_summary"
+            android:title="@string/settings_pseudo_title" />
+    </PreferenceCategory>
+</PreferenceScreen>

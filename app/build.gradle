@@ -10,6 +10,8 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
+        multiDexEnabled true
+
         //Language traduction support for FirebaseUI
         resConfigs "en", "fr"
     }
@@ -23,7 +25,7 @@ android {
 
 repositories {
     // For Icepick
-    maven {url "https://clojars.org/repo/"}
+    maven { url "https://clojars.org/repo/" }
 }
 
 dependencies {
@@ -31,6 +33,7 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:support-v4:27.1.1'
+    implementation 'com.android.support:support-vector-drawable:27.1.1'
     testImplementation 'junit:junit:4.12'
 
     // constraint layout implementation
@@ -65,6 +68,9 @@ dependencies {
     // Firebase implementation
     implementation 'com.google.firebase:firebase-core:15.0.2'
 
+    // Firestore implementation
+    implementation 'com.firebaseui:firebase-ui-firestore:3.3.1'
+
     // FirebaseUI (simplify usage of Firebase)
     implementation 'com.firebaseui:firebase-ui-auth:3.3.1'
 
@@ -75,7 +81,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-places:15.0.1'
 
     // Google Play Service (module Location and activity recognition)
-    implementation'com.google.android.gms:play-services-location:15.0.1'
+    implementation 'com.google.android.gms:play-services-location:15.0.1'
 
     // Used for web request
     implementation 'com.google.code.gson:gson:2.8.2'
@@ -89,8 +95,8 @@ dependencies {
     // used to combine two lines on top
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
 
-    // Multidex support (more than 64k methods) if there is some compilation problem enable or disable this library
-    //implementation 'com.android.support:multidex:1.0.3'
+    // Multi-dex support (more than 64k methods) if there is some compilation problem enable or disable this library
+    implementation 'com.android.support:multidex:1.0.3'
 }
 
 // Firebase implementation

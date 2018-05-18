@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <string name="app_name">Go4Lunch</string>
+
+    <!-- Images descriptions -->
+    <string name="activity_main_nav_drawer_header_string_image_desc">image fond d\'écran du menu drawer</string>
+    <string name="nav_drawer_header_string_user_image_profile">user image profile</string>
+
+    <string name="fragment_list_item_restaurant_image_description">image du restaurant</string>
+    <string name="fragment_list_item_rate_img_description">étoile note du restaurant</string>
+    <string name="fragment_workmates_item_profile_image_string">photo de profil de l\'utilisateur</string>
+
+    <string name="activity_details_resto_main_picture_content_desc">image téléchargée depuis google</string>
+    <string name="activity_details_restaurant_content_desc_phone_icon">icône téléphone</string>
+    <string name="activity_details_restaurant_content_desc_rate_icon"> icône noter</string>
+    <string name="activity_details_restaurant_content_desc_website_icon">icône site web</string>
+
+    <string name="frag_list_item_icon_workmates_voted_for_this_restaurant">Représente le nombre de personnes qui ont votés pour ce restaurant</string>
+
+    <!-- Menu strings -->
+    <string name="navigation_drawer_open">Ouvrir le menu drawer</string>
+    <string name="navigation_drawer_close">fermer le menu drawer</string>
+
+    <string name="menu_bottom_nav_view_workmates">Mes Collègues</string>
+    <string name="menu_bottom_nav_view_list_view">Vue liste</string>
+    <string name="menu_bottom_nav_view_map_view">Vue carte</string>
+
+    <string name="activity_main_menu_drawer_your_lunch_string">Mon repas</string>
+    <string name="activity_main_menu_drawer_settings_string">Paramètres</string>
+    <string name="activity_main_menu_drawer_logout_string">Déconnexion</string>
+
+    <string name="nav_drawer_header_string_email">email</string>
+    <string name="nav_drawer_header_string_name">nom</string>
+
+    <string name="activity_main_menu_search">Rechercher</string>
+
+    <!-- RecyclerView item strings -->
+    <string name="fragment_list_item_restaurant_distance_string">distance</string>
+    <string name="fragment_list_item_restaurant_name_string">Nom</string>
+    <string name="fragment_list_item_restaurant_address_string">addresse</string>
+    <string name="fragment_list_item_restaurant_aperture_string">Ouverture</string>
+
+    <string name="fragment_workmates_item_workmate_name">nom du collègue</string>
+
+    <string name="map_fragment_easy_permission_location_user_request">Autoriser l\'accès à la position ?</string>
+
+    <!-- Activity Details Restaurant strings -->
+    <string name="activity_details_resto_string_call">Appeler</string>
+    <string name="activity_details_resto_string_rate">Noter</string>
+    <string name="activity_details_resto_string_website">Site web</string>
+
+    <string name="alert_dialog_confirmation_msg">Êtes-vous sûr de vouloir supprimer votre compte ?</string>
+    <string name="alert_dialog_no">Non</string>
+    <string name="alert_dialog_yes">Oui</string>
+    <string name="toolbar_title_settings">Paramètres</string>
+
+    <string name="toast_details_activity_no_phone">Ce restaurant n\'a pas de numéro téléphone</string>
+    <string name="toast_details_activity_no_website">>Ce restaurant n\'a pas de site web</string>
+    <string name="toast_frag_no_location">Position non détectée, avez vous activé la localisation dans les paramètres Android ?</string>
+    <string name="toast_frag_no_restaurant_detected">Aucun restaurant détecté proche de vous</string>
+
+    <string name="firebase_no_network_detected">Aucune connexion internet active détectée</string>
+    <string name="firebase_error_login">Erreur à la connexion</string>
+    <string name="firebase_login_cancel">Connexion annulée</string>
+    <string name="firebase_auth_success">Connexion réussie</string>
+
+    <string name="settings_notification_summary">Notifiez-moi quand il est l\'heure de manger !</string>
+    <string name="settings_notification_title">Activer les notifications</string>
+    <string name="settings_category_basic">Paramètres de base</string>
+    <string name="settings_pseudo_summary">Mon pseudo dans l\'application</string>
+    <string name="settings_pseudo_title">Pseudo</string>
+
+    <string name="activity_settings_delete_account_btn">Supprimer mon compte</string>
+
+</resources>

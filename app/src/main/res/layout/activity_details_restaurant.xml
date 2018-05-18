@@ -76,7 +76,7 @@
             android:padding="8dp"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
-            android:text="@string/fragment_list_item_restaurant_adress_string"
+            android:text="@string/fragment_list_item_restaurant_address_string"
             android:textColor="@android:color/white"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/activity_details_resto_name" />

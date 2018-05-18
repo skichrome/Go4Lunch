@@ -1,15 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <string name="app_name">Go4Lunch</string>
 
-    <string name="start_activity_btn_login">[DEBUG] - MainActivity</string>
-    <string name="start_activity_btn_sign_in">Log in to your account</string>
-
     <!-- Images descriptions -->
-    <string name="start_activity_background">background</string>
-    <string name="start_activity_background_content_description">background image for this screen</string>
-    <string name="start_activity_icon_description">lunch icon above title of screen</string>
-
     <string name="activity_main_nav_drawer_header_string_image_desc">background of nav drawer header</string>
 
     <string name="fragment_list_item_restaurant_image_description">image of the restaurant</string>
@@ -40,14 +35,14 @@
     <string name="activity_main_menu_search">search</string>
 
     <!-- RecyclerView item strings -->
-    <string name="frag_list_item_icon_workmates_voted_for_this_resto">person represent users who have voted for this restaurant</string>
-    <string name="fragment_list_item_restaurant_distance_string">dist</string>
+    <string name="frag_list_item_icon_workmates_voted_for_this_restaurant">person represent users who have voted for this restaurant</string>
+    <string name="fragment_list_item_restaurant_distance_string">distance</string>
     <string name="fragment_list_item_restaurant_name_string">Name</string>
-    <string name="fragment_list_item_restaurant_adress_string">address</string>
+    <string name="fragment_list_item_restaurant_address_string">address</string>
     <string name="fragment_list_item_restaurant_aperture_string">aperture</string>
-    <string name="fragment_list_item_number_of_workmates_in_this_restaurant_string">0</string>
+    <string name="fragment_list_item_number_of_workmates_in_this_restaurant_string" translatable="false">0</string>
 
-    <string name="fragment_workmates_item_join_or_not_text_view_string">Participate ?</string>
+    <string name="fragment_workmates_item_workmate_name">name of workmate</string>
 
     <string name="map_fragment_easy_permission_location_user_request">Allow access to fine location ?</string>
 
@@ -59,5 +54,28 @@
     <!-- FACEBOOK PURPOSE -->
     <string name="facebook_application_id" translatable="false">201499303910767</string>
     <string name="facebook_login_protocol_scheme" translatable="false" tools:ignore="UnusedResources">fb201499303910767</string>
+
+    <string name="alert_dialog_confirmation_msg">Are you sure that you want to delete your account ?</string>
+    <string name="alert_dialog_no">No</string>
+    <string name="alert_dialog_yes">Yes</string>
+    <string name="toolbar_title_settings">Settings</string>
+
+    <string name="toast_details_activity_no_phone">This place does not have a phone number</string>
+    <string name="toast_details_activity_no_website">This place does not have a website</string>
+    <string name="toast_frag_no_location">No location detected, have you enabled location in Android settings ?</string>
+    <string name="toast_frag_no_restaurant_detected">No restaurants detected near you</string>
+
+    <string name="firebase_no_network_detected">No active network detected</string>
+    <string name="firebase_error_login">Error when login</string>
+    <string name="firebase_login_cancel">Login canceled</string>
+    <string name="firebase_auth_success">Login successful</string>
+
+    <string name="settings_notification_summary">Notify you when it\'s time to eat</string>
+    <string name="settings_notification_title">Enable Notifications</string>
+    <string name="settings_category_basic">Basics settings</string>
+    <string name="settings_pseudo_summary">your pseudo in the app</string>
+    <string name="settings_pseudo_title">Pseudo</string>
+
+    <string name="activity_settings_delete_account_btn">delete your account</string>
 
 </resources>

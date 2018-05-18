@@ -71,12 +71,12 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         this.configureToolBar();
         this.configureMenuDrawer();
         this.configureNavigationView();
+        this.configureBottomNavigationView();
     }
 
     @Override
     protected void updateActivityWithPermissionGranted()
     {
-        this.configureBottomNavigationView();
         this.configureMapFragment();
         mapMethods.configureGoogleApiClient();
     }
@@ -179,6 +179,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
                 break;
 
             case R.id.activity_main_menu_drawer_settings:
+                this.launchSettingActivityAndFragment();
                 break;
 
             case R.id.activity_main_menu_drawer_logout:
@@ -230,6 +231,12 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         if (workmatesFragment == null)
             workmatesFragment = WorkmatesFragment.newInstance();
         displayFragment(workmatesFragment);
+    }
+
+    private void launchSettingActivityAndFragment()
+    {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     //=========================================

@@ -12,6 +12,7 @@ import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.activities.MainActivity;
+import com.skichrome.go4lunch.controllers.activities.SettingsActivity;
 
 import java.util.Arrays;
 
@@ -64,22 +65,22 @@ public class FireBaseAuthentication
         if (mRequestCode == RequestCodes.RC_SIGN_IN)
         {
             if (mResultCode == Activity.RESULT_OK)
-                mainActivity.showSnackBarMessage("Login successful");       // SUCCESS
-            else                                                                      // ERRORS
+                mainActivity.showSnackBarMessage(mainActivity.getString(R.string.firebase_auth_success));       // SUCCESS
+            else                                                                                                // ERRORS
             {
                 if (response == null)
                 {
-                    mainActivity.showSnackBarMessage("Login canceled");
+                    mainActivity.showSnackBarMessage(mainActivity.getString(R.string.firebase_login_cancel));
                     mainActivity.finish();
                 }
                 else if (response.getError().getErrorCode() == ErrorCodes.NO_NETWORK)
                 {
-                    mainActivity.showSnackBarMessage("No active network detected");
+                    mainActivity.showSnackBarMessage(mainActivity.getString(R.string.firebase_no_network_detected));
                 }
                 else if (response.getError().getErrorCode() == ErrorCodes.UNKNOWN_ERROR)
                 {
                     Log.e("StartActivity", "onActivityResult error : ", response.getError());
-                    mainActivity.showSnackBarMessage("Error when login");
+                    mainActivity.showSnackBarMessage(mainActivity.getString(R.string.firebase_error_login));
                 }
             }
         }
@@ -105,16 +106,6 @@ public class FireBaseAuthentication
             .addOnSuccessListener(mainActivity, this.updateUIAfterRESTRequestsCompleted(RequestCodes.SIGN_OUT_TASK));
     }
 
-    public void deleteAccountFromFirebase()
-    {
-        if (mainActivity.isCurrentUserLogged())
-        {
-            AuthUI.getInstance()
-                    .delete(mainActivity)
-                    .addOnSuccessListener(mainActivity, this.updateUIAfterRESTRequestsCompleted(RequestCodes.DELETE_USER_TASK));
-        }
-    }
-
     private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(final int origin)
     {
         return new OnSuccessListener<Void>()
@@ -128,12 +119,36 @@ public class FireBaseAuthentication
                         mainActivity.recreate();
                         break;
                     case DELETE_USER_TASK:
-                        mainActivity.finish();
+                        settingsActivity.disableProgressBar();
+                        Intent intent = new Intent(settingsActivity, MainActivity.class);
+                        settingsActivity.startActivity(intent);
+                        settingsActivity.finish();
                         break;
                     default:
                         break;
                 }
             }
         };
+    }
+
+    //=========================================
+    // Setting Activity methods
+    //=========================================
+
+    private SettingsActivity settingsActivity;
+
+    public FireBaseAuthentication(SettingsActivity mSettingsActivity)
+    {
+        this.settingsActivity = mSettingsActivity;
+    }
+
+    public void deleteAccountFromFirebase()
+    {
+        if (settingsActivity.isCurrentUserLogged())
+        {
+            AuthUI.getInstance()
+                    .delete(settingsActivity)
+                    .addOnSuccessListener(settingsActivity, this.updateUIAfterRESTRequestsCompleted(RequestCodes.DELETE_USER_TASK));
+        }
     }
 }

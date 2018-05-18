@@ -94,7 +94,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements Activitie
         {
             case 10:
                 if (restaurantDetails.getPhoneNumber() == null)
-                    Toast.makeText(this, "This place does not have a website...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.toast_details_activity_no_phone, Toast.LENGTH_SHORT).show();
                 else
                 {
                     intent = new Intent(Intent.ACTION_DIAL);
@@ -110,7 +110,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements Activitie
 
             case 30:
                 if (restaurantDetails.getWebsite() == null)
-                    Toast.makeText(this, "This place does not have a website...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.toast_details_activity_no_website, Toast.LENGTH_SHORT).show();
                 else
                 {
                     intent = new Intent(Intent.ACTION_VIEW, Uri.parse(restaurantDetails.getWebsite()));

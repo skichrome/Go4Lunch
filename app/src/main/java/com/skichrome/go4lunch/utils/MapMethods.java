@@ -23,7 +23,9 @@ import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.googleplace.MainGooglePlaceSearch;
 
 import java.lang.ref.WeakReference;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
@@ -38,11 +40,14 @@ public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
     private GoogleApiClient googleApiClient;
     private Disposable disposable;
     private WeakReference<ActivitiesCallbacks.RxJavaListeners> callback;
-    private PendingResult<PlaceLikelihoodBuffer> result;
 
     //=========================================
     // Constructor
     //=========================================
+
+    public MapMethods()
+    {
+    }
 
     public MapMethods(MainActivity mMainActivity)
     {
@@ -118,7 +123,7 @@ public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
     public void getNearbyPlaces(final int mFragID)
     {
         final HashMap<String, FormattedPlace> placeHashMap = new HashMap<>();
-        result = Places.PlaceDetectionApi.getCurrentPlace(googleApiClient, null);
+        PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi.getCurrentPlace(googleApiClient, null);
 
         result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>()
         {
@@ -127,7 +132,7 @@ public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
             {
                 for (PlaceLikelihood placeLikelihood : likelyPlaces)
                 {
-                    if (placeLikelihood.getPlace().getPlaceTypes().size(/*contains(Place.TYPE_RESTAURANT)*/) != 0)
+                    if (placeLikelihood.getPlace().getPlaceTypes().contains(Place.TYPE_RESTAURANT) /*placeLikelihood.getPlace().getPlaceTypes().size() != 0*/)
                     {
                         Place tempPlace = placeLikelihood.getPlace();
 
@@ -162,7 +167,14 @@ public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
                     Log.e("RX_JAVA", "STATUS " + mMainGooglePlaceSearch.getStatus());
 
                 if (mMainGooglePlaceSearch.getResult() != null && mMainGooglePlaceSearch.getResult().getPhotos() != null)
+                {
                     mPlace.setPhotoReference(mMainGooglePlaceSearch.getResult().getPhotos().get(0).getPhotoReference());
+
+                    if (mMainGooglePlaceSearch.getResult().getOpeningHours() != null && mMainGooglePlaceSearch.getResult().getOpeningHours().getOpenNow())
+                        mPlace.setAperture(convertAperture(mMainGooglePlaceSearch.getResult().getOpeningHours().getWeekdayText(), Calendar.getInstance().get(Calendar.DAY_OF_WEEK)));
+                    else
+                        mPlace.setAperture("Closed now");
+                }
             }
 
             @Override
@@ -178,6 +190,22 @@ public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
                 Log.e("RX_JAVA", "onComplete");
             }
         });
+    }
+
+    public String convertAperture(List<String> mOpeningHours, int mDayCalendar)
+    {
+        String currentOpeningHours;
+        switch (mDayCalendar)
+        {
+            case 1:
+                currentOpeningHours = mOpeningHours.get(6);
+                break;
+
+            default:
+                currentOpeningHours = mOpeningHours.get(mDayCalendar - 2);
+                break;
+        }
+        return currentOpeningHours.replaceAll("[a-z]","").replace(": ", "");
     }
 
     // ------------------------

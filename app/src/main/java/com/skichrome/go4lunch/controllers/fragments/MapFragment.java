@@ -99,7 +99,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
                 if (location != null)
                     gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
                 else
-                    Toast.makeText(getContext(), "No location detected, have you enabled location in settings ?", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), R.string.toast_frag_no_location, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -151,7 +151,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
             Log.e("MARKER METHOD", "updateMarkerOnMap: size of markers list : " + mPlaces.size());
         }
         else
-            Toast.makeText(getContext(), "No restaurants detected near you ...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.toast_frag_no_restaurant_detected, Toast.LENGTH_SHORT).show();
     }
 
     @Override

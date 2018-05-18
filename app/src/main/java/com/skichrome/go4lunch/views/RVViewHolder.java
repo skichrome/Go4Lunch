@@ -6,6 +6,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.request.RequestOptions;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.models.FormattedPlace;
 
@@ -47,12 +48,17 @@ class RVViewHolder extends RecyclerView.ViewHolder
         this.textViewName.setText(mPlace.getName());
         this.textViewDistance.setText(mPlace.getDistance());
         this.textViewAddress.setText(mPlace.getAddress());
-        this.textViewNumberOfWorkMates.setText("(" + mPlace.getNumberOfWorkmates() + ")");
+        String number = "(" + mPlace.getNumberOfWorkmates() + ")";
+        this.textViewNumberOfWorkMates.setText(number);
         this.textViewAperture.setText(mPlace.getAperture());
+        this.textViewDistance.setText(mPlace.getDistance() == null ? "-" : mPlace.getDistance());
 
         if (mPlace.getPhoto() != null)
-            mGlide.load(mPlace.getPhoto()).into(imageViewRestaurantImg);
+        {
+            imageViewRestaurantImg.setBackgroundResource(0);
+            mGlide.load(mPlace.getPhoto()).apply(RequestOptions.centerCropTransform()).into(imageViewRestaurantImg);
+        }
         else
-            imageViewRestaurantImg.destroyDrawingCache();
+            imageViewRestaurantImg.setBackgroundResource(R.drawable.restaurant);
     }
 }
