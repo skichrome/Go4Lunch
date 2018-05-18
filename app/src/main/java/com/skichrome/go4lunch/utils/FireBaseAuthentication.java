@@ -101,9 +101,9 @@ public class FireBaseAuthentication
 
     public void logoutFromFirebase()
     {
-    AuthUI.getInstance()
-            .signOut(mainActivity)
-            .addOnSuccessListener(mainActivity, this.updateUIAfterRESTRequestsCompleted(RequestCodes.SIGN_OUT_TASK));
+        AuthUI.getInstance()
+                .signOut(mainActivity)
+                .addOnSuccessListener(mainActivity, this.updateUIAfterRESTRequestsCompleted(RequestCodes.SIGN_OUT_TASK));
     }
 
     private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(final int origin)
@@ -144,11 +144,8 @@ public class FireBaseAuthentication
 
     public void deleteAccountFromFirebase()
     {
-        if (settingsActivity.isCurrentUserLogged())
-        {
-            AuthUI.getInstance()
-                    .delete(settingsActivity)
-                    .addOnSuccessListener(settingsActivity, this.updateUIAfterRESTRequestsCompleted(RequestCodes.DELETE_USER_TASK));
-        }
+        AuthUI.getInstance()
+                .delete(settingsActivity)
+                .addOnSuccessListener(settingsActivity, this.updateUIAfterRESTRequestsCompleted(RequestCodes.DELETE_USER_TASK));
     }
 }

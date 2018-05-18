@@ -23,7 +23,7 @@ import com.skichrome.go4lunch.utils.RequestCodes;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class RestaurantDetailsActivity extends BaseActivity implements ActivitiesCallbacks.AsynctaskListeners, ActivitiesCallbacks.RxJavaListeners
+public class RestaurantDetailsActivity extends BaseActivity implements ActivitiesCallbacks.AsyncTaskListeners, ActivitiesCallbacks.RxJavaListener
 {
     @BindView(R.id.activity_details_resto_name) TextView textViewName;
     @BindView(R.id.activity_details_resto_adress) TextView textViewAddress;

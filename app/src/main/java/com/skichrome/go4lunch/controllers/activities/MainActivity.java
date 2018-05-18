@@ -35,7 +35,7 @@ import java.util.HashMap;
 
 import butterknife.BindView;
 
-public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener, ActivitiesCallbacks.MarkersChangedListener, ActivitiesCallbacks.ListFragmentCallback
+public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener, ActivitiesCallbacks.MapFragmentListeners, ActivitiesCallbacks.OnClickRVListener, ActivitiesCallbacks.OnFragmentReadyListener
 {
     //=========================================
     // Fields
@@ -53,6 +53,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
 
     private FireBaseAuthentication fireBaseAuthentication = new FireBaseAuthentication(this);
     private MapMethods mapMethods = new MapMethods(this);
+    private HashMap<String, FormattedPlace> placesHashMap;
 
     //=========================================
     // Superclass Methods
@@ -67,7 +68,6 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     protected void configureActivity()
     {
-        mapMethods.askUserToGrandPermission();
         this.configureToolBar();
         this.configureMenuDrawer();
         this.configureNavigationView();
@@ -77,7 +77,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     protected void updateActivityWithPermissionGranted()
     {
-        mapMethods.configureGoogleApiClient();
+        mapMethods.getNearbyPlaces();
         this.configureMapFragment();
     }
 
@@ -95,7 +95,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     public void onPause()
     {
         super.onPause();
-        mapMethods.disconnectFromGoogleApiClient();
+        mapMethods.disconnectFromDisposable();
     }
 
     @Override
@@ -245,25 +245,13 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Update Method
     //=========================================
 
-    public void updatePlacesHashMap(int mFragID, HashMap<String, FormattedPlace> mFormattedPlaceHashMap)
+    public void updatePlacesHashMap(HashMap<String, FormattedPlace> mFormattedPlaceHashMap)
     {
-        switch (mFragID)
-        {
-            case RequestCodes.ID_MAP_FRAGMENT:
-                mapFragment.updateMarkerOnMap(mFormattedPlaceHashMap);
-                break;
+        this.placesHashMap = new HashMap<>();
+        this.placesHashMap.putAll(mFormattedPlaceHashMap);
 
-            case RequestCodes.ID_LIST_FRAGMENT:
-                ArrayList<FormattedPlace> places = new ArrayList<>(mFormattedPlaceHashMap.values());
-                listFragment.updatePlacesList(places);
-                break;
-
-            case RequestCodes.ID_WORKMATES_FRAGMENT:
-                break;
-
-            default:
-                break;
-        }
+        if (mapFragment != null && mapFragment.isVisible())
+            mapFragment.updateMarkerOnMap(this.placesHashMap);
     }
 
     public void showSnackBarMessage(String mMessage)
@@ -290,15 +278,19 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     //=========================================
 
     @Override
-    public void getMarkerOnMap()
+    public void onListFragmentReady()
     {
-        mapMethods.getNearbyPlaces(RequestCodes.ID_MAP_FRAGMENT);
+        if (placesHashMap != null)
+        {
+            ArrayList<FormattedPlace> places = new ArrayList<>(this.placesHashMap.values());
+            listFragment.updatePlacesList(places);
+        }
     }
 
     @Override
-    public void updatePlaceList()
+    public void getResultOnClickFloatingActionBtn()
     {
-        mapMethods.getNearbyPlaces(RequestCodes.ID_LIST_FRAGMENT);
+        mapMethods.getNearbyPlaces();
     }
 
     @Override
@@ -308,7 +300,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     }
 
     @Override
-    public void displayRestaurantDetailsOnMarkerClick(FormattedPlace mDetailsRestaurants)
+    public void displayRestaurantDetailsOnClick(FormattedPlace mDetailsRestaurants)
     {
         this.startRestaurantDetailsActivity(mDetailsRestaurants);
     }

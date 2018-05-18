@@ -27,7 +27,7 @@ import java.util.List;
 
 import butterknife.BindView;
 
-public class ListFragment extends BaseFragment implements ActivitiesCallbacks.AsynctaskListeners, ActivitiesCallbacks.RxJavaListeners
+public class ListFragment extends BaseFragment implements ActivitiesCallbacks.AsyncTaskListeners, ActivitiesCallbacks.RxJavaListener
 {
     //=========================================
     // Fields
@@ -39,7 +39,7 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
     private List<FormattedPlace> placesList;
     private ArrayList<FormattedPlace> placesListDetails;
     private RVAdapter adapter;
-    private WeakReference<ActivitiesCallbacks.ListFragmentCallback> callback;
+    private WeakReference<ActivitiesCallbacks.OnClickRVListener> callbackRVClick;
 
     private FusedLocationProviderClient mLocationClient;
     private MapMethods mapMethods = new MapMethods(this);
@@ -66,13 +66,16 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
     @Override
     protected void configureFragment()
     {
-        this.mLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         this.progressBar.setVisibility(View.VISIBLE);
+
+        this.mLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         this.configureRecyclerView();
 
-        callback = new WeakReference<>((ActivitiesCallbacks.ListFragmentCallback) getActivity());
-        callback.get().updatePlaceList();
+        callbackRVClick = new WeakReference<>((ActivitiesCallbacks.OnClickRVListener) getActivity());
         this.configureOnClickRV();
+
+        WeakReference<ActivitiesCallbacks.OnFragmentReadyListener> callbackFragmentReady = new WeakReference<>((ActivitiesCallbacks.OnFragmentReadyListener) getActivity());
+        callbackFragmentReady.get().onListFragmentReady();
     }
 
     //=========================================
@@ -127,7 +130,7 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
                     @Override
                     public void onItemClicked(RecyclerView recyclerView, int position, View v)
                     {
-                        callback.get().onClickRecyclerView(adapter.getClickedPlace(position));
+                        callbackRVClick.get().onClickRecyclerView(adapter.getClickedPlace(position));
                     }
                 });
     }

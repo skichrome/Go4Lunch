@@ -24,7 +24,7 @@ public class FormattedPlace implements Serializable
     private String aperture;
     private String rating;
     private List<String> workmates;
-    private Bitmap photo;
+    private transient Bitmap photo;
 
     //=========================================
     // Constructor

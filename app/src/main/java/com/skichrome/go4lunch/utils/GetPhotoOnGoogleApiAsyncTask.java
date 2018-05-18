@@ -5,7 +5,7 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import com.skichrome.go4lunch.models.FormattedPlace;
-import com.skichrome.go4lunch.utils.ActivitiesCallbacks.AsynctaskListeners;
+import com.skichrome.go4lunch.utils.ActivitiesCallbacks.AsyncTaskListeners;
 
 import java.io.FileNotFoundException;
 import java.lang.ref.WeakReference;
@@ -14,11 +14,11 @@ import java.net.URL;
 
 public class GetPhotoOnGoogleApiAsyncTask extends android.os.AsyncTask<String, Void, Void>
 {
-    private final WeakReference<AsynctaskListeners> callback;
+    private final WeakReference<AsyncTaskListeners> callback;
     private FormattedPlace place;
     private final String apiKey;
 
-    public GetPhotoOnGoogleApiAsyncTask(AsynctaskListeners mCallback, FormattedPlace mPlace, String mApiKey)
+    public GetPhotoOnGoogleApiAsyncTask(AsyncTaskListeners mCallback, FormattedPlace mPlace, String mApiKey)
     {
         this.callback = new WeakReference<>(mCallback);
         this.place = mPlace;

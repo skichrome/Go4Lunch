@@ -4,26 +4,30 @@ import com.skichrome.go4lunch.models.FormattedPlace;
 
 public interface ActivitiesCallbacks
 {
-    interface ListFragmentCallback
+    interface OnClickRVListener
     {
-        void updatePlaceList();
         void onClickRecyclerView(FormattedPlace mPlace);
     }
 
-    interface MarkersChangedListener
+    interface OnFragmentReadyListener
     {
-        void getMarkerOnMap();
-        void displayRestaurantDetailsOnMarkerClick(FormattedPlace mDetailsRestaurants);
+        void onListFragmentReady();
     }
 
-    interface AsynctaskListeners
+    interface MapFragmentListeners
+    {
+        void getResultOnClickFloatingActionBtn();
+        void displayRestaurantDetailsOnClick(FormattedPlace mDetailsRestaurants);
+    }
+
+    interface AsyncTaskListeners
     {
         void onPreExecute();
         void doInBackground();
         void onPostExecute(FormattedPlace mPlace);
     }
 
-    interface RxJavaListeners
+    interface RxJavaListener
     {
         void onComplete(FormattedPlace mPlace);
     }

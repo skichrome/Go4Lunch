@@ -2,7 +2,6 @@ package com.skichrome.go4lunch.controllers.fragments;
 
 import android.annotation.SuppressLint;
 import android.location.Location;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -20,14 +19,12 @@ import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.base.BaseFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
-import com.skichrome.go4lunch.utils.RequestCodes;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
 import butterknife.OnClick;
-import pub.devrel.easypermissions.AfterPermissionGranted;
 
 /**
  * This Fragment is used to display a mapView with map api, it will display some restaurants around the user mainly
@@ -42,8 +39,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     private HashMap<String, FormattedPlace> placesHashMap;
 
     private FusedLocationProviderClient mLocationClient;
-    //private Marker lastMarkerClicked;
-    private WeakReference<ActivitiesCallbacks.MarkersChangedListener> markerCallback;
+    private WeakReference<ActivitiesCallbacks.MapFragmentListeners> markerCallback;
 
     //=========================================
     // New Instance method
@@ -61,7 +57,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     @Override
     protected void configureFragment()
     {
-        this.markerCallback = new WeakReference<>((ActivitiesCallbacks.MarkersChangedListener) getActivity());
+        this.markerCallback = new WeakReference<>((ActivitiesCallbacks.MapFragmentListeners) getActivity());
         this.mLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         this.configureMapApi();
     }
@@ -77,7 +73,6 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     //=========================================
 
     @OnClick(R.id.fragment_map_floating_action_btn)
-    @AfterPermissionGranted(RequestCodes.RC_LOCATION_CODE)
     public void onClickFloatingActionBtn()
     {
         this.getLastKnownLocation();
@@ -95,9 +90,11 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
             @Override
             public void onSuccess(Location location)
             {
-                // Got last known location. In some rare situations this can be null.
                 if (location != null)
+                {
                     gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+                    markerCallback.get().getResultOnClickFloatingActionBtn();
+                }
                 else
                     Toast.makeText(getContext(), R.string.toast_frag_no_location, Toast.LENGTH_SHORT).show();
             }
@@ -122,8 +119,6 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     @Override
     public void onMapReady(GoogleMap mGoogleMap)
     {
-        markerCallback.get().getMarkerOnMap();
-
         gMap = mGoogleMap;
         gMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         gMap.setIndoorEnabled(true);
@@ -137,18 +132,19 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
 
     public void updateMarkerOnMap(HashMap<String, FormattedPlace> mPlaces)
     {
-        if (mPlaces.size() != 0)
+        this.placesHashMap = new HashMap<>();
+        this.placesHashMap.putAll(mPlaces);
+
+        if (placesHashMap != null && placesHashMap.size() != 0)
         {
-            this.placesHashMap = mPlaces;
             gMap.clear();
 
-            for (Map.Entry<String, FormattedPlace> place : mPlaces.entrySet())
+            for (Map.Entry<String, FormattedPlace> place : placesHashMap.entrySet())
             {
                 FormattedPlace placeValue = place.getValue();
                 LatLng location = new LatLng(placeValue.getLocationLatitude(), placeValue.getLocationLongitude());
                 gMap.addMarker(new MarkerOptions().position(location).title(placeValue.getName()).icon(BitmapDescriptorFactory.fromResource(R.drawable.lunch_marker_nobody)));
             }
-            Log.e("MARKER METHOD", "updateMarkerOnMap: size of markers list : " + mPlaces.size());
         }
         else
             Toast.makeText(getContext(), R.string.toast_frag_no_restaurant_detected, Toast.LENGTH_SHORT).show();
@@ -158,7 +154,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     public boolean onMarkerClick(Marker mMarker)
     {
         FormattedPlace restaurantDetails = placesHashMap.get(mMarker.getTitle());
-        markerCallback.get().displayRestaurantDetailsOnMarkerClick(restaurantDetails);
+        markerCallback.get().displayRestaurantDetailsOnClick(restaurantDetails);
         return true;
     }
 }

@@ -5,10 +5,8 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.places.AutocompleteFilter;
@@ -17,7 +15,6 @@ import com.google.android.gms.location.places.PlaceLikelihood;
 import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
-import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.activities.MainActivity;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.googleplace.MainGooglePlaceSearch;
@@ -29,17 +26,16 @@ import java.util.List;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
-import pub.devrel.easypermissions.EasyPermissions;
 
-public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
+public class MapMethods
 {
     //=========================================
     // Fields
     //=========================================
+
     private MainActivity mainActivity;
-    private GoogleApiClient googleApiClient;
     private Disposable disposable;
-    private WeakReference<ActivitiesCallbacks.RxJavaListeners> callback;
+    private WeakReference<ActivitiesCallbacks.RxJavaListener> callback;
 
     //=========================================
     // Constructor
@@ -54,7 +50,7 @@ public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
         this.mainActivity = mMainActivity;
     }
 
-    public MapMethods(ActivitiesCallbacks.RxJavaListeners mCallback)
+    public MapMethods(ActivitiesCallbacks.RxJavaListener mCallback)
     {
         this.callback = new WeakReference<>(mCallback);
     }
@@ -63,35 +59,10 @@ public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
     // Methods
     //=========================================
 
-    // ------------------------
-    // Google API configuration
-    // ------------------------
-
-    public void configureGoogleApiClient()
+    public void disconnectFromDisposable()
     {
-        googleApiClient = new GoogleApiClient
-                .Builder(mainActivity)
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
-                .enableAutoManage(mainActivity, this)
-                .build();
-    }
-
-    public void disconnectFromGoogleApiClient()
-    {
-        if (googleApiClient != null && googleApiClient.isConnected())
-        {
-            googleApiClient.stopAutoManage(mainActivity);
-            googleApiClient.disconnect();
-        }
         if (disposable != null && !disposable.isDisposed())
             disposable.dispose();
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult mConnectionResult)
-    {
-        Log.e("GoogleAPIClient ERROR", "onConnectionFailed ERROR CODE : " + mConnectionResult.getErrorCode());
     }
 
     public void launchPlaceAutocompleteActivity()
@@ -120,10 +91,10 @@ public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
     // ------------------------
 
     @SuppressLint("MissingPermission")
-    public void getNearbyPlaces(final int mFragID)
+    public void getNearbyPlaces()
     {
         final HashMap<String, FormattedPlace> placeHashMap = new HashMap<>();
-        PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi.getCurrentPlace(googleApiClient, null);
+        PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi.getCurrentPlace(mainActivity.googleApiClient, null);
 
         result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>()
         {
@@ -150,7 +121,7 @@ public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
                         placeHashMap.put(tempPlace.getName().toString(), place);
                     }
                 }
-                mainActivity.updatePlacesHashMap(mFragID, placeHashMap);
+                mainActivity.updatePlacesHashMap(placeHashMap);
                 likelyPlaces.release();
             }
         });
@@ -164,11 +135,10 @@ public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
             public void onNext(MainGooglePlaceSearch mMainGooglePlaceSearch)
             {
                 if (mMainGooglePlaceSearch.getStatus() != null)
-                    Log.e("RX_JAVA", "STATUS " + mMainGooglePlaceSearch.getStatus());
+                    Log.i("RX_JAVA", "STATUS " + mMainGooglePlaceSearch.getStatus());
 
                 if (mMainGooglePlaceSearch.getResult() != null && mMainGooglePlaceSearch.getResult().getPhotos() != null)
                 {
-                    Log.e("--- PLACE ID ---", "onNext: " + mPlace.getId());
                     mPlace.setPhotoReference(mMainGooglePlaceSearch.getResult().getPhotos().get(0).getPhotoReference());
 
                     if (mMainGooglePlaceSearch.getResult().getOpeningHours() != null && mMainGooglePlaceSearch.getResult().getOpeningHours().getOpenNow())
@@ -188,7 +158,6 @@ public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
             public void onComplete()
             {
                 callback.get().onComplete(mPlace);
-                Log.e("RX_JAVA", "onComplete");
             }
         });
     }
@@ -215,20 +184,5 @@ public class MapMethods implements GoogleApiClient.OnConnectionFailedListener
             return "Closed Today";
 
         return currentOpeningHours.replaceAll("[a-zA-Z]+","").replace(": ", "");
-    }
-
-    // ------------------------
-    // Permission Methods
-    // ------------------------
-
-    public void askUserToGrandPermission()
-    {
-        // Check with EasyPermissions if tha app have access to the location
-        if (!EasyPermissions.hasPermissions(mainActivity, RequestCodes.LOCATION_PERMISSION_REQUEST))
-        {
-            EasyPermissions.requestPermissions(mainActivity, mainActivity.getString(R.string.map_fragment_easy_permission_location_user_request), RequestCodes.RC_LOCATION_CODE, RequestCodes.LOCATION_PERMISSION_REQUEST);
-            return;
-        }
-        Log.i("EasyPerm in activity", "askUserToEnableLocationPermission: Location Access granted");
     }
 }
