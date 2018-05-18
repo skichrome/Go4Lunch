@@ -18,6 +18,7 @@ import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.skichrome.go4lunch.controllers.activities.MainActivity;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.googleplace.MainGooglePlaceSearch;
+import com.skichrome.go4lunch.utils.rxjava.GoogleApiStream;
 
 import java.lang.ref.WeakReference;
 import java.util.Calendar;
@@ -135,7 +136,7 @@ public class MapMethods
             public void onNext(MainGooglePlaceSearch mMainGooglePlaceSearch)
             {
                 if (mMainGooglePlaceSearch.getStatus() != null)
-                    Log.i("RX_JAVA", "STATUS " + mMainGooglePlaceSearch.getStatus());
+                    Log.i("RX_JAVA", "Response code " + mMainGooglePlaceSearch.getStatus());
 
                 if (mMainGooglePlaceSearch.getResult() != null && mMainGooglePlaceSearch.getResult().getPhotos() != null)
                 {

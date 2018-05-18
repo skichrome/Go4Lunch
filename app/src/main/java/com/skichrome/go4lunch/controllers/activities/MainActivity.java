@@ -26,7 +26,7 @@ import com.skichrome.go4lunch.controllers.fragments.MapFragment;
 import com.skichrome.go4lunch.controllers.fragments.WorkmatesFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
-import com.skichrome.go4lunch.utils.FireBaseAuthentication;
+import com.skichrome.go4lunch.utils.FireStoreAuthentication;
 import com.skichrome.go4lunch.utils.MapMethods;
 import com.skichrome.go4lunch.utils.RequestCodes;
 
@@ -51,7 +51,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     private ListFragment listFragment;
     private WorkmatesFragment workmatesFragment;
 
-    private FireBaseAuthentication fireBaseAuthentication = new FireBaseAuthentication(this);
+    private FireStoreAuthentication fireStoreAuthentication = new FireStoreAuthentication(this);
     private MapMethods mapMethods = new MapMethods(this);
     private HashMap<String, FormattedPlace> placesHashMap;
 
@@ -88,7 +88,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         if (isCurrentUserLogged())
             this.updateDrawerFields();
         else
-            fireBaseAuthentication.startSignInActivity();
+            fireStoreAuthentication.startSignInActivity();
     }
 
     @Override
@@ -102,7 +102,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
-        fireBaseAuthentication.onActivityResult(requestCode, resultCode, data);
+        fireStoreAuthentication.onActivityResult(requestCode, resultCode, data);
     }
 
     //=========================================
@@ -185,7 +185,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
                 break;
 
             case R.id.activity_main_menu_drawer_logout:
-                fireBaseAuthentication.logoutFromFirebase();
+                fireStoreAuthentication.logoutFromFirestore();
                 break;
 
             default:

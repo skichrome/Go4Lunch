@@ -5,10 +5,12 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.skichrome.go4lunch.R;
@@ -100,7 +102,7 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
      *      Nullable instance of FireBaseUser containing the current logged user
      */
     @Nullable
-    protected FirebaseUser getCurrentUser()
+    public FirebaseUser getCurrentUser()
     {
         return FirebaseAuth.getInstance().getCurrentUser();
     }
@@ -198,4 +200,21 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     {
         Log.e("GoogleAPIClient ERROR", "onConnectionFailed ERROR CODE : " + mConnectionResult.getErrorCode());
     }
+
+    // ------------------------
+    // Firebase configuration
+    // ------------------------
+
+    public OnFailureListener onFailureListener()
+    {
+        return new OnFailureListener()
+        {
+            @Override
+            public void onFailure(@NonNull Exception mE)
+            {
+                Toast.makeText(getApplicationContext(), getString(R.string.fui_error_unknown), Toast.LENGTH_SHORT).show();
+            }
+        };
+    }
+
 }

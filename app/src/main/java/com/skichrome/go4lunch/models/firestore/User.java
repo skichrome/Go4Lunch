@@ -12,6 +12,8 @@ public class User
     private String username;
     @Nullable
     private String urlPicture;
+    @Nullable
+    private Place selectedPlace;
 
     //=========================================
     // Constructors
@@ -48,6 +50,12 @@ public class User
         return urlPicture;
     }
 
+    @Nullable
+    public Place getSelectedPlace()
+    {
+        return selectedPlace;
+    }
+
     //=========================================
     // Setters
     //=========================================
@@ -65,5 +73,10 @@ public class User
     public void setUrlPicture(@Nullable String urlPicture)
     {
         this.urlPicture = urlPicture;
+    }
+
+    public void setSelectedPlace(@Nullable Place mSelectedPlace)
+    {
+        selectedPlace = mSelectedPlace;
     }
 }

@@ -1,4 +1,4 @@
-package com.skichrome.go4lunch.utils;
+package com.skichrome.go4lunch.utils.rxjava;
 
 import com.skichrome.go4lunch.models.googleplace.MainGooglePlaceSearch;
 

@@ -17,7 +17,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.base.BaseActivity;
 import com.skichrome.go4lunch.controllers.fragments.SettingFragment;
-import com.skichrome.go4lunch.utils.FireBaseAuthentication;
+import com.skichrome.go4lunch.utils.FireStoreAuthentication;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -31,7 +31,7 @@ public class SettingsActivity extends BaseActivity
     @BindView(R.id.activity_settings_email) TextView textViewEmail;
     @BindView(R.id.activity_settings_delete_account_btn) Button btn;
 
-    private FireBaseAuthentication fireBaseAuthentication = new FireBaseAuthentication(this);
+    private FireStoreAuthentication fireStoreAuthentication = new FireStoreAuthentication(this);
 
     @Override
     protected int getActivityLayout()
@@ -87,7 +87,7 @@ public class SettingsActivity extends BaseActivity
                     public void onClick(DialogInterface dialog, int which)
                     {
                         progressBar.setVisibility(View.VISIBLE);
-                        fireBaseAuthentication.deleteAccountFromFirebase();
+                        fireStoreAuthentication.deleteAccountFromFirebase();
                     }
                 })
                 .setNegativeButton(R.string.alert_dialog_no, null)

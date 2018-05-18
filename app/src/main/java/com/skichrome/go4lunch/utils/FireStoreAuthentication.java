@@ -13,13 +13,14 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.activities.MainActivity;
 import com.skichrome.go4lunch.controllers.activities.SettingsActivity;
+import com.skichrome.go4lunch.utils.firebase.UserHelper;
 
 import java.util.Arrays;
 
 import static com.skichrome.go4lunch.utils.RequestCodes.DELETE_USER_TASK;
 import static com.skichrome.go4lunch.utils.RequestCodes.SIGN_OUT_TASK;
 
-public class FireBaseAuthentication
+public class FireStoreAuthentication
 {
     //=========================================
     // Fields
@@ -31,7 +32,7 @@ public class FireBaseAuthentication
     // Constructor
     //=========================================
 
-    public FireBaseAuthentication(MainActivity mMainActivity)
+    public FireStoreAuthentication(MainActivity mMainActivity)
     {
         this.mainActivity = mMainActivity;
     }
@@ -65,7 +66,10 @@ public class FireBaseAuthentication
         if (mRequestCode == RequestCodes.RC_SIGN_IN)
         {
             if (mResultCode == Activity.RESULT_OK)
+            {
+                this.createUserInFirebase();
                 mainActivity.showSnackBarMessage(mainActivity.getString(R.string.firebase_auth_success));       // SUCCESS
+            }
             else                                                                                                // ERRORS
             {
                 if (response == null)
@@ -99,7 +103,19 @@ public class FireBaseAuthentication
         }
     }
 
-    public void logoutFromFirebase()
+    private void createUserInFirebase()
+    {
+        if (mainActivity.getCurrentUser() != null)
+        {
+            String uuid = mainActivity.getCurrentUser().getUid();
+            String username = mainActivity.getCurrentUser().getDisplayName();
+            String urlPicture = mainActivity.getCurrentUser().getPhotoUrl() == null ? null : mainActivity.getCurrentUser().getPhotoUrl().toString();
+
+            UserHelper.createUser(uuid, username, urlPicture).addOnFailureListener(mainActivity.onFailureListener());
+        }
+    }
+
+    public void logoutFromFirestore()
     {
         AuthUI.getInstance()
                 .signOut(mainActivity)
@@ -137,15 +153,20 @@ public class FireBaseAuthentication
 
     private SettingsActivity settingsActivity;
 
-    public FireBaseAuthentication(SettingsActivity mSettingsActivity)
+    public FireStoreAuthentication(SettingsActivity mSettingsActivity)
     {
         this.settingsActivity = mSettingsActivity;
     }
 
     public void deleteAccountFromFirebase()
     {
-        AuthUI.getInstance()
-                .delete(settingsActivity)
-                .addOnSuccessListener(settingsActivity, this.updateUIAfterRESTRequestsCompleted(RequestCodes.DELETE_USER_TASK));
+        if (settingsActivity.getCurrentUser() != null)
+        {
+            UserHelper.deleteUser(settingsActivity.getCurrentUser().getUid()).addOnFailureListener(settingsActivity.onFailureListener());
+
+            AuthUI.getInstance()
+                    .delete(settingsActivity)
+                    .addOnSuccessListener(settingsActivity, this.updateUIAfterRESTRequestsCompleted(RequestCodes.DELETE_USER_TASK));
+        }
     }
 }
