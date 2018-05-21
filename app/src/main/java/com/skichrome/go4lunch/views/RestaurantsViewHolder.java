@@ -13,7 +13,7 @@ import com.skichrome.go4lunch.models.FormattedPlace;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-class RVViewHolder extends RecyclerView.ViewHolder
+class RestaurantsViewHolder extends RecyclerView.ViewHolder
 {
     //=========================================
     // Fields
@@ -33,7 +33,7 @@ class RVViewHolder extends RecyclerView.ViewHolder
     // Constructor
     //=========================================
 
-    RVViewHolder(View itemView)
+    RestaurantsViewHolder(View itemView)
     {
         super(itemView);
         ButterKnife.bind(this, itemView);

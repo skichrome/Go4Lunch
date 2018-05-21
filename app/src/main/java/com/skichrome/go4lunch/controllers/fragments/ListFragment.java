@@ -13,22 +13,31 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.skichrome.go4lunch.R;
-import com.skichrome.go4lunch.base.BaseFragment;
+import com.skichrome.go4lunch.controllers.base.BaseFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
+import com.skichrome.go4lunch.models.googleplace.MainGooglePlaceSearch;
 import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
 import com.skichrome.go4lunch.utils.GetPhotoOnGoogleApiAsyncTask;
 import com.skichrome.go4lunch.utils.ItemClickSupportOnRecyclerView;
 import com.skichrome.go4lunch.utils.MapMethods;
-import com.skichrome.go4lunch.views.RVAdapter;
+import com.skichrome.go4lunch.utils.rxjava.GoogleApiStream;
+import com.skichrome.go4lunch.views.RestaurantsAdapter;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
 
-public class ListFragment extends BaseFragment implements ActivitiesCallbacks.AsyncTaskListeners, ActivitiesCallbacks.RxJavaListener
+public class ListFragment extends BaseFragment implements ActivitiesCallbacks.AsyncTaskListeners
 {
+    public interface OnFragmentReadyListener
+    {
+        void onListFragmentReady();
+    }
+
     //=========================================
     // Fields
     //=========================================
@@ -38,11 +47,11 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
 
     private List<FormattedPlace> placesList;
     private ArrayList<FormattedPlace> placesListDetails;
-    private RVAdapter adapter;
-    private WeakReference<ActivitiesCallbacks.OnClickRVListener> callbackRVClick;
+    private RestaurantsAdapter adapter;
+    private WeakReference<ActivitiesCallbacks.ShowDetailsListener> callbackRVClick;
 
     private FusedLocationProviderClient mLocationClient;
-    private MapMethods mapMethods = new MapMethods(this);
+    private Disposable disposable;
 
     //=========================================
     // New Instance method
@@ -71,10 +80,10 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
         this.mLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         this.configureRecyclerView();
 
-        callbackRVClick = new WeakReference<>((ActivitiesCallbacks.OnClickRVListener) getActivity());
+        callbackRVClick = new WeakReference<>((ActivitiesCallbacks.ShowDetailsListener) getActivity());
         this.configureOnClickRV();
 
-        WeakReference<ActivitiesCallbacks.OnFragmentReadyListener> callbackFragmentReady = new WeakReference<>((ActivitiesCallbacks.OnFragmentReadyListener) getActivity());
+        WeakReference<OnFragmentReadyListener> callbackFragmentReady = new WeakReference<>((OnFragmentReadyListener) getActivity());
         callbackFragmentReady.get().onListFragmentReady();
     }
 
@@ -117,7 +126,7 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
     private void configureRecyclerView()
     {
         this.placesList = new ArrayList<>();
-        this.adapter = new RVAdapter(placesList, Glide.with(this));
+        this.adapter = new RestaurantsAdapter(placesList, Glide.with(this));
         this.recyclerView.setAdapter(adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }
@@ -130,7 +139,7 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
                     @Override
                     public void onItemClicked(RecyclerView recyclerView, int position, View v)
                     {
-                        callbackRVClick.get().onClickRecyclerView(adapter.getClickedPlace(position));
+                        callbackRVClick.get().showRestaurantDetails(adapter.getClickedPlace(position));
                     }
                 });
     }
@@ -143,16 +152,39 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
 
         this.placesListDetails = new ArrayList<>();
         for (FormattedPlace place : placesList)
-            mapMethods.getPlaceDetails(getString(R.string.google_place_api_key), place);
-
+        {
+            this.getPlaceDetails(place);
+        }
     }
 
     //=========================================
     // AsyncTask Methods
     //=========================================
 
-    @Override
-    public void onComplete(FormattedPlace mPlace)
+    private void getPlaceDetails(final FormattedPlace mPlace)
+    {
+        this.disposable = GoogleApiStream.getNearbyPlacesOnGoogleWebApi(getString(R.string.google_place_api_key), mPlace.getId()).subscribeWith(new DisposableObserver<MainGooglePlaceSearch>()
+        {
+            @Override
+            public void onNext(MainGooglePlaceSearch mMainGooglePlaceSearch)
+            {
+                MapMethods.updatePlaceDetails(mMainGooglePlaceSearch, mPlace);
+            }
+
+            @Override
+            public void onError(Throwable e)
+            {
+            }
+
+            @Override
+            public void onComplete()
+            {
+                executeAsyncTask(mPlace);
+            }
+        });
+    }
+
+    private void executeAsyncTask(FormattedPlace mPlace)
     {
         GetPhotoOnGoogleApiAsyncTask asyncTask = new GetPhotoOnGoogleApiAsyncTask(this, mPlace, getString(R.string.google_place_api_key));
         asyncTask.execute();

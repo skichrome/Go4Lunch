@@ -13,18 +13,25 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.skichrome.go4lunch.R;
-import com.skichrome.go4lunch.base.BaseActivity;
+import com.skichrome.go4lunch.controllers.base.BaseActivity;
 import com.skichrome.go4lunch.models.FormattedPlace;
+import com.skichrome.go4lunch.models.googleplace.MainGooglePlaceSearch;
 import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
 import com.skichrome.go4lunch.utils.GetPhotoOnGoogleApiAsyncTask;
 import com.skichrome.go4lunch.utils.MapMethods;
-import com.skichrome.go4lunch.utils.RequestCodes;
+import com.skichrome.go4lunch.utils.rxjava.GoogleApiStream;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
 
-public class RestaurantDetailsActivity extends BaseActivity implements ActivitiesCallbacks.AsyncTaskListeners, ActivitiesCallbacks.RxJavaListener
+public class RestaurantDetailsActivity extends BaseActivity implements ActivitiesCallbacks.AsyncTaskListeners
 {
+    //=========================================
+    // Fields
+    //=========================================
+
     @BindView(R.id.activity_details_resto_name) TextView textViewName;
     @BindView(R.id.activity_details_resto_adress) TextView textViewAddress;
     @BindView(R.id.activity_details_resto_picture) ImageView imageViewPicture;
@@ -35,9 +42,15 @@ public class RestaurantDetailsActivity extends BaseActivity implements Activitie
     @BindView(R.id.activity_details_progress_bar) ProgressBar progressBar;
 
     private FormattedPlace restaurantDetails;
-    private MapMethods mapMethods = new MapMethods(this);
 
+    Disposable disposable;
     GetPhotoOnGoogleApiAsyncTask asyncTask;
+
+    public static final String ACTIVITY_DETAILS_CODE = "ACTIVITY_DETAILS_INTENT_CODE";
+
+    //=========================================
+    // Superclass Methods
+    //=========================================
 
     @Override
     protected int getActivityLayout()
@@ -59,11 +72,15 @@ public class RestaurantDetailsActivity extends BaseActivity implements Activitie
     {
     }
 
+    //=========================================
+    // Configuration Methods
+    //=========================================
+
     private void getDataFromBundle()
     {
         try
         {
-            this.restaurantDetails = (FormattedPlace) getIntent().getSerializableExtra(RequestCodes.ACTIVITY_DETAILS_CODE);
+            this.restaurantDetails = (FormattedPlace) getIntent().getSerializableExtra(ACTIVITY_DETAILS_CODE);
         }
         catch (ClassCastException mE)
         {
@@ -79,6 +96,10 @@ public class RestaurantDetailsActivity extends BaseActivity implements Activitie
         if (restaurantDetails.getPhoto() != null)
             Glide.with(this).load(restaurantDetails.getPhoto()).into(imageViewPicture);
     }
+
+    //=========================================
+    // OnClick Methods
+    //=========================================
 
     @OnClick(R.id.activity_details_resto_floating_btn)
     public void onClickFloatingActionBtn()
@@ -131,11 +152,28 @@ public class RestaurantDetailsActivity extends BaseActivity implements Activitie
 
     private void getPlaceDetails()
     {
-        mapMethods.getPlaceDetails(getString(R.string.google_place_api_key), restaurantDetails);
+        this.disposable = GoogleApiStream.getNearbyPlacesOnGoogleWebApi(getString(R.string.google_place_api_key), restaurantDetails.getId()).subscribeWith(new DisposableObserver<MainGooglePlaceSearch>()
+        {
+            @Override
+            public void onNext(MainGooglePlaceSearch mMainGooglePlaceSearch)
+            {
+                MapMethods.updatePlaceDetails(mMainGooglePlaceSearch, restaurantDetails);
+            }
+
+            @Override
+            public void onError(Throwable e)
+            {
+            }
+
+            @Override
+            public void onComplete()
+            {
+                executeAsyncTask(restaurantDetails);
+            }
+        });
     }
 
-    @Override
-    public void onComplete(FormattedPlace mPlace)
+    public void executeAsyncTask(FormattedPlace mPlace)
     {
         asyncTask = new GetPhotoOnGoogleApiAsyncTask(this, mPlace, getString(R.string.google_place_api_key));
         asyncTask.execute();
@@ -158,5 +196,4 @@ public class RestaurantDetailsActivity extends BaseActivity implements Activitie
         this.updateUIElements();
         this.progressBar.setVisibility(View.INVISIBLE);
     }
-
 }

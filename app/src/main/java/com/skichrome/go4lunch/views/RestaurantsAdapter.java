@@ -12,7 +12,7 @@ import com.skichrome.go4lunch.models.FormattedPlace;
 
 import java.util.List;
 
-public class RVAdapter extends RecyclerView.Adapter<RVViewHolder>
+public class RestaurantsAdapter extends RecyclerView.Adapter<RestaurantsViewHolder>
 {
     //=========================================
     // Fields
@@ -25,7 +25,7 @@ public class RVAdapter extends RecyclerView.Adapter<RVViewHolder>
     // Constructor
     //=========================================
 
-    public RVAdapter(List<FormattedPlace> mPlaceList, RequestManager mGlide)
+    public RestaurantsAdapter(List<FormattedPlace> mPlaceList, RequestManager mGlide)
     {
         this.placeList = mPlaceList;
         this.glide = mGlide;
@@ -37,16 +37,16 @@ public class RVAdapter extends RecyclerView.Adapter<RVViewHolder>
 
     @NonNull
     @Override
-    public RVViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
+    public RestaurantsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.fragment_list_list_item_recycler_view, parent, false);
 
-        return new RVViewHolder(view);
+        return new RestaurantsViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RVViewHolder holder, int position)
+    public void onBindViewHolder(@NonNull RestaurantsViewHolder holder, int position)
     {
         holder.updateUI(placeList.get(position), glide);
     }

@@ -4,18 +4,15 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.firebase.auth.FirebaseUser;
 import com.skichrome.go4lunch.R;
-import com.skichrome.go4lunch.base.BaseActivity;
+import com.skichrome.go4lunch.controllers.base.BaseActivity;
 import com.skichrome.go4lunch.controllers.fragments.SettingFragment;
 import com.skichrome.go4lunch.utils.FireStoreAuthentication;
 
@@ -25,13 +22,10 @@ import butterknife.OnClick;
 public class SettingsActivity extends BaseActivity
 {
     @BindView(R.id.activity_setting_toolbar_include) Toolbar toolbar;
-    @BindView(R.id.activity_setting_progress_bar) ProgressBar progressBar;
     @BindView(R.id.activity_settings_profile_img) ImageView imageViewProfile;
     @BindView(R.id.activity_settings_name) TextView textViewName;
     @BindView(R.id.activity_settings_email) TextView textViewEmail;
     @BindView(R.id.activity_settings_delete_account_btn) Button btn;
-
-    private FireStoreAuthentication fireStoreAuthentication = new FireStoreAuthentication(this);
 
     @Override
     protected int getActivityLayout()
@@ -42,7 +36,6 @@ public class SettingsActivity extends BaseActivity
     @Override
     protected void configureActivity()
     {
-        this.progressBar.setVisibility(View.INVISIBLE);
         this.configureToolbar();
         this.updateUserInfo();
     }
@@ -86,17 +79,15 @@ public class SettingsActivity extends BaseActivity
                     @Override
                     public void onClick(DialogInterface dialog, int which)
                     {
-                        progressBar.setVisibility(View.VISIBLE);
-                        fireStoreAuthentication.deleteAccountFromFirebase();
+                        deleteAccountFromFireBase();
                     }
                 })
                 .setNegativeButton(R.string.alert_dialog_no, null)
                 .show();
-        Log.i("OnClick Method", "onClickDeleteAccountBtn : Button delete clicked !");
     }
 
-    public void disableProgressBar()
+    private void deleteAccountFromFireBase()
     {
-        progressBar.setVisibility(View.GONE);
+        FireStoreAuthentication.deleteAccountFromFirebase(this, getCurrentUser());
     }
 }

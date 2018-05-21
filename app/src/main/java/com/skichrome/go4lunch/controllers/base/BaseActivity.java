@@ -1,20 +1,18 @@
-package com.skichrome.go4lunch.base;
+package com.skichrome.go4lunch.controllers.base;
 
+import android.Manifest;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.skichrome.go4lunch.R;
-import com.skichrome.go4lunch.utils.RequestCodes;
 
 import java.util.List;
 
@@ -31,6 +29,9 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     //=========================================
 
     public GoogleApiClient googleApiClient;
+
+    public static final String LOCATION_PERMISSION_REQUEST = Manifest.permission.ACCESS_FINE_LOCATION;
+    public static final int RC_LOCATION_CODE = 4123;
 
     //=========================================
     // Base Abstract Methods
@@ -69,7 +70,7 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
         // Configuration
         this.configureActivity();
 
-        if (EasyPermissions.hasPermissions(this, RequestCodes.LOCATION_PERMISSION_REQUEST))
+        if (EasyPermissions.hasPermissions(this, LOCATION_PERMISSION_REQUEST))
         {
             this.configureGoogleApiClient();
             this.updateActivityWithPermissionGranted();
@@ -124,9 +125,9 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     public void askUserToGrandPermission()
     {
         // Check with EasyPermissions if tha app have access to the location
-        if (!EasyPermissions.hasPermissions(this, RequestCodes.LOCATION_PERMISSION_REQUEST))
+        if (!EasyPermissions.hasPermissions(this, LOCATION_PERMISSION_REQUEST))
         {
-            EasyPermissions.requestPermissions(this, getString(R.string.map_fragment_easy_permission_location_user_request), RequestCodes.RC_LOCATION_CODE, RequestCodes.LOCATION_PERMISSION_REQUEST);
+            EasyPermissions.requestPermissions(this, getString(R.string.map_fragment_easy_permission_location_user_request), RC_LOCATION_CODE, LOCATION_PERMISSION_REQUEST);
             return;
         }
         Log.i("EasyPerm in activity", "askUserToEnableLocationPermission: Location Access granted");
@@ -161,7 +162,7 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     @Override
     public void onPermissionsGranted(int requestCode, @NonNull List<String> perms)
     {
-        if (requestCode == RequestCodes.RC_LOCATION_CODE)
+        if (requestCode == RC_LOCATION_CODE)
         {
             this.configureGoogleApiClient();
             this.updateActivityWithPermissionGranted();
@@ -200,21 +201,4 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     {
         Log.e("GoogleAPIClient ERROR", "onConnectionFailed ERROR CODE : " + mConnectionResult.getErrorCode());
     }
-
-    // ------------------------
-    // Firebase configuration
-    // ------------------------
-
-    public OnFailureListener onFailureListener()
-    {
-        return new OnFailureListener()
-        {
-            @Override
-            public void onFailure(@NonNull Exception mE)
-            {
-                Toast.makeText(getApplicationContext(), getString(R.string.fui_error_unknown), Toast.LENGTH_SHORT).show();
-            }
-        };
-    }
-
 }

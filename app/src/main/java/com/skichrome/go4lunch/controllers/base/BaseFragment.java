@@ -1,4 +1,4 @@
-package com.skichrome.go4lunch.base;
+package com.skichrome.go4lunch.controllers.base;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;

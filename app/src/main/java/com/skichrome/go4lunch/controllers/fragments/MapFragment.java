@@ -16,7 +16,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.skichrome.go4lunch.R;
-import com.skichrome.go4lunch.base.BaseFragment;
+import com.skichrome.go4lunch.controllers.base.BaseFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
 
@@ -31,6 +31,11 @@ import butterknife.OnClick;
  */
 public class MapFragment extends BaseFragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener
 {
+    public interface MapFragmentListeners
+    {
+        void getResultOnClickFloatingActionBtn();
+    }
+
     //=========================================
     // Fields
     //=========================================
@@ -39,7 +44,8 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     private HashMap<String, FormattedPlace> placesHashMap;
 
     private FusedLocationProviderClient mLocationClient;
-    private WeakReference<ActivitiesCallbacks.MapFragmentListeners> markerCallback;
+    private WeakReference<MapFragmentListeners> markerCallback;
+    private WeakReference<ActivitiesCallbacks.ShowDetailsListener> detailsCallback;
 
     //=========================================
     // New Instance method
@@ -57,7 +63,9 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     @Override
     protected void configureFragment()
     {
-        this.markerCallback = new WeakReference<>((ActivitiesCallbacks.MapFragmentListeners) getActivity());
+        this.markerCallback = new WeakReference<>((MapFragmentListeners) getActivity());
+        this.detailsCallback = new WeakReference<>((ActivitiesCallbacks.ShowDetailsListener) getActivity());
+
         this.mLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         this.configureMapApi();
     }
@@ -154,7 +162,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     public boolean onMarkerClick(Marker mMarker)
     {
         FormattedPlace restaurantDetails = placesHashMap.get(mMarker.getTitle());
-        markerCallback.get().displayRestaurantDetailsOnClick(restaurantDetails);
+        detailsCallback.get().showRestaurantDetails(restaurantDetails);
         return true;
     }
 }

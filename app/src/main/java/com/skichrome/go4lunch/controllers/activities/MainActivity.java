@@ -20,7 +20,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.skichrome.go4lunch.R;
-import com.skichrome.go4lunch.base.BaseActivity;
+import com.skichrome.go4lunch.controllers.base.BaseActivity;
 import com.skichrome.go4lunch.controllers.fragments.ListFragment;
 import com.skichrome.go4lunch.controllers.fragments.MapFragment;
 import com.skichrome.go4lunch.controllers.fragments.WorkmatesFragment;
@@ -28,14 +28,19 @@ import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
 import com.skichrome.go4lunch.utils.FireStoreAuthentication;
 import com.skichrome.go4lunch.utils.MapMethods;
-import com.skichrome.go4lunch.utils.RequestCodes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import butterknife.BindView;
 
-public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener, ActivitiesCallbacks.MapFragmentListeners, ActivitiesCallbacks.OnClickRVListener, ActivitiesCallbacks.OnFragmentReadyListener
+import static com.skichrome.go4lunch.utils.FireStoreAuthentication.RC_SIGN_IN;
+
+public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener,
+        MapFragment.MapFragmentListeners,
+        ActivitiesCallbacks.ShowDetailsListener,
+        ListFragment.OnFragmentReadyListener,
+        MapMethods.ListenersNearbyPlaces
 {
     //=========================================
     // Fields
@@ -51,9 +56,9 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     private ListFragment listFragment;
     private WorkmatesFragment workmatesFragment;
 
-    private FireStoreAuthentication fireStoreAuthentication = new FireStoreAuthentication(this);
-    private MapMethods mapMethods = new MapMethods(this);
     private HashMap<String, FormattedPlace> placesHashMap;
+
+    public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 4124;
 
     //=========================================
     // Superclass Methods
@@ -77,7 +82,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     protected void updateActivityWithPermissionGranted()
     {
-        mapMethods.getNearbyPlaces();
+        MapMethods.getNearbyPlaces(this, googleApiClient);
         this.configureMapFragment();
     }
 
@@ -88,21 +93,20 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         if (isCurrentUserLogged())
             this.updateDrawerFields();
         else
-            fireStoreAuthentication.startSignInActivity();
-    }
-
-    @Override
-    public void onPause()
-    {
-        super.onPause();
-        mapMethods.disconnectFromDisposable();
+            startActivityForResult(FireStoreAuthentication.startSignInActivity(), RC_SIGN_IN);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
-        fireStoreAuthentication.onActivityResult(requestCode, resultCode, data);
+        String result = FireStoreAuthentication.onActivityResult(this, this.getCurrentUser(), requestCode, resultCode, data);
+        if (result != null)
+        {
+            this.showSnackBarMessage(result);
+            if (result.equals(getString(R.string.firebase_login_cancel)))
+                this.finish();
+        }
     }
 
     //=========================================
@@ -150,7 +154,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         switch (item.getItemId())
         {
             case R.id.activity_main_menu_search:
-                mapMethods.launchPlaceAutocompleteActivity();
+                startActivityForResult(MapMethods.launchPlaceAutocompleteActivity(this), PLACE_AUTOCOMPLETE_REQUEST_CODE);
                 return true;
 
             default:
@@ -185,7 +189,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
                 break;
 
             case R.id.activity_main_menu_drawer_logout:
-                fireStoreAuthentication.logoutFromFirestore();
+                FireStoreAuthentication.logoutFromFirestore(this);
                 break;
 
             default:
@@ -245,7 +249,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Update Method
     //=========================================
 
-    public void updatePlacesHashMap(HashMap<String, FormattedPlace> mFormattedPlaceHashMap)
+    private void updatePlacesHashMap(HashMap<String, FormattedPlace> mFormattedPlaceHashMap)
     {
         this.placesHashMap = new HashMap<>();
         this.placesHashMap.putAll(mFormattedPlaceHashMap);
@@ -290,25 +294,25 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     public void getResultOnClickFloatingActionBtn()
     {
-        mapMethods.getNearbyPlaces();
+        MapMethods.getNearbyPlaces(this, googleApiClient);
     }
 
     @Override
-    public void onClickRecyclerView(FormattedPlace mPlace)
+    public void showRestaurantDetails(FormattedPlace mPlace)
     {
         this.startRestaurantDetailsActivity(mPlace);
-    }
-
-    @Override
-    public void displayRestaurantDetailsOnClick(FormattedPlace mDetailsRestaurants)
-    {
-        this.startRestaurantDetailsActivity(mDetailsRestaurants);
     }
 
     private void startRestaurantDetailsActivity(FormattedPlace mDetailsRestaurants)
     {
         Intent intent = new Intent(this, RestaurantDetailsActivity.class);
-        intent.putExtra(RequestCodes.ACTIVITY_DETAILS_CODE, mDetailsRestaurants);
+        intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, mDetailsRestaurants);
         startActivity(intent);
+    }
+
+    @Override
+    public void OnResult(HashMap<String, FormattedPlace> mPlaceHashMap)
+    {
+        this.updatePlacesHashMap(mPlaceHashMap);
     }
 }

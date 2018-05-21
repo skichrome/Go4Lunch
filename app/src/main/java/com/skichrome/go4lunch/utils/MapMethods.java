@@ -1,12 +1,15 @@
 package com.skichrome.go4lunch.utils;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.places.AutocompleteFilter;
@@ -15,58 +18,36 @@ import com.google.android.gms.location.places.PlaceLikelihood;
 import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
-import com.skichrome.go4lunch.controllers.activities.MainActivity;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.googleplace.MainGooglePlaceSearch;
-import com.skichrome.go4lunch.utils.rxjava.GoogleApiStream;
 
-import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
-import io.reactivex.disposables.Disposable;
-import io.reactivex.observers.DisposableObserver;
-
-public class MapMethods
+public abstract class MapMethods
 {
     //=========================================
-    // Fields
+    // Callback interfaces
     //=========================================
 
-    private MainActivity mainActivity;
-    private Disposable disposable;
-    private WeakReference<ActivitiesCallbacks.RxJavaListener> callback;
+    public interface ListenersNearbyPlaces
+    {
+        void OnResult(HashMap<String, FormattedPlace> mPlaceHashMap);
+    }
 
     //=========================================
     // Constructor
     //=========================================
 
-    public MapMethods()
-    {
-    }
-
-    public MapMethods(MainActivity mMainActivity)
-    {
-        this.mainActivity = mMainActivity;
-    }
-
-    public MapMethods(ActivitiesCallbacks.RxJavaListener mCallback)
-    {
-        this.callback = new WeakReference<>(mCallback);
-    }
+    private MapMethods() {}
 
     //=========================================
     // Methods
     //=========================================
 
-    public void disconnectFromDisposable()
-    {
-        if (disposable != null && !disposable.isDisposed())
-            disposable.dispose();
-    }
-
-    public void launchPlaceAutocompleteActivity()
+    @Nullable
+    public static Intent launchPlaceAutocompleteActivity(Activity mActivity)
     {
         try
         {
@@ -76,14 +57,14 @@ public class MapMethods
                     .build();
 
             // Create an intent and start an activity with request code
-            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
+            return new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
                     .setFilter(filter)
-                    .build(mainActivity);
-            mainActivity.startActivityForResult(intent, RequestCodes.PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                    .build(mActivity);
         }
         catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException mE)
         {
             mE.printStackTrace();
+            return null;
         }
     }
 
@@ -92,10 +73,10 @@ public class MapMethods
     // ------------------------
 
     @SuppressLint("MissingPermission")
-    public void getNearbyPlaces()
+    public static void getNearbyPlaces(final ListenersNearbyPlaces mCallback, GoogleApiClient mGoogleApiClient)
     {
         final HashMap<String, FormattedPlace> placeHashMap = new HashMap<>();
-        PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi.getCurrentPlace(mainActivity.googleApiClient, null);
+        PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi.getCurrentPlace(mGoogleApiClient, null);
 
         result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>()
         {
@@ -118,52 +99,32 @@ public class MapMethods
                                 tempPlace.getLatLng().longitude,
                                 "-",
                                 null);
-
                         placeHashMap.put(tempPlace.getName().toString(), place);
                     }
                 }
-                mainActivity.updatePlacesHashMap(placeHashMap);
+                mCallback.OnResult(placeHashMap);
                 likelyPlaces.release();
             }
         });
     }
 
-    public void getPlaceDetails(String mApiKey, final FormattedPlace mPlace)
+    public static void updatePlaceDetails(MainGooglePlaceSearch mMainGooglePlaceSearch, FormattedPlace mPlace)
     {
-        disposable = GoogleApiStream.getNearbyPlacesOnGoogleWebApi(mApiKey, mPlace.getId()).subscribeWith(new DisposableObserver<MainGooglePlaceSearch>()
+        if (mMainGooglePlaceSearch.getStatus() != null)
+            Log.i("RX_JAVA", "Response code " + mMainGooglePlaceSearch.getStatus());
+
+        if (mMainGooglePlaceSearch.getResult() != null && mMainGooglePlaceSearch.getResult().getPhotos() != null)
         {
-            @Override
-            public void onNext(MainGooglePlaceSearch mMainGooglePlaceSearch)
-            {
-                if (mMainGooglePlaceSearch.getStatus() != null)
-                    Log.i("RX_JAVA", "Response code " + mMainGooglePlaceSearch.getStatus());
+            mPlace.setPhotoReference(mMainGooglePlaceSearch.getResult().getPhotos().get(0).getPhotoReference());
 
-                if (mMainGooglePlaceSearch.getResult() != null && mMainGooglePlaceSearch.getResult().getPhotos() != null)
-                {
-                    mPlace.setPhotoReference(mMainGooglePlaceSearch.getResult().getPhotos().get(0).getPhotoReference());
-
-                    if (mMainGooglePlaceSearch.getResult().getOpeningHours() != null && mMainGooglePlaceSearch.getResult().getOpeningHours().getOpenNow())
-                        mPlace.setAperture(convertAperture(mMainGooglePlaceSearch.getResult().getOpeningHours().getWeekdayText(), Calendar.getInstance().get(Calendar.DAY_OF_WEEK)));
-                    else
-                        mPlace.setAperture("Closed now");
-                }
-            }
-
-            @Override
-            public void onError(Throwable e)
-            {
-                Log.e("RX_JAVA", "onError ", e);
-            }
-
-            @Override
-            public void onComplete()
-            {
-                callback.get().onComplete(mPlace);
-            }
-        });
+            if (mMainGooglePlaceSearch.getResult().getOpeningHours() != null && mMainGooglePlaceSearch.getResult().getOpeningHours().getOpenNow())
+                mPlace.setAperture(convertAperture(mMainGooglePlaceSearch.getResult().getOpeningHours().getWeekdayText(), Calendar.getInstance().get(Calendar.DAY_OF_WEEK)));
+            else
+                mPlace.setAperture("Closed now");
+        }
     }
 
-    public String convertAperture(List<String> mOpeningHours, int mDayCalendar)
+    private static String convertAperture(List<String> mOpeningHours, int mDayCalendar)
     {
         String currentOpeningHours;
         int correctedIndex;

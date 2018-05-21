@@ -4,6 +4,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.skichrome.go4lunch.models.firestore.Place;
 import com.skichrome.go4lunch.models.firestore.User;
 
@@ -12,7 +13,7 @@ public class UserHelper
     private static final String COLLECTION_NAME = "users";
 
     // Collection reference
-    public static CollectionReference getUsersCollection()
+    private static CollectionReference getUsersCollection()
     {
         return FirebaseFirestore.getInstance().collection(COLLECTION_NAME);
     }
@@ -28,6 +29,13 @@ public class UserHelper
     public static Task<DocumentSnapshot> getUser(String mUid)
     {
         return UserHelper.getUsersCollection().document(mUid).get();
+    }
+
+    // Get all users
+    public static Query getAllUsers()
+    {
+        return FirebaseFirestore.getInstance().collection(COLLECTION_NAME)
+                .limit(50);
     }
 
     // Update username
