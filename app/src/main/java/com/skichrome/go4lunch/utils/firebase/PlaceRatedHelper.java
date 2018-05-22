@@ -5,7 +5,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.skichrome.go4lunch.models.FormattedPlace;
-import com.skichrome.go4lunch.models.firestore.Place;
 import com.skichrome.go4lunch.models.firestore.User;
 
 public class PlaceRatedHelper
@@ -24,16 +23,14 @@ public class PlaceRatedHelper
 
     public static Task<Void> createPlace(String mSortedPlaceKey, FormattedPlace mPlace)
     {
-        Place place = mPlace != null ? new Place(mPlace.getId(), mPlace.getName(), mPlace.getAddress()) : null;
-
         return PlaceHelper.getPlaceCollection()
                 .document(mSortedPlaceKey)
                 .collection(COLLECTION_NAME)
                 .document(mPlace.getId())
-                .set(place);
+                .set(mPlace);
     }
 
-    public static Task<Void> createUserIntoPlace(String mSortedPlaceKey, FirebaseUser mUser, FormattedPlace mPlace, Place mPlaceInterest)
+    public static Task<Void> createUserIntoPlace(String mSortedPlaceKey, FirebaseUser mUser, FormattedPlace mPlace, FormattedPlace mPlaceInterest)
     {
         User user = new User(mUser.getUid(), mUser.getDisplayName(), mUser.getPhotoUrl() == null ? null : mUser.getPhotoUrl().toString(), mPlaceInterest);
 

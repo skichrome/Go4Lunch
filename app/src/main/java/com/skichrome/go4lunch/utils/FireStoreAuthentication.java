@@ -41,7 +41,6 @@ public abstract class FireStoreAuthentication
     // Fields
     //=========================================
 
-    private static final int UPDATE_TASK = 21000;
     private static final int SIGN_OUT_TASK = 100;
     private static final int DELETE_USER_TASK = 200;
     public static final int RC_SIGN_IN = 1234;
@@ -171,10 +170,6 @@ public abstract class FireStoreAuthentication
                         mActivity.finish();
                         break;
 
-                    case UPDATE_TASK :
-                        Toast.makeText(mActivity, "Update successful !", Toast.LENGTH_SHORT).show();
-                        break;
-
                     default:
                         break;
                 }
@@ -198,17 +193,17 @@ public abstract class FireStoreAuthentication
     // Update Methods
     //=========================================
 
-    private static void updateChosenRestaurant(Activity mActivity, final FirebaseUser mUser, FormattedPlace mPlace, com.skichrome.go4lunch.models.firestore.Place mPlaceInterest)
+    private static void updateChosenRestaurant(Activity mActivity, final FirebaseUser mUser, FormattedPlace mPlace, FormattedPlace mPlaceInterest)
     {
-        UserHelper.updateChosenPlace(mUser.getUid(), mPlace).addOnFailureListener(onFailureListener(mActivity)).addOnSuccessListener(updateUIAfterRESTRequestsCompleted(mActivity, UPDATE_TASK));
-        PlaceRatedHelper.createPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mPlace).addOnSuccessListener(updateUIAfterRESTRequestsCompleted(mActivity, UPDATE_TASK)).addOnFailureListener(onFailureListener(mActivity));
+        UserHelper.updateChosenPlace(mUser.getUid(), mPlace).addOnFailureListener(onFailureListener(mActivity));
+        PlaceRatedHelper.createPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mPlace).addOnFailureListener(onFailureListener(mActivity));
         PlaceRatedHelper.createUserIntoPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mUser, mPlace, mPlaceInterest).addOnFailureListener(onFailureListener(mActivity));
     }
 
-    public static void updateRateRestaurant(Activity mActivity, FirebaseUser mUser, FormattedPlace mPlace, com.skichrome.go4lunch.models.firestore.Place mPlaceInterest)
+    public static void updateRateRestaurant(Activity mActivity, FirebaseUser mUser, FormattedPlace mPlace, FormattedPlace mPlaceInterest)
     {
-        PlaceRatedHelper.createPlace(ID_PLACE_RATED_CLOUD_FIRESTORE, mPlace).addOnSuccessListener(updateUIAfterRESTRequestsCompleted(mActivity, UPDATE_TASK)).addOnFailureListener(onFailureListener(mActivity));
-        PlaceRatedHelper.createUserIntoPlace(ID_PLACE_RATED_CLOUD_FIRESTORE, mUser, mPlace, mPlaceInterest).addOnSuccessListener(updateUIAfterRESTRequestsCompleted(mActivity, UPDATE_TASK)).addOnFailureListener(onFailureListener(mActivity));
+        PlaceRatedHelper.createPlace(ID_PLACE_RATED_CLOUD_FIRESTORE, mPlace).addOnFailureListener(onFailureListener(mActivity));
+        PlaceRatedHelper.createUserIntoPlace(ID_PLACE_RATED_CLOUD_FIRESTORE, mUser, mPlace, mPlaceInterest).addOnFailureListener(onFailureListener(mActivity));
     }
 
     public static void deleteUserFromPlace(final Activity mActivity, final FirebaseUser mUser, final FormattedPlace mPlace)
@@ -219,24 +214,28 @@ public abstract class FireStoreAuthentication
             public void onSuccess(DocumentSnapshot mDocumentSnapshot)
             {
                 User user = mDocumentSnapshot.toObject(User.class);
-                String placeId = user != null ? user.getSelectedPlace() != null ? user.getSelectedPlace().getId() : "" : "";
+                String placeId = user != null ? user.getSelectedPlace() != null ? user.getSelectedPlace().getId() : null : null;
 
-                PlaceRatedHelper.removeUserIntoPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mUser.getUid(), placeId).addOnSuccessListener(new OnSuccessListener<Void>()
+                if (placeId != null)
                 {
-                    @Override
-                    public void onSuccess(Void mVoid)
+                    PlaceRatedHelper.removeUserIntoPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mUser.getUid(), placeId).addOnSuccessListener(new OnSuccessListener<Void>()
                     {
-                        updateRating(mActivity, mUser, mPlace);
-                    }
-                });
+                        @Override
+                        public void onSuccess(Void mVoid)
+                        {
+                            updateRestaurant(mActivity, mUser, mPlace); // Calling this method here because we have to wait success of deleting previous place before update new place
+                        }
+                    });
+                }
+                else
+                    updateRestaurant(mActivity, mUser, mPlace);
             }
         });
     }
 
-    private static void updateRating(Activity mActivity, FirebaseUser mUser, FormattedPlace mPlace)
+    private static void updateRestaurant(Activity mActivity, FirebaseUser mUser, FormattedPlace mPlace)
     {
-        com.skichrome.go4lunch.models.firestore.Place place = new com.skichrome.go4lunch.models.firestore.Place(mPlace.getId(), mPlace.getName(), mPlace.getAddress());
-        FireStoreAuthentication.updateChosenRestaurant(mActivity, mUser, mPlace, place);
+        FireStoreAuthentication.updateChosenRestaurant(mActivity, mUser, mPlace, mPlace);
     }
 
     public static void getUserPlace(final GetUserListener mCallback, final Activity mActivity, User mUser)
@@ -247,12 +246,11 @@ public abstract class FireStoreAuthentication
             public void onSuccess(DocumentSnapshot mDocumentSnapshot)
             {
                 User user = mDocumentSnapshot.toObject(User.class);
-                com.skichrome.go4lunch.models.firestore.Place place = user != null ? user.getSelectedPlace() : null;
+                FormattedPlace place = user != null ? user.getSelectedPlace() : null;
                 if (place != null)
                 {
-                    FormattedPlace formattedPlace = new FormattedPlace(place.getId(), place.getName(), place.getAddress(), null, null, 0, 0);
-                    Intent intent = new Intent(mActivity, RestaurantDetailsActivity.class);
-                    intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, formattedPlace);
+                   Intent intent = new Intent(mActivity, RestaurantDetailsActivity.class);
+                    intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, place);
 
                     mCallback.onSuccess(intent);
                 }

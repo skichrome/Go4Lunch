@@ -122,7 +122,7 @@ public abstract class MapMethods
         }
     }
 
-    private static String convertAperture(List<String> mOpeningHours, int mDayCalendar)
+    public static String convertAperture(List<String> mOpeningHours, int mDayCalendar)
     {
         String currentOpeningHours;
         int correctedIndex;

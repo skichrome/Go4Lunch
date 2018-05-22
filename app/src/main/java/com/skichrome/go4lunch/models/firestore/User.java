@@ -2,6 +2,8 @@ package com.skichrome.go4lunch.models.firestore;
 
 import android.support.annotation.Nullable;
 
+import com.skichrome.go4lunch.models.FormattedPlace;
+
 public class User
 {
     //=========================================
@@ -13,7 +15,7 @@ public class User
     @Nullable
     private String urlPicture;
     @Nullable
-    private Place selectedPlace;
+    private FormattedPlace selectedPlace;
 
     //=========================================
     // Constructors
@@ -23,7 +25,7 @@ public class User
     {
     }
 
-    public User(String mUid, String mUsername, @Nullable String mUrlPicture, @Nullable Place mSelectedPlace)
+    public User(String mUid, String mUsername, @Nullable String mUrlPicture, @Nullable FormattedPlace mSelectedPlace)
     {
         uid = mUid;
         username = mUsername;
@@ -52,7 +54,7 @@ public class User
     }
 
     @Nullable
-    public Place getSelectedPlace()
+    public FormattedPlace getSelectedPlace()
     {
         return selectedPlace;
     }
@@ -76,7 +78,7 @@ public class User
         this.urlPicture = urlPicture;
     }
 
-    public void setSelectedPlace(@Nullable Place mSelectedPlace)
+    public void setSelectedPlace(@Nullable FormattedPlace mSelectedPlace)
     {
         selectedPlace = mSelectedPlace;
     }

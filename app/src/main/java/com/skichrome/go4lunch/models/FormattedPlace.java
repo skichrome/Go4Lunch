@@ -2,6 +2,8 @@ package com.skichrome.go4lunch.models;
 
 import android.graphics.Bitmap;
 
+import com.google.firebase.firestore.Exclude;
+
 import java.io.Serializable;
 
 public class FormattedPlace implements Serializable
@@ -21,11 +23,15 @@ public class FormattedPlace implements Serializable
     private String phoneNumber;
     private String distance;
     private String aperture;
+
+    @Exclude
     private transient Bitmap photo;
 
     //=========================================
     // Constructor
     //=========================================
+
+    public FormattedPlace() { }
 
     public FormattedPlace(String mId,
                           String mName,
@@ -98,6 +104,7 @@ public class FormattedPlace implements Serializable
         return phoneNumber;
     }
 
+    @Exclude
     public Bitmap getPhoto()
     {
         return photo;
@@ -122,6 +129,7 @@ public class FormattedPlace implements Serializable
         aperture = mAperture;
     }
 
+    @Exclude
     public void setPhoto(Bitmap mPhoto)
     {
         photo = mPhoto;

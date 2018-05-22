@@ -18,7 +18,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class MapMethodTests
 {
-    private MapMethods mapMethods;
     private List<String> apertureRaw;
     private List<String> aperture;
 
@@ -31,8 +30,6 @@ public class MapMethodTests
     @Before
     public void configureMapMethods()
     {
-        this.mapMethods = new MapMethods();
-
         this.aperture = new ArrayList<>();
         this.apertureRaw = new ArrayList<>();
 
@@ -75,14 +72,14 @@ public class MapMethodTests
     @Test
     public void shouldRemoveAllFirstCharacters()
     {
-        String result = mapMethods.convertAperture(apertureRaw, calendarInstance[indexOfDay]);
+        String result = MapMethods.convertAperture(apertureRaw, calendarInstance[indexOfDay]);
         assertEquals("10:00 – 14:30, 18:30 – 22:00", result);
     }
 
     @Test
     public void shouldReturnMondayIfTodayIsMonday()
     {
-        String result = mapMethods.convertAperture(apertureRaw, calendarInstance[indexOfDay]);
+        String result = MapMethods.convertAperture(apertureRaw, calendarInstance[indexOfDay]);
         assertEquals(aperture.get(indexOfDay), result);
     }
 
@@ -90,7 +87,7 @@ public class MapMethodTests
     public void shouldReturnSundayIfTodayIsSunday()
     {
         indexOfDay = 6;
-        String result = mapMethods.convertAperture(apertureRaw, calendarInstance[indexOfDay]);
+        String result = MapMethods.convertAperture(apertureRaw, calendarInstance[indexOfDay]);
         assertEquals(aperture.get(indexOfDay), result);
     }
 
@@ -99,7 +96,7 @@ public class MapMethodTests
     {
         for (int i = 0; i < apertureRaw.size(); i++)
         {
-            String result = mapMethods.convertAperture(apertureRaw, calendarInstance[i]);
+            String result = MapMethods.convertAperture(apertureRaw, calendarInstance[i]);
             assertEquals(aperture.get(i), result);
         }
     }
@@ -108,7 +105,7 @@ public class MapMethodTests
     public void shouldReturnClosedIfNoOpenHoursIsSpecified()
     {
         indexOfDay = 6;
-        String result = mapMethods.convertAperture(apertureSundayClosedRaw, calendarInstance[indexOfDay]);
+        String result = MapMethods.convertAperture(apertureSundayClosedRaw, calendarInstance[indexOfDay]);
         assertEquals(apertureSundayClosed.get(indexOfDay), result);
     }
 }

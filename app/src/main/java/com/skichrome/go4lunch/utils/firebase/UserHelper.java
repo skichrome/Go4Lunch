@@ -7,7 +7,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.SetOptions;
 import com.skichrome.go4lunch.models.FormattedPlace;
-import com.skichrome.go4lunch.models.firestore.Place;
 import com.skichrome.go4lunch.models.firestore.User;
 
 import java.util.HashMap;
@@ -23,7 +22,7 @@ public class UserHelper
     }
 
     // Create
-    public static Task<Void> createUser(String mUid, String mUsername, String mUrlPicture, Place mSelectedPlace)
+    public static Task<Void> createUser(String mUid, String mUsername, String mUrlPicture, FormattedPlace mSelectedPlace)
     {
         User user = new User(mUid, mUsername, mUrlPicture, mSelectedPlace);
         return UserHelper.getUsersCollection().document(mUid).set(user);
@@ -51,9 +50,8 @@ public class UserHelper
     // Update chosen place
     public static Task<Void> updateChosenPlace(String mUid, FormattedPlace mPlace)
     {
-        Place place = new Place(mPlace.getId(), mPlace.getName(), mPlace.getAddress());
-        HashMap<String, Place> map = new HashMap<>();
-        map.put("selectedPlace", place);
+        HashMap<String, FormattedPlace> map = new HashMap<>();
+        map.put("selectedPlace", mPlace);
 
         return UserHelper.getUsersCollection().document(mUid).set(map, SetOptions.mergeFields("selectedPlace"));
     }
