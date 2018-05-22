@@ -78,4 +78,11 @@
 
     <string name="activity_settings_delete_account_btn">delete your account</string>
 
+    <string name="activity_main_toast_no_restaurant_selected">You haven\'t selected a restaurant</string>
+
+    <!-- View Holder Workmates -->
+    <string name="view_holder_is_eating">is eating to</string>
+    <string name="view_holder_not_eating">hasn\'t decided yet</string>
+    <string name="view_holder_is_joining">is joining !</string>
+
 </resources>

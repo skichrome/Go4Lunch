@@ -15,7 +15,9 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.base.BaseActivity;
 import com.skichrome.go4lunch.models.FormattedPlace;
@@ -35,6 +37,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
 import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_INTEREST_CLOUD_FIRESTORE;
+import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_RATED_CLOUD_FIRESTORE;
 
 public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoOnGoogleApiAsyncTask.AsyncTaskListeners, FireStoreAuthentication.GetUserListener
 {
@@ -45,6 +48,9 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
     @BindView(R.id.activity_details_resto_name) TextView textViewName;
     @BindView(R.id.activity_details_resto_adress) TextView textViewAddress;
     @BindView(R.id.activity_details_resto_picture) ImageView imageViewPicture;
+    @BindView(R.id.activity_details_resto_rate_1_star) ImageView imageViewRate1;
+    @BindView(R.id.activity_details_resto_rate_2_stars) ImageView imageViewRate2;
+    @BindView(R.id.activity_details_resto_rate_3_stars) ImageView imageViewRate3;
     @BindView(R.id.activity_details_resto_floating_btn) FloatingActionButton floatingActionButton;
     @BindView(R.id.activity_details_restaurant_container_call) ConstraintLayout constraintLayoutCall;
     @BindView(R.id.activity_details_restaurant_container_rate) ConstraintLayout constraintLayoutRate;
@@ -117,153 +123,189 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
 
         if (restaurantDetails.getPhoto() != null)
             Glide.with(this).load(restaurantDetails.getPhoto()).into(imageViewPicture);
-    }
 
-    private void configureRecyclerView()
-    {
-        this.adapter = new WorkmatesAdapter(generateOptionsForAdapter(PlaceRatedHelper.getWorkMatesInPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, restaurantDetails.getId())), Glide.with(this));
-        this.recyclerView.setAdapter(adapter);
-        this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-    }
-
-    private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query mQuery)
-    {
-        return new FirestoreRecyclerOptions.Builder<User>()
-                .setQuery(mQuery, User.class)
-                .setLifecycleOwner(this)
-                .build();
-    }
-
-    private void configureOnClickRecyclerView()
-    {
-        ItemClickSupportOnRecyclerView.addTo(recyclerView, R.id.fragment_workmates_recycler_view).setOnItemClickListener(new ItemClickSupportOnRecyclerView.OnItemClickListener()
+        PlaceRatedHelper.getNumberOfWorkmates(ID_PLACE_RATED_CLOUD_FIRESTORE, restaurantDetails.getId()).addOnSuccessListener(new OnSuccessListener<QuerySnapshot>()
         {
             @Override
-            public void onItemClicked(RecyclerView recyclerView, int position, View v)
+            public void onSuccess(QuerySnapshot mQueryDocumentSnapshots)
             {
-                launchActivity(position);
+                int size = mQueryDocumentSnapshots.size();
+                switch (size)
+                {
+                    case 0:
+                        imageViewRate1.setVisibility(View.INVISIBLE);
+                        imageViewRate2.setVisibility(View.INVISIBLE);
+                        imageViewRate3.setVisibility(View.INVISIBLE);
+                        break;
+                    case 1:
+                        imageViewRate1.setVisibility(View.VISIBLE);
+                        imageViewRate2.setVisibility(View.INVISIBLE);
+                        imageViewRate3.setVisibility(View.INVISIBLE);
+                        break;
+
+                    case 2:
+                        imageViewRate1.setVisibility(View.VISIBLE);
+                        imageViewRate2.setVisibility(View.VISIBLE);
+                        imageViewRate3.setVisibility(View.INVISIBLE);
+                        break;
+
+                    default:
+                        imageViewRate1.setVisibility(View.VISIBLE);
+                        imageViewRate2.setVisibility(View.VISIBLE);
+                        imageViewRate3.setVisibility(View.VISIBLE);
+                        break;
+                }
             }
         });
     }
 
-    private void launchActivity(int position)
-    {
-        FireStoreAuthentication.getUserPlace(this, this, adapter.getItem(position));
-    }
-
-    //=========================================
-    // OnClick Methods
-    //=========================================
-
-    @OnClick(R.id.activity_details_resto_floating_btn)
-    public void onClickFloatingActionBtn()
-    {
-        if (isCurrentUserLogged())
+        private void configureRecyclerView ()
         {
-            FireStoreAuthentication.deleteUserFromPlace(this, getCurrentUser(), restaurantDetails);
-            this.floatingActionButton.setImageResource(R.drawable.baseline_check_circle_outline_white_24dp);
+            String[] text = {getString(R.string.view_holder_is_joining)};
+
+            this.adapter = new WorkmatesAdapter(generateOptionsForAdapter(PlaceRatedHelper.getWorkMatesInPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, restaurantDetails.getId())), Glide.with(this), restaurantDetails.getId(), text);
+            this.recyclerView.setAdapter(adapter);
+            this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        }
+
+        private FirestoreRecyclerOptions<User> generateOptionsForAdapter (Query mQuery)
+        {
+            return new FirestoreRecyclerOptions.Builder<User>()
+                    .setQuery(mQuery, User.class)
+                    .setLifecycleOwner(this)
+                    .build();
+        }
+
+        private void configureOnClickRecyclerView ()
+        {
+            ItemClickSupportOnRecyclerView.addTo(recyclerView, R.id.fragment_workmates_recycler_view).setOnItemClickListener(new ItemClickSupportOnRecyclerView.OnItemClickListener()
+            {
+                @Override
+                public void onItemClicked(RecyclerView recyclerView, int position, View v)
+                {
+                    launchActivity(position);
+                }
+            });
+        }
+
+        private void launchActivity ( int position)
+        {
+            FireStoreAuthentication.getUserPlace(this, this, adapter.getItem(position));
+        }
+
+        //=========================================
+        // OnClick Methods
+        //=========================================
+
+        @OnClick(R.id.activity_details_resto_floating_btn)
+        public void onClickFloatingActionBtn ()
+        {
+            if (isCurrentUserLogged())
+            {
+                FireStoreAuthentication.deleteUserFromPlace(this, getCurrentUser(), restaurantDetails);
+                this.floatingActionButton.setImageResource(R.drawable.baseline_check_circle_outline_white_24dp);
+            }
+        }
+
+        @OnClick({R.id.activity_details_restaurant_container_call, R.id.activity_details_restaurant_container_rate, R.id.activity_details_restaurant_container_website})
+        public void onClickConstraintLayout (ConstraintLayout mConstraintLayout)
+        {
+            Intent intent;
+            switch (Integer.valueOf(mConstraintLayout.getTag().toString()))
+            {
+                case 10:
+                    if (restaurantDetails.getPhoneNumber() == null)
+                        Toast.makeText(this, R.string.toast_details_activity_no_phone, Toast.LENGTH_SHORT).show();
+                    else
+                    {
+                        intent = new Intent(Intent.ACTION_DIAL);
+                        intent.setData(Uri.parse("tel:" + restaurantDetails.getPhoneNumber()));
+                        if (intent.resolveActivity(getPackageManager()) != null)
+                            startActivity(intent);
+                    }
+                    break;
+
+                case 20:
+                    this.updateRatingOfRestaurant();
+                    Toast.makeText(this, "You are trying to rate the restaurant !", Toast.LENGTH_SHORT).show();
+                    break;
+
+                case 30:
+                    if (restaurantDetails.getWebsite() == null)
+                        Toast.makeText(this, R.string.toast_details_activity_no_website, Toast.LENGTH_SHORT).show();
+                    else
+                    {
+                        intent = new Intent(Intent.ACTION_VIEW, Uri.parse(restaurantDetails.getWebsite()));
+                        if (intent.resolveActivity(getPackageManager()) != null)
+                            startActivity(intent);
+                    }
+
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        private void updateRatingOfRestaurant ()
+        {
+            FireStoreAuthentication.updateRateRestaurant(this, getCurrentUser(), restaurantDetails, null);
+        }
+
+        //=========================================
+        // AsyncTask Methods
+        //=========================================
+
+        private void getPlaceDetails ()
+        {
+            this.disposable = GoogleApiStream.getNearbyPlacesOnGoogleWebApi(getString(R.string.google_place_api_key), restaurantDetails.getId()).subscribeWith(new DisposableObserver<MainGooglePlaceSearch>()
+            {
+                @Override
+                public void onNext(MainGooglePlaceSearch mMainGooglePlaceSearch)
+                {
+                    MapMethods.updatePlaceDetails(mMainGooglePlaceSearch, restaurantDetails);
+                }
+
+                @Override
+                public void onError(Throwable e)
+                {
+                }
+
+                @Override
+                public void onComplete()
+                {
+                    executeAsyncTask(restaurantDetails);
+                }
+            });
+        }
+
+        public void executeAsyncTask (FormattedPlace mPlace)
+        {
+            asyncTask = new GetPhotoOnGoogleApiAsyncTask(this, mPlace, getString(R.string.google_place_api_key));
+            asyncTask.execute();
+        }
+
+        @Override
+        public void onPreExecute ()
+        {
+        }
+
+        @Override
+        public void doInBackground ()
+        {
+        }
+
+        @Override
+        public void onPostExecute (FormattedPlace mPlace)
+        {
+            this.restaurantDetails = mPlace;
+            this.updateUIElements();
+            this.progressBar.setVisibility(View.INVISIBLE);
+        }
+
+        @Override
+        public void onSuccess (Intent mIntent)
+        {
+            startActivity(mIntent);
         }
     }
-
-    @OnClick({R.id.activity_details_restaurant_container_call, R.id.activity_details_restaurant_container_rate, R.id.activity_details_restaurant_container_website})
-    public void onClickConstraintLayout(ConstraintLayout mConstraintLayout)
-    {
-        Intent intent;
-        switch (Integer.valueOf(mConstraintLayout.getTag().toString()))
-        {
-            case 10:
-                if (restaurantDetails.getPhoneNumber() == null)
-                    Toast.makeText(this, R.string.toast_details_activity_no_phone, Toast.LENGTH_SHORT).show();
-                else
-                {
-                    intent = new Intent(Intent.ACTION_DIAL);
-                    intent.setData(Uri.parse("tel:" + restaurantDetails.getPhoneNumber()));
-                    if (intent.resolveActivity(getPackageManager()) != null)
-                        startActivity(intent);
-                }
-                break;
-
-            case 20:
-                this.updateRatingOfRestaurant();
-                Toast.makeText(this, "You are trying to rate the restaurant !", Toast.LENGTH_SHORT).show();
-                break;
-
-            case 30:
-                if (restaurantDetails.getWebsite() == null)
-                    Toast.makeText(this, R.string.toast_details_activity_no_website, Toast.LENGTH_SHORT).show();
-                else
-                {
-                    intent = new Intent(Intent.ACTION_VIEW, Uri.parse(restaurantDetails.getWebsite()));
-                    if (intent.resolveActivity(getPackageManager()) != null)
-                        startActivity(intent);
-                }
-
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    private void updateRatingOfRestaurant()
-    {
-        FireStoreAuthentication.updateRateRestaurant(this, getCurrentUser(), restaurantDetails, null);
-    }
-
-    //=========================================
-    // AsyncTask Methods
-    //=========================================
-
-    private void getPlaceDetails()
-    {
-        this.disposable = GoogleApiStream.getNearbyPlacesOnGoogleWebApi(getString(R.string.google_place_api_key), restaurantDetails.getId()).subscribeWith(new DisposableObserver<MainGooglePlaceSearch>()
-        {
-            @Override
-            public void onNext(MainGooglePlaceSearch mMainGooglePlaceSearch)
-            {
-                MapMethods.updatePlaceDetails(mMainGooglePlaceSearch, restaurantDetails);
-            }
-
-            @Override
-            public void onError(Throwable e)
-            {
-            }
-
-            @Override
-            public void onComplete()
-            {
-                executeAsyncTask(restaurantDetails);
-            }
-        });
-    }
-
-    public void executeAsyncTask(FormattedPlace mPlace)
-    {
-        asyncTask = new GetPhotoOnGoogleApiAsyncTask(this, mPlace, getString(R.string.google_place_api_key));
-        asyncTask.execute();
-    }
-
-    @Override
-    public void onPreExecute()
-    {
-    }
-
-    @Override
-    public void doInBackground()
-    {
-    }
-
-    @Override
-    public void onPostExecute(FormattedPlace mPlace)
-    {
-        this.restaurantDetails = mPlace;
-        this.updateUIElements();
-        this.progressBar.setVisibility(View.INVISIBLE);
-    }
-
-    @Override
-    public void onSuccess(Intent mIntent)
-    {
-        startActivity(mIntent);
-    }
-}

@@ -60,7 +60,9 @@ public class WorkmatesFragment extends BaseFragment implements FireStoreAuthenti
 
     private void configureRecyclerView()
     {
-        this.adapterWorkmates = new WorkmatesAdapter(generateOptionsForAdapter(UserHelper.getAllUsers()), Glide.with(this));
+        String[] text = {getString(R.string.view_holder_is_eating), getString(R.string.view_holder_not_eating)};
+
+        this.adapterWorkmates = new WorkmatesAdapter(generateOptionsForAdapter(UserHelper.getAllUsers()), Glide.with(this), null, text);
         this.recyclerView.setAdapter(adapterWorkmates);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }

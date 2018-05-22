@@ -16,16 +16,20 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.activities.RestaurantDetailsActivity;
 import com.skichrome.go4lunch.controllers.base.BaseFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
+import com.skichrome.go4lunch.utils.firebase.PlaceRatedHelper;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
 import butterknife.OnClick;
+
+import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_INTEREST_CLOUD_FIRESTORE;
 
 /**
  * This Fragment is used to display a mapView with map api, it will display some restaurants around the user mainly
@@ -147,13 +151,26 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
 
             for (Map.Entry<String, FormattedPlace> place : placesHashMap.entrySet())
             {
-                FormattedPlace placeValue = place.getValue();
-                LatLng location = new LatLng(placeValue.getLocationLatitude(), placeValue.getLocationLongitude());
-                gMap.addMarker(new MarkerOptions().position(location).title(placeValue.getName()).icon(BitmapDescriptorFactory.fromResource(R.drawable.lunch_marker_nobody)));
+                final FormattedPlace placeValue = place.getValue();
+
+                PlaceRatedHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, placeValue.getId()).addOnSuccessListener(new OnSuccessListener<QuerySnapshot>()
+                {
+                    @Override
+                    public void onSuccess(QuerySnapshot mQueryDocumentSnapshots)
+                    {
+                        addMarkerToMap(mQueryDocumentSnapshots.size() != 0, placeValue);
+                    }
+                });
             }
         }
         else
             Toast.makeText(getContext(), R.string.toast_frag_no_restaurant_detected, Toast.LENGTH_SHORT).show();
+    }
+
+    private void addMarkerToMap(boolean someoneIsJoining, FormattedPlace mPlace)
+    {
+        LatLng location = new LatLng(mPlace.getLocationLatitude(), mPlace.getLocationLongitude());
+        gMap.addMarker(new MarkerOptions().position(location).title(mPlace.getName()).icon(BitmapDescriptorFactory.fromResource(someoneIsJoining ? R.drawable.lunch_marker_someone_here : R.drawable.lunch_marker_nobody)));
     }
 
     @Override

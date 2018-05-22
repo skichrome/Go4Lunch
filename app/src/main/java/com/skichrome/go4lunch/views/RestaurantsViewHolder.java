@@ -17,6 +17,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_INTEREST_CLOUD_FIRESTORE;
+import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_RATED_CLOUD_FIRESTORE;
 
 class RestaurantsViewHolder extends RecyclerView.ViewHolder
 {
@@ -33,6 +34,9 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
     @BindView(R.id.fragment_list_item_rate_2_stars) ImageView imageViewRate2;
     @BindView(R.id.fragment_list_item_rate_3_stars) ImageView imageViewRate3;
     @BindView(R.id.fragment_list_item_restaurant_image) ImageView imageViewRestaurantImg;
+
+    private static final int ID_WORKMATES = 100;
+    private static final int ID_RATE = 200;
 
     //=========================================
     // Constructor
@@ -53,19 +57,11 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
         this.textViewName.setText(mPlace.getName());
         this.textViewDistance.setText(mPlace.getDistance());
         this.textViewAddress.setText(mPlace.getAddress());
-
-        PlaceRatedHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mPlace.getId()).addOnSuccessListener(new OnSuccessListener<QuerySnapshot>()
-        {
-            @Override
-            public void onSuccess(QuerySnapshot mQueryDocumentSnapshots)
-            {
-                String textToDisplay = "(" + mQueryDocumentSnapshots.size() + ")";
-                textViewNumberOfWorkMates.setText(textToDisplay);
-            }
-        });
-
         this.textViewAperture.setText(mPlace.getAperture());
         this.textViewDistance.setText(mPlace.getDistance() == null ? "-" : mPlace.getDistance());
+
+        PlaceRatedHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mPlace.getId()).addOnSuccessListener(onSuccessListener(ID_WORKMATES));
+        PlaceRatedHelper.getNumberOfWorkmates(ID_PLACE_RATED_CLOUD_FIRESTORE, mPlace.getId()).addOnSuccessListener(onSuccessListener(ID_RATE));
 
         if (mPlace.getPhoto() != null)
         {
@@ -74,5 +70,55 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
         }
         else
             imageViewRestaurantImg.setBackgroundResource(R.drawable.restaurant);
+    }
+
+    private OnSuccessListener<QuerySnapshot> onSuccessListener(final int mOrigin)
+    {
+        return new OnSuccessListener<QuerySnapshot>()
+        {
+            @Override
+            public void onSuccess(QuerySnapshot mQueryDocumentSnapshots)
+            {
+                switch (mOrigin)
+                {
+                    case ID_WORKMATES :
+                        String textToDisplay = "(" + mQueryDocumentSnapshots.size() + ")";
+                        textViewNumberOfWorkMates.setText(textToDisplay);
+                        break;
+
+                    case ID_RATE :
+                        int size = mQueryDocumentSnapshots.size();
+                        switch (size)
+                        {
+                            case 0:
+                                imageViewRate1.setVisibility(View.INVISIBLE);
+                                imageViewRate2.setVisibility(View.INVISIBLE);
+                                imageViewRate3.setVisibility(View.INVISIBLE);
+                                break;
+                            case 1:
+                                imageViewRate1.setVisibility(View.VISIBLE);
+                                imageViewRate2.setVisibility(View.INVISIBLE);
+                                imageViewRate3.setVisibility(View.INVISIBLE);
+                                break;
+
+                            case 2:
+                                imageViewRate1.setVisibility(View.VISIBLE);
+                                imageViewRate2.setVisibility(View.VISIBLE);
+                                imageViewRate3.setVisibility(View.INVISIBLE);
+                                break;
+
+                            default:
+                                imageViewRate1.setVisibility(View.VISIBLE);
+                                imageViewRate2.setVisibility(View.VISIBLE);
+                                imageViewRate3.setVisibility(View.VISIBLE);
+                                break;
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        };
     }
 }

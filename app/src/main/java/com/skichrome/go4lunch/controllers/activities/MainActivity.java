@@ -16,17 +16,22 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.base.BaseActivity;
 import com.skichrome.go4lunch.controllers.fragments.ListFragment;
 import com.skichrome.go4lunch.controllers.fragments.MapFragment;
 import com.skichrome.go4lunch.controllers.fragments.WorkmatesFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
+import com.skichrome.go4lunch.models.firestore.User;
 import com.skichrome.go4lunch.utils.FireStoreAuthentication;
 import com.skichrome.go4lunch.utils.MapMethods;
+import com.skichrome.go4lunch.utils.firebase.UserHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -180,6 +185,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
 
             // For Navigation Drawer
             case R.id.activity_main_menu_drawer_your_lunch:
+                this.launchRestaurantDetailsActivity();
                 break;
 
             case R.id.activity_main_menu_drawer_settings:
@@ -241,6 +247,27 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     {
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
+    }
+
+    private void launchRestaurantDetailsActivity()
+    {
+        UserHelper.getUser(getCurrentUser().getUid()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>()
+        {
+            @Override
+            public void onSuccess(DocumentSnapshot mDocumentSnapshot)
+            {
+                User user = mDocumentSnapshot.toObject(User.class);
+                FormattedPlace place = user != null ? user.getSelectedPlace() : null;
+                if (place != null)
+                {
+                    Intent intent = new Intent(getApplicationContext(), RestaurantDetailsActivity.class);
+                    intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, place);
+                    startActivity(intent);
+                }
+                else
+                    Toast.makeText(getApplicationContext(), R.string.activity_main_toast_no_restaurant_selected, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     //=========================================
