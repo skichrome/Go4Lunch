@@ -15,8 +15,13 @@ import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.activities.MainActivity;
+import com.skichrome.go4lunch.controllers.activities.RestaurantDetailsActivity;
+import com.skichrome.go4lunch.models.FormattedPlace;
+import com.skichrome.go4lunch.models.firestore.User;
+import com.skichrome.go4lunch.utils.firebase.PlaceRatedHelper;
 import com.skichrome.go4lunch.utils.firebase.UserHelper;
 
 import java.util.Arrays;
@@ -24,12 +29,25 @@ import java.util.Arrays;
 public abstract class FireStoreAuthentication
 {
     //=========================================
+    // Callback
+    //=========================================
+
+    public interface GetUserListener
+    {
+        void onSuccess(Intent mIntent);
+    }
+
+    //=========================================
     // Fields
     //=========================================
 
+    private static final int UPDATE_TASK = 21000;
     private static final int SIGN_OUT_TASK = 100;
     private static final int DELETE_USER_TASK = 200;
     public static final int RC_SIGN_IN = 1234;
+
+    private static final String ID_PLACE_RATED_CLOUD_FIRESTORE = "places_rated";
+    public static final String ID_PLACE_INTEREST_CLOUD_FIRESTORE = "places_interest";
 
     //=========================================
     // Constructor
@@ -107,12 +125,12 @@ public abstract class FireStoreAuthentication
             String username = mUser.getDisplayName();
             String urlPicture = mUser.getPhotoUrl() == null ? null : mUser.getPhotoUrl().toString();
 
-            UserHelper.createUser(uuid, username, urlPicture).addOnFailureListener(onFailureListener(mActivity));
+            UserHelper.createUser(uuid, username, urlPicture, null).addOnFailureListener(onFailureListener(mActivity));
         }
     }
 
     //=========================================
-    // Log out and delete account methods
+    // Log out and delete methods
     //=========================================
 
     public static void logoutFromFirestore(Activity mActivity)
@@ -146,11 +164,17 @@ public abstract class FireStoreAuthentication
                     case SIGN_OUT_TASK:
                         mActivity.recreate();
                         break;
+
                     case DELETE_USER_TASK:
                         Intent intent = new Intent(mActivity, MainActivity.class);
                         mActivity.startActivity(intent);
                         mActivity.finish();
                         break;
+
+                    case UPDATE_TASK :
+                        Toast.makeText(mActivity, "Update successful !", Toast.LENGTH_SHORT).show();
+                        break;
+
                     default:
                         break;
                 }
@@ -168,5 +192,73 @@ public abstract class FireStoreAuthentication
                 Toast.makeText(mActivity.getApplicationContext(), mActivity.getString(R.string.fui_error_unknown), Toast.LENGTH_SHORT).show();
             }
         };
+    }
+
+    //=========================================
+    // Update Methods
+    //=========================================
+
+    private static void updateChosenRestaurant(Activity mActivity, final FirebaseUser mUser, FormattedPlace mPlace, com.skichrome.go4lunch.models.firestore.Place mPlaceInterest)
+    {
+        UserHelper.updateChosenPlace(mUser.getUid(), mPlace).addOnFailureListener(onFailureListener(mActivity)).addOnSuccessListener(updateUIAfterRESTRequestsCompleted(mActivity, UPDATE_TASK));
+        PlaceRatedHelper.createPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mPlace).addOnSuccessListener(updateUIAfterRESTRequestsCompleted(mActivity, UPDATE_TASK)).addOnFailureListener(onFailureListener(mActivity));
+        PlaceRatedHelper.createUserIntoPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mUser, mPlace, mPlaceInterest).addOnFailureListener(onFailureListener(mActivity));
+    }
+
+    public static void updateRateRestaurant(Activity mActivity, FirebaseUser mUser, FormattedPlace mPlace, com.skichrome.go4lunch.models.firestore.Place mPlaceInterest)
+    {
+        PlaceRatedHelper.createPlace(ID_PLACE_RATED_CLOUD_FIRESTORE, mPlace).addOnSuccessListener(updateUIAfterRESTRequestsCompleted(mActivity, UPDATE_TASK)).addOnFailureListener(onFailureListener(mActivity));
+        PlaceRatedHelper.createUserIntoPlace(ID_PLACE_RATED_CLOUD_FIRESTORE, mUser, mPlace, mPlaceInterest).addOnSuccessListener(updateUIAfterRESTRequestsCompleted(mActivity, UPDATE_TASK)).addOnFailureListener(onFailureListener(mActivity));
+    }
+
+    public static void deleteUserFromPlace(final Activity mActivity, final FirebaseUser mUser, final FormattedPlace mPlace)
+    {
+        UserHelper.getUser(mUser.getUid()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>()
+        {
+            @Override
+            public void onSuccess(DocumentSnapshot mDocumentSnapshot)
+            {
+                User user = mDocumentSnapshot.toObject(User.class);
+                String placeId = user != null ? user.getSelectedPlace() != null ? user.getSelectedPlace().getId() : "" : "";
+
+                PlaceRatedHelper.removeUserIntoPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mUser.getUid(), placeId).addOnSuccessListener(new OnSuccessListener<Void>()
+                {
+                    @Override
+                    public void onSuccess(Void mVoid)
+                    {
+                        updateRating(mActivity, mUser, mPlace);
+                    }
+                });
+            }
+        });
+    }
+
+    private static void updateRating(Activity mActivity, FirebaseUser mUser, FormattedPlace mPlace)
+    {
+        com.skichrome.go4lunch.models.firestore.Place place = new com.skichrome.go4lunch.models.firestore.Place(mPlace.getId(), mPlace.getName(), mPlace.getAddress());
+        FireStoreAuthentication.updateChosenRestaurant(mActivity, mUser, mPlace, place);
+    }
+
+    public static void getUserPlace(final GetUserListener mCallback, final Activity mActivity, User mUser)
+    {
+        UserHelper.getUser(mUser.getUid()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>()
+        {
+            @Override
+            public void onSuccess(DocumentSnapshot mDocumentSnapshot)
+            {
+                User user = mDocumentSnapshot.toObject(User.class);
+                com.skichrome.go4lunch.models.firestore.Place place = user != null ? user.getSelectedPlace() : null;
+                if (place != null)
+                {
+                    FormattedPlace formattedPlace = new FormattedPlace(place.getId(), place.getName(), place.getAddress(), null, null, 0, 0);
+                    Intent intent = new Intent(mActivity, RestaurantDetailsActivity.class);
+                    intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, formattedPlace);
+
+                    mCallback.onSuccess(intent);
+                }
+                else
+                    Toast.makeText(mActivity, "This workmate doesn't have selected a place to eat now", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

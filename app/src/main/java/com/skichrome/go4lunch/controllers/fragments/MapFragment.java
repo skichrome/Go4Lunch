@@ -1,6 +1,7 @@
 package com.skichrome.go4lunch.controllers.fragments;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.location.Location;
 import android.widget.Toast;
 
@@ -16,9 +17,9 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.skichrome.go4lunch.R;
+import com.skichrome.go4lunch.controllers.activities.RestaurantDetailsActivity;
 import com.skichrome.go4lunch.controllers.base.BaseFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
-import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -45,7 +46,6 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
 
     private FusedLocationProviderClient mLocationClient;
     private WeakReference<MapFragmentListeners> markerCallback;
-    private WeakReference<ActivitiesCallbacks.ShowDetailsListener> detailsCallback;
 
     //=========================================
     // New Instance method
@@ -64,8 +64,6 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     protected void configureFragment()
     {
         this.markerCallback = new WeakReference<>((MapFragmentListeners) getActivity());
-        this.detailsCallback = new WeakReference<>((ActivitiesCallbacks.ShowDetailsListener) getActivity());
-
         this.mLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         this.configureMapApi();
     }
@@ -162,7 +160,11 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     public boolean onMarkerClick(Marker mMarker)
     {
         FormattedPlace restaurantDetails = placesHashMap.get(mMarker.getTitle());
-        detailsCallback.get().showRestaurantDetails(restaurantDetails);
+
+        Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
+        intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, restaurantDetails);
+        startActivity(intent);
+
         return true;
     }
 }

@@ -1,6 +1,7 @@
 package com.skichrome.go4lunch.controllers.fragments;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.location.Location;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,10 +14,10 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.skichrome.go4lunch.R;
+import com.skichrome.go4lunch.controllers.activities.RestaurantDetailsActivity;
 import com.skichrome.go4lunch.controllers.base.BaseFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.googleplace.MainGooglePlaceSearch;
-import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
 import com.skichrome.go4lunch.utils.GetPhotoOnGoogleApiAsyncTask;
 import com.skichrome.go4lunch.utils.ItemClickSupportOnRecyclerView;
 import com.skichrome.go4lunch.utils.MapMethods;
@@ -31,7 +32,7 @@ import butterknife.BindView;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
-public class ListFragment extends BaseFragment implements ActivitiesCallbacks.AsyncTaskListeners
+public class ListFragment extends BaseFragment implements GetPhotoOnGoogleApiAsyncTask.AsyncTaskListeners
 {
     public interface OnFragmentReadyListener
     {
@@ -48,7 +49,6 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
     private List<FormattedPlace> placesList;
     private ArrayList<FormattedPlace> placesListDetails;
     private RestaurantsAdapter adapter;
-    private WeakReference<ActivitiesCallbacks.ShowDetailsListener> callbackRVClick;
 
     private FusedLocationProviderClient mLocationClient;
     private Disposable disposable;
@@ -79,12 +79,18 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
 
         this.mLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         this.configureRecyclerView();
-
-        callbackRVClick = new WeakReference<>((ActivitiesCallbacks.ShowDetailsListener) getActivity());
         this.configureOnClickRV();
 
         WeakReference<OnFragmentReadyListener> callbackFragmentReady = new WeakReference<>((OnFragmentReadyListener) getActivity());
         callbackFragmentReady.get().onListFragmentReady();
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        if (!disposable.isDisposed())
+            disposable.dispose();
     }
 
     //=========================================
@@ -139,7 +145,9 @@ public class ListFragment extends BaseFragment implements ActivitiesCallbacks.As
                     @Override
                     public void onItemClicked(RecyclerView recyclerView, int position, View v)
                     {
-                        callbackRVClick.get().showRestaurantDetails(adapter.getClickedPlace(position));
+                        Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
+                        intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, adapter.getClickedPlace(position));
+                        startActivity(intent);
                     }
                 });
     }

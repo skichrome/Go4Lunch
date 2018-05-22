@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -12,21 +14,29 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.firestore.Query;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.base.BaseActivity;
 import com.skichrome.go4lunch.models.FormattedPlace;
+import com.skichrome.go4lunch.models.firestore.User;
 import com.skichrome.go4lunch.models.googleplace.MainGooglePlaceSearch;
-import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
+import com.skichrome.go4lunch.utils.FireStoreAuthentication;
 import com.skichrome.go4lunch.utils.GetPhotoOnGoogleApiAsyncTask;
+import com.skichrome.go4lunch.utils.ItemClickSupportOnRecyclerView;
 import com.skichrome.go4lunch.utils.MapMethods;
+import com.skichrome.go4lunch.utils.firebase.PlaceRatedHelper;
 import com.skichrome.go4lunch.utils.rxjava.GoogleApiStream;
+import com.skichrome.go4lunch.views.WorkmatesAdapter;
 
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
-public class RestaurantDetailsActivity extends BaseActivity implements ActivitiesCallbacks.AsyncTaskListeners
+import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_INTEREST_CLOUD_FIRESTORE;
+
+public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoOnGoogleApiAsyncTask.AsyncTaskListeners, FireStoreAuthentication.GetUserListener
 {
     //=========================================
     // Fields
@@ -41,8 +51,10 @@ public class RestaurantDetailsActivity extends BaseActivity implements Activitie
     @BindView(R.id.activity_details_restaurant_container_website) ConstraintLayout constraintLayoutWebsite;
     @BindView(R.id.activity_details_progress_bar) ProgressBar progressBar;
 
-    private FormattedPlace restaurantDetails;
+    @BindView(R.id.activity_details_resto_revycler_view_container) RecyclerView recyclerView;
+    private WorkmatesAdapter adapter;
 
+    private FormattedPlace restaurantDetails;
     Disposable disposable;
     GetPhotoOnGoogleApiAsyncTask asyncTask;
 
@@ -65,11 +77,21 @@ public class RestaurantDetailsActivity extends BaseActivity implements Activitie
         this.getDataFromBundle();
         this.updateUIElements();
         this.getPlaceDetails();
+        this.configureRecyclerView();
+        this.configureOnClickRecyclerView();
     }
 
     @Override
     protected void updateActivityWithPermissionGranted()
     {
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        if (!disposable.isDisposed())
+            disposable.dispose();
     }
 
     //=========================================
@@ -97,6 +119,38 @@ public class RestaurantDetailsActivity extends BaseActivity implements Activitie
             Glide.with(this).load(restaurantDetails.getPhoto()).into(imageViewPicture);
     }
 
+    private void configureRecyclerView()
+    {
+        this.adapter = new WorkmatesAdapter(generateOptionsForAdapter(PlaceRatedHelper.getWorkMatesInPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, restaurantDetails.getId())), Glide.with(this));
+        this.recyclerView.setAdapter(adapter);
+        this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+    private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query mQuery)
+    {
+        return new FirestoreRecyclerOptions.Builder<User>()
+                .setQuery(mQuery, User.class)
+                .setLifecycleOwner(this)
+                .build();
+    }
+
+    private void configureOnClickRecyclerView()
+    {
+        ItemClickSupportOnRecyclerView.addTo(recyclerView, R.id.fragment_workmates_recycler_view).setOnItemClickListener(new ItemClickSupportOnRecyclerView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClicked(RecyclerView recyclerView, int position, View v)
+            {
+                launchActivity(position);
+            }
+        });
+    }
+
+    private void launchActivity(int position)
+    {
+        FireStoreAuthentication.getUserPlace(this, this, adapter.getItem(position));
+    }
+
     //=========================================
     // OnClick Methods
     //=========================================
@@ -104,7 +158,11 @@ public class RestaurantDetailsActivity extends BaseActivity implements Activitie
     @OnClick(R.id.activity_details_resto_floating_btn)
     public void onClickFloatingActionBtn()
     {
-        this.floatingActionButton.setImageResource(R.drawable.baseline_check_circle_outline_white_24dp);
+        if (isCurrentUserLogged())
+        {
+            FireStoreAuthentication.deleteUserFromPlace(this, getCurrentUser(), restaurantDetails);
+            this.floatingActionButton.setImageResource(R.drawable.baseline_check_circle_outline_white_24dp);
+        }
     }
 
     @OnClick({R.id.activity_details_restaurant_container_call, R.id.activity_details_restaurant_container_rate, R.id.activity_details_restaurant_container_website})
@@ -126,6 +184,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements Activitie
                 break;
 
             case 20:
+                this.updateRatingOfRestaurant();
                 Toast.makeText(this, "You are trying to rate the restaurant !", Toast.LENGTH_SHORT).show();
                 break;
 
@@ -144,6 +203,11 @@ public class RestaurantDetailsActivity extends BaseActivity implements Activitie
             default:
                 break;
         }
+    }
+
+    private void updateRatingOfRestaurant()
+    {
+        FireStoreAuthentication.updateRateRestaurant(this, getCurrentUser(), restaurantDetails, null);
     }
 
     //=========================================
@@ -195,5 +259,11 @@ public class RestaurantDetailsActivity extends BaseActivity implements Activitie
         this.restaurantDetails = mPlace;
         this.updateUIElements();
         this.progressBar.setVisibility(View.INVISIBLE);
+    }
+
+    @Override
+    public void onSuccess(Intent mIntent)
+    {
+        startActivity(mIntent);
     }
 }

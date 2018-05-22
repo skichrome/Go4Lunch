@@ -3,7 +3,6 @@ package com.skichrome.go4lunch.models;
 import android.graphics.Bitmap;
 
 import java.io.Serializable;
-import java.util.List;
 
 public class FormattedPlace implements Serializable
 {
@@ -11,19 +10,17 @@ public class FormattedPlace implements Serializable
     // Fields
     //=========================================
 
-    private final String id;
-    private final String name;
-    private final String address;
-    private final double locationLatitude;
-    private final double locationLongitude;
+    private String id;
+    private String name;
+    private String address;
+    private double locationLatitude;
+    private double locationLongitude;
 
     private String photoReference;
     private String website;
     private String phoneNumber;
     private String distance;
     private String aperture;
-    private String rating;
-    private List<String> workmates;
     private transient Bitmap photo;
 
     //=========================================
@@ -36,9 +33,7 @@ public class FormattedPlace implements Serializable
                           String mPhoneNumber,
                           String mWebsite,
                           double mLocationLatitude,
-                          double mLocationLongitude,
-                          String mRating,
-                          List<String> mWorkmates)
+                          double mLocationLongitude)
     {
         this.id = mId;
         this.name = mName;
@@ -47,8 +42,6 @@ public class FormattedPlace implements Serializable
         this.website = mWebsite;
         this.locationLatitude = mLocationLatitude;
         this.locationLongitude = mLocationLongitude;
-        this.rating = mRating;
-        this.workmates = mWorkmates;
     }
 
     //=========================================
@@ -105,21 +98,6 @@ public class FormattedPlace implements Serializable
         return phoneNumber;
     }
 
-    public String getRating()
-    {
-        return rating;
-    }
-
-    public List<String> getWorkmates()
-    {
-        return workmates;
-    }
-
-    public int getNumberOfWorkmates()
-    {
-        return workmates == null ? 0 : workmates.size();
-    }
-
     public Bitmap getPhoto()
     {
         return photo;
@@ -142,16 +120,6 @@ public class FormattedPlace implements Serializable
     public void setAperture(String mAperture)
     {
         aperture = mAperture;
-    }
-
-    public void setRating(String mRating)
-    {
-        rating = mRating;
-    }
-
-    public void setWorkmates(List<String> mWorkmates)
-    {
-        workmates = mWorkmates;
     }
 
     public void setPhoto(Bitmap mPhoto)
@@ -177,8 +145,6 @@ public class FormattedPlace implements Serializable
                 ", website='" + website + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", imageUrl='" + photoReference + '\'' +
-                ", rating='" + rating + '\'' +
-                ", workmates=" + getNumberOfWorkmates() +
                 '}';
     }
 }

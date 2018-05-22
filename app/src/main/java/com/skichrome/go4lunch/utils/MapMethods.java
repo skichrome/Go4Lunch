@@ -96,9 +96,7 @@ public abstract class MapMethods
                                 tempPlace.getPhoneNumber() == null ? null : tempPlace.getPhoneNumber().toString(),
                                 tempPlace.getWebsiteUri() == null ? null : tempPlace.getWebsiteUri().toString(),
                                 tempPlace.getLatLng().latitude,
-                                tempPlace.getLatLng().longitude,
-                                "-",
-                                null);
+                                tempPlace.getLatLng().longitude);
                         placeHashMap.put(tempPlace.getName().toString(), place);
                     }
                 }

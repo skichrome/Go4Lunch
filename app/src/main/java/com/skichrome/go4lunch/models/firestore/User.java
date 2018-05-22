@@ -23,11 +23,12 @@ public class User
     {
     }
 
-    public User(String uid, String username, @Nullable String urlPicture)
+    public User(String mUid, String mUsername, @Nullable String mUrlPicture, @Nullable Place mSelectedPlace)
     {
-        this.uid = uid;
-        this.username = username;
-        this.urlPicture = urlPicture;
+        uid = mUid;
+        username = mUsername;
+        urlPicture = mUrlPicture;
+        selectedPlace = mSelectedPlace;
     }
 
     //=========================================

@@ -2,47 +2,36 @@ package com.skichrome.go4lunch.models.firestore;
 
 import android.support.annotation.Nullable;
 
-import com.google.firebase.firestore.ServerTimestamp;
-
-import java.util.Date;
-import java.util.List;
-
 public class Place
 {
-    //=========================================
-    // Fields
-    //=========================================
-
     private String id;
     private String name;
-    private String type;
+    private String address;
+
     @Nullable
-    private List<User> usersRatedThis;
-    @Nullable
-    private List<User> userInterested;
+    private String numberOfRate;
 
-    private Date datePlaceCreated;
+    private String userId;
 
-    //=========================================
-    // Constructors
-    //=========================================
+    public Place()
+    {
+    }
 
-    public Place(String mId, String mName, String mType, @Nullable List<User> mUsersRatedThis, @Nullable List<User> mUserInterested)
+    public Place(String mId, String mName, String mAddress)
     {
         id = mId;
         name = mName;
-        type = mType;
-        usersRatedThis = mUsersRatedThis;
-        userInterested = mUserInterested;
+        address = mAddress;
     }
-
-    //=========================================
-    // Getters
-    //=========================================
 
     public String getId()
     {
         return id;
+    }
+
+    public void setId(String mId)
+    {
+        id = mId;
     }
 
     public String getName()
@@ -50,60 +39,18 @@ public class Place
         return name;
     }
 
-    public String getType()
-    {
-        return type;
-    }
-
-    @Nullable
-    public List<User> getUsersRatedThis()
-    {
-        return usersRatedThis;
-    }
-
-    @Nullable
-    public List<User> getUserInterested()
-    {
-        return userInterested;
-    }
-
-    @ServerTimestamp
-    public Date getDatePlaceCreated()
-    {
-        return datePlaceCreated;
-    }
-
-//=========================================
-    // Setters
-    //=========================================
-
-    public void setId(String mId)
-    {
-        id = mId;
-    }
-
     public void setName(String mName)
     {
         name = mName;
     }
 
-    public void setType(String mType)
+    public String getAddress()
     {
-        type = mType;
+        return address;
     }
 
-    public void setUsersRatedThis(@Nullable List<User> mUsersRatedThis)
+    public void setAddress(String mAddress)
     {
-        usersRatedThis = mUsersRatedThis;
-    }
-
-    public void setUserInterested(@Nullable List<User> mUserInterested)
-    {
-        userInterested = mUserInterested;
-    }
-
-    public void setDatePlaceCreated(Date mDatePlaceCreated)
-    {
-        datePlaceCreated = mDatePlaceCreated;
+        address = mAddress;
     }
 }

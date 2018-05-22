@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -73,16 +75,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/activity_settings_profile_img" />
 
-    <ProgressBar
-        android:id="@+id/activity_setting_progress_bar"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/activity_settings_fragment_container"
-        app:layout_constraintEnd_toStartOf="@+id/activity_settings_delete_account_btn"
-        app:layout_constraintHorizontal_bias="0.75"
-        app:layout_constraintStart_toStartOf="parent" />
 </android.support.constraint.ConstraintLayout>

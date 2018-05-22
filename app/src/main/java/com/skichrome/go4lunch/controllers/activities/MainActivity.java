@@ -25,7 +25,6 @@ import com.skichrome.go4lunch.controllers.fragments.ListFragment;
 import com.skichrome.go4lunch.controllers.fragments.MapFragment;
 import com.skichrome.go4lunch.controllers.fragments.WorkmatesFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
-import com.skichrome.go4lunch.utils.ActivitiesCallbacks;
 import com.skichrome.go4lunch.utils.FireStoreAuthentication;
 import com.skichrome.go4lunch.utils.MapMethods;
 
@@ -38,7 +37,6 @@ import static com.skichrome.go4lunch.utils.FireStoreAuthentication.RC_SIGN_IN;
 
 public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener,
         MapFragment.MapFragmentListeners,
-        ActivitiesCallbacks.ShowDetailsListener,
         ListFragment.OnFragmentReadyListener,
         MapMethods.ListenersNearbyPlaces
 {
@@ -295,19 +293,6 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     public void getResultOnClickFloatingActionBtn()
     {
         MapMethods.getNearbyPlaces(this, googleApiClient);
-    }
-
-    @Override
-    public void showRestaurantDetails(FormattedPlace mPlace)
-    {
-        this.startRestaurantDetailsActivity(mPlace);
-    }
-
-    private void startRestaurantDetailsActivity(FormattedPlace mDetailsRestaurants)
-    {
-        Intent intent = new Intent(this, RestaurantDetailsActivity.class);
-        intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, mDetailsRestaurants);
-        startActivity(intent);
     }
 
     @Override

@@ -7,11 +7,16 @@ import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.models.FormattedPlace;
+import com.skichrome.go4lunch.utils.firebase.PlaceRatedHelper;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_INTEREST_CLOUD_FIRESTORE;
 
 class RestaurantsViewHolder extends RecyclerView.ViewHolder
 {
@@ -48,8 +53,17 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
         this.textViewName.setText(mPlace.getName());
         this.textViewDistance.setText(mPlace.getDistance());
         this.textViewAddress.setText(mPlace.getAddress());
-        String number = "(" + mPlace.getNumberOfWorkmates() + ")";
-        this.textViewNumberOfWorkMates.setText(number);
+
+        PlaceRatedHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mPlace.getId()).addOnSuccessListener(new OnSuccessListener<QuerySnapshot>()
+        {
+            @Override
+            public void onSuccess(QuerySnapshot mQueryDocumentSnapshots)
+            {
+                String textToDisplay = "(" + mQueryDocumentSnapshots.size() + ")";
+                textViewNumberOfWorkMates.setText(textToDisplay);
+            }
+        });
+
         this.textViewAperture.setText(mPlace.getAperture());
         this.textViewDistance.setText(mPlace.getDistance() == null ? "-" : mPlace.getDistance());
 
