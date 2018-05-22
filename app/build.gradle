@@ -21,19 +21,27 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 repositories {
     // For Icepick
     maven { url "https://clojars.org/repo/" }
+
+    // For twitter
+    maven { url 'https://maven.fabric.io/public' }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.android.support:design:27.1.1'
-    implementation 'com.android.support:support-v4:27.1.1'
-    implementation 'com.android.support:support-vector-drawable:27.1.1'
+    implementation 'com.android.support:appcompat-v7:27.1.0'
+    implementation 'com.android.support:design:27.1.0'
+    implementation 'com.android.support:support-v4:27.1.0'
+    implementation 'com.android.support:support-vector-drawable:27.1.0'
     testImplementation 'junit:junit:4.12'
 
     // constraint layout implementation
@@ -53,7 +61,7 @@ dependencies {
     annotationProcessor 'frankiesardo:icepick-processor:3.2.0'
 
     // RecyclerView
-    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'com.android.support:recyclerview-v7:27.1.0'
 
     // Glide
     implementation 'com.github.bumptech.glide:glide:4.6.1'
@@ -77,6 +85,9 @@ dependencies {
     // Facebook login support for Firebase
     implementation 'com.facebook.android:facebook-android-sdk:4.32.0'
 
+    // Twitter login support for firebase=
+    implementation 'com.twitter.sdk.android:twitter-core:3.3.0'
+
     // Google Play Service (module Places)
     implementation 'com.google.android.gms:play-services-places:15.0.1'
 
@@ -98,6 +109,5 @@ dependencies {
     // Multi-dex support (more than 64k methods) if there is some compilation problem enable or disable this library
     implementation 'com.android.support:multidex:1.0.3'
 }
-
 // Firebase implementation
 apply plugin: 'com.google.gms.google-services'

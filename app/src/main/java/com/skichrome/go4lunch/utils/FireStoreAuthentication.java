@@ -67,7 +67,8 @@ public abstract class FireStoreAuthentication
                 .setAvailableProviders(
                         Arrays.asList(new AuthUI.IdpConfig.EmailBuilder().build(),          // EMAIL
                                 new AuthUI.IdpConfig.GoogleBuilder().build(),               // GOOGLE
-                                new AuthUI.IdpConfig.FacebookBuilder().build()))            // FACEBOOK
+                                new AuthUI.IdpConfig.FacebookBuilder().build(),           // FACEBOOK
+                                new AuthUI.IdpConfig.TwitterBuilder().build()))
                 .setIsSmartLockEnabled(false, true)
                 .setLogo(R.drawable.lunch_logo_makers)
                 .build();
@@ -255,7 +256,7 @@ public abstract class FireStoreAuthentication
                     mCallback.onSuccess(intent);
                 }
                 else
-                    Toast.makeText(mActivity, "This workmate doesn't have selected a place to eat now", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mActivity, R.string.toast_workmate_note_decided, Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -51,9 +51,13 @@
     <string name="activity_details_resto_string_rate">Rate</string>
     <string name="activity_details_resto_string_website">Website</string>
 
-    <!-- FACEBOOK PURPOSE -->
+    <!-- Facebook purpose -->
     <string name="facebook_application_id" translatable="false">201499303910767</string>
     <string name="facebook_login_protocol_scheme" translatable="false" tools:ignore="UnusedResources">fb201499303910767</string>
+
+    <!-- Twitter purpose -->
+    <string name="twitter_consumer_key" translatable="false">7PhNYfOtEqdyJyGsMz1MfPLIT</string>
+    <string name="twitter_consumer_secret" translatable="false">Q3vKs0u6HagVbLkovl6AhCuWSJbWsyWquoZ7kGubETlbgvVVg1</string>
 
     <string name="alert_dialog_confirmation_msg">Are you sure that you want to delete your account ?</string>
     <string name="alert_dialog_no">No</string>
@@ -79,6 +83,7 @@
     <string name="activity_settings_delete_account_btn">delete your account</string>
 
     <string name="activity_main_toast_no_restaurant_selected">You haven\'t selected a restaurant</string>
+    <string name="toast_workmate_note_decided">This workmate doesn\'t have selected a place to eat now</string>
 
     <!-- View Holder Workmates -->
     <string name="view_holder_is_eating">is eating to</string>

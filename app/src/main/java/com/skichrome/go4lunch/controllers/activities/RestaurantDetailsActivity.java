@@ -227,7 +227,6 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
 
                 case 20:
                     this.updateRatingOfRestaurant();
-                    Toast.makeText(this, "You are trying to rate the restaurant !", Toast.LENGTH_SHORT).show();
                     break;
 
                 case 30:
@@ -239,7 +238,6 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
                         if (intent.resolveActivity(getPackageManager()) != null)
                             startActivity(intent);
                     }
-
                     break;
 
                 default:
@@ -267,9 +265,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
                 }
 
                 @Override
-                public void onError(Throwable e)
-                {
-                }
+                public void onError(Throwable e) {}
 
                 @Override
                 public void onComplete()
@@ -286,14 +282,10 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
         }
 
         @Override
-        public void onPreExecute ()
-        {
-        }
+        public void onPreExecute () { }
 
         @Override
-        public void doInBackground ()
-        {
-        }
+        public void doInBackground () { }
 
         @Override
         public void onPostExecute (FormattedPlace mPlace)
