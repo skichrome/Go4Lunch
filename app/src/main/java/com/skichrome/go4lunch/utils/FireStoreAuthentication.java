@@ -17,7 +17,7 @@ import com.skichrome.go4lunch.controllers.activities.MainActivity;
 import com.skichrome.go4lunch.controllers.activities.RestaurantDetailsActivity;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.firestore.User;
-import com.skichrome.go4lunch.utils.firebase.PlaceRatedHelper;
+import com.skichrome.go4lunch.utils.firebase.PlaceTypeHelper;
 import com.skichrome.go4lunch.utils.firebase.UserHelper;
 
 import java.util.Arrays;
@@ -182,14 +182,14 @@ public abstract class FireStoreAuthentication
     private static void updateChosenRestaurant(Activity mActivity, final FirebaseUser mUser, FormattedPlace mPlace, FormattedPlace mPlaceInterest)
     {
         UserHelper.updateChosenPlace(mUser.getUid(), mPlace).addOnFailureListener(onFailureListener(mActivity));
-        PlaceRatedHelper.createPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mPlace).addOnFailureListener(onFailureListener(mActivity));
-        PlaceRatedHelper.createUserIntoPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mUser, mPlace, mPlaceInterest).addOnFailureListener(onFailureListener(mActivity));
+        PlaceTypeHelper.createPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mPlace).addOnFailureListener(onFailureListener(mActivity));
+        PlaceTypeHelper.createUserIntoPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mUser, mPlace, mPlaceInterest).addOnFailureListener(onFailureListener(mActivity));
     }
 
     public static void updateRateRestaurant(Activity mActivity, FirebaseUser mUser, FormattedPlace mPlace, FormattedPlace mPlaceInterest)
     {
-        PlaceRatedHelper.createPlace(ID_PLACE_RATED_CLOUD_FIRESTORE, mPlace).addOnFailureListener(onFailureListener(mActivity));
-        PlaceRatedHelper.createUserIntoPlace(ID_PLACE_RATED_CLOUD_FIRESTORE, mUser, mPlace, mPlaceInterest).addOnFailureListener(onFailureListener(mActivity));
+        PlaceTypeHelper.createPlace(ID_PLACE_RATED_CLOUD_FIRESTORE, mPlace).addOnFailureListener(onFailureListener(mActivity));
+        PlaceTypeHelper.createUserIntoPlace(ID_PLACE_RATED_CLOUD_FIRESTORE, mUser, mPlace, mPlaceInterest).addOnFailureListener(onFailureListener(mActivity));
     }
 
     public static void deleteUserFromPlace(final Activity mActivity, final FirebaseUser mUser, final FormattedPlace mPlace)
@@ -201,7 +201,7 @@ public abstract class FireStoreAuthentication
 
             if (placeId != null)
             {
-                PlaceRatedHelper.removeUserIntoPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mUser.getUid(), placeId).addOnSuccessListener(mVoid ->
+                PlaceTypeHelper.removeUserIntoPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mUser.getUid(), placeId).addOnSuccessListener(mVoid ->
                 {
                     updateRestaurant(mActivity, mUser, mPlace); // Calling this method here because we have to wait success of deleting previous place before update new place
                 });

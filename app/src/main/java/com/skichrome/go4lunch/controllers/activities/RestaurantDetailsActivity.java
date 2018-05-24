@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.base.BaseActivity;
 import com.skichrome.go4lunch.models.FormattedPlace;
@@ -25,7 +26,7 @@ import com.skichrome.go4lunch.utils.FireStoreAuthentication;
 import com.skichrome.go4lunch.utils.GetPhotoOnGoogleApiAsyncTask;
 import com.skichrome.go4lunch.utils.ItemClickSupportOnRecyclerView;
 import com.skichrome.go4lunch.utils.MapMethods;
-import com.skichrome.go4lunch.utils.firebase.PlaceRatedHelper;
+import com.skichrome.go4lunch.utils.firebase.PlaceTypeHelper;
 import com.skichrome.go4lunch.utils.rxjava.GoogleApiStream;
 import com.skichrome.go4lunch.views.WorkmatesAdapter;
 
@@ -63,6 +64,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
     GetPhotoOnGoogleApiAsyncTask asyncTask;
 
     public static final String ACTIVITY_DETAILS_CODE = "ACTIVITY_DETAILS_INTENT_CODE";
+    public static final String FIREBASE_TOPIC = "restaurant_selected";
 
     //=========================================
     // Superclass Methods
@@ -122,7 +124,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
         if (restaurantDetails.getPhoto() != null)
             Glide.with(this).load(restaurantDetails.getPhoto()).into(imageViewPicture);
 
-        PlaceRatedHelper.getNumberOfWorkmates(ID_PLACE_RATED_CLOUD_FIRESTORE, restaurantDetails.getId()).addOnSuccessListener(mQueryDocumentSnapshots ->
+        PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_RATED_CLOUD_FIRESTORE, restaurantDetails.getId()).addOnSuccessListener(mQueryDocumentSnapshots ->
         {
             int size = mQueryDocumentSnapshots.size();
             switch (size)
@@ -157,7 +159,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
         {
             String[] text = {getString(R.string.view_holder_is_joining)};
 
-            this.adapter = new WorkmatesAdapter(generateOptionsForAdapter(PlaceRatedHelper.getWorkMatesInPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, restaurantDetails.getId())), Glide.with(this), restaurantDetails.getId(), text);
+            this.adapter = new WorkmatesAdapter(generateOptionsForAdapter(PlaceTypeHelper.getWorkMatesInPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, restaurantDetails.getId())), Glide.with(this), restaurantDetails.getId(), text);
             this.recyclerView.setAdapter(adapter);
             this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
         }
@@ -191,6 +193,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
             {
                 FireStoreAuthentication.deleteUserFromPlace(this, getCurrentUser(), restaurantDetails);
                 this.floatingActionButton.setImageResource(R.drawable.baseline_check_circle_outline_white_24dp);
+                FirebaseMessaging.getInstance().subscribeToTopic(FIREBASE_TOPIC);
             }
         }
 

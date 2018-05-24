@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.location.Location;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -52,7 +51,8 @@ public class ListFragment extends BaseFragment implements GetPhotoOnGoogleApiAsy
 
     private FusedLocationProviderClient mLocationClient;
     private Disposable disposable;
-    GetPhotoOnGoogleApiAsyncTask asyncTask;
+    private GetPhotoOnGoogleApiAsyncTask asyncTask;
+    private String API_KEY;
 
     //=========================================
     // New Instance method
@@ -76,6 +76,7 @@ public class ListFragment extends BaseFragment implements GetPhotoOnGoogleApiAsy
     @Override
     protected void configureFragment()
     {
+        this.API_KEY = getString(R.string.google_place_api_key);
         this.progressBar.setVisibility(View.VISIBLE);
 
         this.mLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
@@ -115,10 +116,8 @@ public class ListFragment extends BaseFragment implements GetPhotoOnGoogleApiAsy
                     int distance = (int) location.distanceTo(placeLocation);
                     place.setDistance(distance + "m");
                 }
-                adapter.notifyDataSetChanged();
             }
-            else
-                Toast.makeText(getContext(), R.string.toast_frag_no_location, Toast.LENGTH_SHORT).show();
+            else Toast.makeText(getContext(), R.string.toast_frag_no_location, Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -147,11 +146,8 @@ public class ListFragment extends BaseFragment implements GetPhotoOnGoogleApiAsy
 
     public void updatePlacesList(ArrayList<FormattedPlace> mPlaces)
     {
-        Log.e("--- DEBUG ---", "updatePlacesList: " + placesList.size());
         placesList.clear();
         placesList.addAll(mPlaces);
-        Log.e("--- DEBUG ---", "updatePlacesList: " + placesList.size());
-        adapter.notifyDataSetChanged();
         this.getLastKnownLocation();
 
         this.placesListDetails = new ArrayList<>();
@@ -165,7 +161,7 @@ public class ListFragment extends BaseFragment implements GetPhotoOnGoogleApiAsy
 
     private void getPlaceDetails(final FormattedPlace mPlace)
     {
-        this.disposable = GoogleApiStream.getNearbyPlacesOnGoogleWebApi(getString(R.string.google_place_api_key), mPlace.getId()).subscribeWith(new DisposableObserver<MainGooglePlaceSearch>()
+        this.disposable = GoogleApiStream.getNearbyPlacesOnGoogleWebApi(API_KEY, mPlace.getId()).subscribeWith(new DisposableObserver<MainGooglePlaceSearch>()
         {
             @Override
             public void onNext(MainGooglePlaceSearch mMainGooglePlaceSearch)
@@ -174,9 +170,7 @@ public class ListFragment extends BaseFragment implements GetPhotoOnGoogleApiAsy
             }
 
             @Override
-            public void onError(Throwable e)
-            {
-            }
+            public void onError(Throwable e) { }
 
             @Override
             public void onComplete()
@@ -188,19 +182,15 @@ public class ListFragment extends BaseFragment implements GetPhotoOnGoogleApiAsy
 
     private void executeAsyncTask(FormattedPlace mPlace)
     {
-        asyncTask = new GetPhotoOnGoogleApiAsyncTask(this, mPlace, getString(R.string.google_place_api_key));
+        asyncTask = new GetPhotoOnGoogleApiAsyncTask(this, mPlace, API_KEY);
         asyncTask.execute();
     }
 
     @Override
-    public void onPreExecute()
-    {
-    }
+    public void onPreExecute() { }
 
     @Override
-    public void doInBackground()
-    {
-    }
+    public void doInBackground() { }
 
     @Override
     public void onPostExecute(FormattedPlace mPlace)

@@ -84,4 +84,6 @@
     <string name="error_unknown_error">Une erreur inconnue s\'est produite</string>
     <string name="error_cancel_request">Requête annulée</string>
 
+    <string name="notification_channel_name">Service de notification</string>
+
 </resources>

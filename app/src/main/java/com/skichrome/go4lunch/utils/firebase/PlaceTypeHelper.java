@@ -7,7 +7,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.firestore.User;
 
-public class PlaceRatedHelper
+public class PlaceTypeHelper
 {
     private static final String COLLECTION_NAME = "places";
     private static final String SUB_COLLECTION_NAME = "users_linked";

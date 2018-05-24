@@ -18,7 +18,7 @@ import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.activities.RestaurantDetailsActivity;
 import com.skichrome.go4lunch.controllers.base.BaseFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
-import com.skichrome.go4lunch.utils.firebase.PlaceRatedHelper;
+import com.skichrome.go4lunch.utils.firebase.PlaceTypeHelper;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -97,7 +97,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         {
             if (location != null)
             {
-                gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+                gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 17));
                 markerCallback.get().getResultOnClickFloatingActionBtn();
             }
             else Toast.makeText(getContext(), R.string.toast_frag_no_location, Toast.LENGTH_SHORT).show();
@@ -141,7 +141,8 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         {
             gMap.clear();
             for (FormattedPlace place : mPlaces)
-                PlaceRatedHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, place.getId()).addOnSuccessListener(mQueryDocumentSnapshots -> addMarkerToMap(mQueryDocumentSnapshots.size() != 0, place));
+                PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, place.getId())
+                        .addOnSuccessListener(mQueryDocumentSnapshots -> addMarkerToMap(mQueryDocumentSnapshots.size() != 0, place));
         }
         else Toast.makeText(getContext(), R.string.toast_frag_no_restaurant_detected, Toast.LENGTH_SHORT).show();
     }

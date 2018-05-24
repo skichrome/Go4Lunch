@@ -84,4 +84,6 @@
     <string name="error_unknown_error">An unknown error occurred</string>
     <string name="error_cancel_request">Request canceled</string>
 
+    <string name="notification_channel_name">Notification service</string>
+
 </resources>

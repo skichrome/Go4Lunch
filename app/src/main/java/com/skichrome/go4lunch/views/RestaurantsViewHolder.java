@@ -11,7 +11,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.models.FormattedPlace;
-import com.skichrome.go4lunch.utils.firebase.PlaceRatedHelper;
+import com.skichrome.go4lunch.utils.firebase.PlaceTypeHelper;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -60,8 +60,8 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
         this.textViewAperture.setText(mPlace.getAperture());
         this.textViewDistance.setText(mPlace.getDistance() == null ? "-" : mPlace.getDistance());
 
-        PlaceRatedHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mPlace.getId()).addOnSuccessListener(onSuccessListener(ID_WORKMATES));
-        PlaceRatedHelper.getNumberOfWorkmates(ID_PLACE_RATED_CLOUD_FIRESTORE, mPlace.getId()).addOnSuccessListener(onSuccessListener(ID_RATE));
+        PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mPlace.getId()).addOnSuccessListener(onSuccessListener(ID_WORKMATES));
+        PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_RATED_CLOUD_FIRESTORE, mPlace.getId()).addOnSuccessListener(onSuccessListener(ID_RATE));
 
         if (mPlace.getPhoto() != null)
         {
