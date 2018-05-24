@@ -2,7 +2,6 @@ package com.skichrome.go4lunch.controllers.fragments;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.location.Location;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -15,8 +14,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.activities.RestaurantDetailsActivity;
 import com.skichrome.go4lunch.controllers.base.BaseFragment;
@@ -24,6 +21,7 @@ import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.utils.firebase.PlaceRatedHelper;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,7 +44,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     //=========================================
 
     private GoogleMap gMap;
-    private HashMap<String, FormattedPlace> placesHashMap;
+    private Map<Marker, FormattedPlace> markers;
 
     private FusedLocationProviderClient mLocationClient;
     private WeakReference<MapFragmentListeners> markerCallback;
@@ -95,19 +93,14 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     @SuppressLint("MissingPermission")
     private void getLastKnownLocation()
     {
-        mLocationClient.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>()
+        mLocationClient.getLastLocation().addOnSuccessListener(getActivity(), location ->
         {
-            @Override
-            public void onSuccess(Location location)
+            if (location != null)
             {
-                if (location != null)
-                {
-                    gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
-                    markerCallback.get().getResultOnClickFloatingActionBtn();
-                }
-                else
-                    Toast.makeText(getContext(), R.string.toast_frag_no_location, Toast.LENGTH_SHORT).show();
+                gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+                markerCallback.get().getResultOnClickFloatingActionBtn();
             }
+            else Toast.makeText(getContext(), R.string.toast_frag_no_location, Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -140,48 +133,33 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         this.getLastKnownLocation();
     }
 
-    public void updateMarkerOnMap(HashMap<String, FormattedPlace> mPlaces)
+    public void updateMarkerOnMap(ArrayList<FormattedPlace> mPlaces)
     {
-        this.placesHashMap = new HashMap<>();
-        this.placesHashMap.putAll(mPlaces);
+        this.markers = new HashMap<>();
 
-        if (placesHashMap != null && placesHashMap.size() != 0)
+        if (mPlaces != null && mPlaces.size() != 0)
         {
             gMap.clear();
-
-            for (Map.Entry<String, FormattedPlace> place : placesHashMap.entrySet())
-            {
-                final FormattedPlace placeValue = place.getValue();
-
-                PlaceRatedHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, placeValue.getId()).addOnSuccessListener(new OnSuccessListener<QuerySnapshot>()
-                {
-                    @Override
-                    public void onSuccess(QuerySnapshot mQueryDocumentSnapshots)
-                    {
-                        addMarkerToMap(mQueryDocumentSnapshots.size() != 0, placeValue);
-                    }
-                });
-            }
+            for (FormattedPlace place : mPlaces)
+                PlaceRatedHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, place.getId()).addOnSuccessListener(mQueryDocumentSnapshots -> addMarkerToMap(mQueryDocumentSnapshots.size() != 0, place));
         }
-        else
-            Toast.makeText(getContext(), R.string.toast_frag_no_restaurant_detected, Toast.LENGTH_SHORT).show();
+        else Toast.makeText(getContext(), R.string.toast_frag_no_restaurant_detected, Toast.LENGTH_SHORT).show();
     }
 
     private void addMarkerToMap(boolean someoneIsJoining, FormattedPlace mPlace)
     {
         LatLng location = new LatLng(mPlace.getLocationLatitude(), mPlace.getLocationLongitude());
-        gMap.addMarker(new MarkerOptions().position(location).title(mPlace.getName()).icon(BitmapDescriptorFactory.fromResource(someoneIsJoining ? R.drawable.lunch_marker_someone_here : R.drawable.lunch_marker_nobody)));
+        Marker marker = gMap.addMarker(new MarkerOptions().position(location).title(mPlace.getName()).icon(BitmapDescriptorFactory.fromResource(someoneIsJoining ? R.drawable.lunch_marker_someone_here : R.drawable.lunch_marker_nobody)));
+        this.markers.put(marker, mPlace);
     }
 
     @Override
     public boolean onMarkerClick(Marker mMarker)
     {
-        FormattedPlace restaurantDetails = placesHashMap.get(mMarker.getTitle());
-
+        FormattedPlace restaurantDetails = markers.get(mMarker);
         Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
         intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, restaurantDetails);
         startActivity(intent);
-
         return true;
     }
 }

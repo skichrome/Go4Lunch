@@ -73,6 +73,9 @@ dependencies {
     // Google Map View support
     implementation 'com.google.android.gms:play-services-maps:15.0.1'
 
+    //Google map utils
+    implementation 'com.google.maps.android:android-maps-utils:0.4.4'
+
     // Firebase implementation
     implementation 'com.google.firebase:firebase-core:15.0.2'
 
@@ -108,6 +111,10 @@ dependencies {
 
     // Multi-dex support (more than 64k methods) if there is some compilation problem enable or disable this library
     implementation 'com.android.support:multidex:1.0.3'
+
+    // Leak Canary for Memory leaks
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
+    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
 }
 // Firebase implementation
 apply plugin: 'com.google.gms.google-services'

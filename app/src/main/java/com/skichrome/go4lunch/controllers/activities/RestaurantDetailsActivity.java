@@ -15,9 +15,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.base.BaseActivity;
 import com.skichrome.go4lunch.models.FormattedPlace;
@@ -96,8 +94,8 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
     public void onPause()
     {
         super.onPause();
-        if (!disposable.isDisposed())
-            disposable.dispose();
+        if (disposable != null && !disposable.isDisposed()) disposable.dispose();
+        if (asyncTask != null) asyncTask.cancel(true);
     }
 
     //=========================================
@@ -124,37 +122,33 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
         if (restaurantDetails.getPhoto() != null)
             Glide.with(this).load(restaurantDetails.getPhoto()).into(imageViewPicture);
 
-        PlaceRatedHelper.getNumberOfWorkmates(ID_PLACE_RATED_CLOUD_FIRESTORE, restaurantDetails.getId()).addOnSuccessListener(new OnSuccessListener<QuerySnapshot>()
+        PlaceRatedHelper.getNumberOfWorkmates(ID_PLACE_RATED_CLOUD_FIRESTORE, restaurantDetails.getId()).addOnSuccessListener(mQueryDocumentSnapshots ->
         {
-            @Override
-            public void onSuccess(QuerySnapshot mQueryDocumentSnapshots)
+            int size = mQueryDocumentSnapshots.size();
+            switch (size)
             {
-                int size = mQueryDocumentSnapshots.size();
-                switch (size)
-                {
-                    case 0:
-                        imageViewRate1.setVisibility(View.INVISIBLE);
-                        imageViewRate2.setVisibility(View.INVISIBLE);
-                        imageViewRate3.setVisibility(View.INVISIBLE);
-                        break;
-                    case 1:
-                        imageViewRate1.setVisibility(View.VISIBLE);
-                        imageViewRate2.setVisibility(View.INVISIBLE);
-                        imageViewRate3.setVisibility(View.INVISIBLE);
-                        break;
+                case 0:
+                    imageViewRate1.setVisibility(View.INVISIBLE);
+                    imageViewRate2.setVisibility(View.INVISIBLE);
+                    imageViewRate3.setVisibility(View.INVISIBLE);
+                    break;
+                case 1:
+                    imageViewRate1.setVisibility(View.VISIBLE);
+                    imageViewRate2.setVisibility(View.INVISIBLE);
+                    imageViewRate3.setVisibility(View.INVISIBLE);
+                    break;
 
-                    case 2:
-                        imageViewRate1.setVisibility(View.VISIBLE);
-                        imageViewRate2.setVisibility(View.VISIBLE);
-                        imageViewRate3.setVisibility(View.INVISIBLE);
-                        break;
+                case 2:
+                    imageViewRate1.setVisibility(View.VISIBLE);
+                    imageViewRate2.setVisibility(View.VISIBLE);
+                    imageViewRate3.setVisibility(View.INVISIBLE);
+                    break;
 
-                    default:
-                        imageViewRate1.setVisibility(View.VISIBLE);
-                        imageViewRate2.setVisibility(View.VISIBLE);
-                        imageViewRate3.setVisibility(View.VISIBLE);
-                        break;
-                }
+                default:
+                    imageViewRate1.setVisibility(View.VISIBLE);
+                    imageViewRate2.setVisibility(View.VISIBLE);
+                    imageViewRate3.setVisibility(View.VISIBLE);
+                    break;
             }
         });
     }
@@ -178,14 +172,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
 
         private void configureOnClickRecyclerView ()
         {
-            ItemClickSupportOnRecyclerView.addTo(recyclerView, R.id.fragment_workmates_recycler_view).setOnItemClickListener(new ItemClickSupportOnRecyclerView.OnItemClickListener()
-            {
-                @Override
-                public void onItemClicked(RecyclerView recyclerView, int position, View v)
-                {
-                    launchActivity(position);
-                }
-            });
+            ItemClickSupportOnRecyclerView.addTo(recyclerView, R.id.fragment_workmates_recycler_view).setOnItemClickListener((recyclerView, position, v) -> launchActivity(position));
         }
 
         private void launchActivity ( int position)

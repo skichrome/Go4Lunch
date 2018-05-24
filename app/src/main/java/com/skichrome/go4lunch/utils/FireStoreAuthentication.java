@@ -2,20 +2,16 @@ package com.skichrome.go4lunch.utils;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
-import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.activities.MainActivity;
 import com.skichrome.go4lunch.controllers.activities.RestaurantDetailsActivity;
@@ -47,6 +43,8 @@ public abstract class FireStoreAuthentication
 
     public static final String ID_PLACE_RATED_CLOUD_FIRESTORE = "places_rated";
     public static final String ID_PLACE_INTEREST_CLOUD_FIRESTORE = "places_interest";
+
+    private static final int REQUEST_CHECK_SETTINGS = 12000;
 
     //=========================================
     // Constructor
@@ -80,41 +78,39 @@ public abstract class FireStoreAuthentication
     {
         IdpResponse response = IdpResponse.fromResultIntent(mData);
 
-        if (mRequestCode == RC_SIGN_IN)
+        switch (mRequestCode)
         {
-            if (mResultCode == Activity.RESULT_OK)                                                  // SUCCESS
-            {
-                createUserInFirebase(mActivity, mUser);
-                return mActivity.getString(R.string.firebase_auth_success);
-            }
-            else                                                                                    // ERRORS
-            {
-                if (response == null)
-                    return mActivity.getString(R.string.firebase_login_cancel);
-                else if (response.getError().getErrorCode() == ErrorCodes.NO_NETWORK)
-                    return mActivity.getString(R.string.firebase_no_network_detected);
-                else if (response.getError().getErrorCode() == ErrorCodes.UNKNOWN_ERROR)
+            case RC_SIGN_IN :
+                if (mResultCode == Activity.RESULT_OK)                                                  // SUCCESS
                 {
-                    Log.e("StartActivity", "onActivityResult error : ", response.getError());
-                    return mActivity.getString(R.string.firebase_error_login);
+                    createUserInFirebase(mActivity, mUser);
+                    return mActivity.getString(R.string.firebase_auth_success);
                 }
-            }
-        }
+                else                                                                                    // ERRORS
+                {
+                    if (response == null)
+                        return mActivity.getString(R.string.firebase_login_cancel);
+                    if (response.getError().getErrorCode() == ErrorCodes.NO_NETWORK)
+                        return mActivity.getString(R.string.firebase_no_network_detected);
+                    if (response.getError().getErrorCode() == ErrorCodes.UNKNOWN_ERROR)
+                        return mActivity.getString(R.string.firebase_error_login);
+                }
 
-        if (mRequestCode == MainActivity.PLACE_AUTOCOMPLETE_REQUEST_CODE)
-        {
-            if (mResultCode == Activity.RESULT_OK)
-            {
-                Place place = PlaceAutocomplete.getPlace(mActivity, mData);
-                Log.d("Place Autocomplete", "onActivityResult: User typed this : " + place.getName());
-            }
-            if (mResultCode == PlaceAutocomplete.RESULT_ERROR)
-                Log.e("Place Autocomplete", "onActivityResult: Place autocomplete error ! \n\n" + PlaceAutocomplete.getStatus(mActivity, mData).getStatusMessage());
-            if (mResultCode == Activity.RESULT_CANCELED)
-                Log.i("Place Autocomplete", "onActivityResult: User canceled !");
-        }
+            case MainActivity.PLACE_AUTOCOMPLETE_REQUEST_CODE :
+                if (mResultCode == PlaceAutocomplete.RESULT_ERROR)
+                    return mActivity.getString(R.string.error_unknown_error);
+                if (mResultCode == Activity.RESULT_CANCELED)
+                    return mActivity.getString(R.string.error_cancel_request);
 
-        return null;
+            case REQUEST_CHECK_SETTINGS :
+                if (mResultCode == Activity.RESULT_OK)
+                    return "Google location updates granted";
+                if (mResultCode == Activity.RESULT_CANCELED)
+                    return "User has denied uses of location updates";
+
+            default:
+                return null;
+        }
     }
 
     private static void createUserInFirebase(Activity mActivity, FirebaseUser mUser)
@@ -154,40 +150,29 @@ public abstract class FireStoreAuthentication
 
     private static OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(final Activity mActivity, final int origin)
     {
-        return new OnSuccessListener<Void>()
+        return aVoid ->
         {
-            @Override
-            public void onSuccess(Void aVoid)
+            switch (origin)
             {
-                switch (origin)
-                {
-                    case SIGN_OUT_TASK:
-                        mActivity.recreate();
-                        break;
+                case SIGN_OUT_TASK:
+                    mActivity.recreate();
+                    break;
 
-                    case DELETE_USER_TASK:
-                        Intent intent = new Intent(mActivity, MainActivity.class);
-                        mActivity.startActivity(intent);
-                        mActivity.finish();
-                        break;
+                case DELETE_USER_TASK:
+                    Intent intent = new Intent(mActivity, MainActivity.class);
+                    mActivity.startActivity(intent);
+                    mActivity.finish();
+                    break;
 
-                    default:
-                        break;
-                }
+                default:
+                    break;
             }
         };
     }
 
     private static OnFailureListener onFailureListener(final Activity mActivity)
     {
-        return new OnFailureListener()
-        {
-            @Override
-            public void onFailure(@NonNull Exception mE)
-            {
-                Toast.makeText(mActivity.getApplicationContext(), mActivity.getString(R.string.fui_error_unknown), Toast.LENGTH_SHORT).show();
-            }
-        };
+        return mE -> Toast.makeText(mActivity.getApplicationContext(), mActivity.getString(R.string.fui_error_unknown), Toast.LENGTH_SHORT).show();
     }
 
     //=========================================
@@ -209,28 +194,20 @@ public abstract class FireStoreAuthentication
 
     public static void deleteUserFromPlace(final Activity mActivity, final FirebaseUser mUser, final FormattedPlace mPlace)
     {
-        UserHelper.getUser(mUser.getUid()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>()
+        UserHelper.getUser(mUser.getUid()).addOnSuccessListener(mDocumentSnapshot ->
         {
-            @Override
-            public void onSuccess(DocumentSnapshot mDocumentSnapshot)
-            {
-                User user = mDocumentSnapshot.toObject(User.class);
-                String placeId = user != null ? user.getSelectedPlace() != null ? user.getSelectedPlace().getId() : null : null;
+            User user = mDocumentSnapshot.toObject(User.class);
+            String placeId = user != null ? user.getSelectedPlace() != null ? user.getSelectedPlace().getId() : null : null;
 
-                if (placeId != null)
+            if (placeId != null)
+            {
+                PlaceRatedHelper.removeUserIntoPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mUser.getUid(), placeId).addOnSuccessListener(mVoid ->
                 {
-                    PlaceRatedHelper.removeUserIntoPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mUser.getUid(), placeId).addOnSuccessListener(new OnSuccessListener<Void>()
-                    {
-                        @Override
-                        public void onSuccess(Void mVoid)
-                        {
-                            updateRestaurant(mActivity, mUser, mPlace); // Calling this method here because we have to wait success of deleting previous place before update new place
-                        }
-                    });
-                }
-                else
-                    updateRestaurant(mActivity, mUser, mPlace);
+                    updateRestaurant(mActivity, mUser, mPlace); // Calling this method here because we have to wait success of deleting previous place before update new place
+                });
             }
+            else
+                updateRestaurant(mActivity, mUser, mPlace);
         });
     }
 
@@ -241,23 +218,19 @@ public abstract class FireStoreAuthentication
 
     public static void getUserPlace(final GetUserListener mCallback, final Activity mActivity, User mUser)
     {
-        UserHelper.getUser(mUser.getUid()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>()
+        UserHelper.getUser(mUser.getUid()).addOnSuccessListener(mDocumentSnapshot ->
         {
-            @Override
-            public void onSuccess(DocumentSnapshot mDocumentSnapshot)
+            User user = mDocumentSnapshot.toObject(User.class);
+            FormattedPlace place = user != null ? user.getSelectedPlace() : null;
+            if (place != null)
             {
-                User user = mDocumentSnapshot.toObject(User.class);
-                FormattedPlace place = user != null ? user.getSelectedPlace() : null;
-                if (place != null)
-                {
-                   Intent intent = new Intent(mActivity, RestaurantDetailsActivity.class);
-                    intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, place);
+               Intent intent = new Intent(mActivity, RestaurantDetailsActivity.class);
+                intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, place);
 
-                    mCallback.onSuccess(intent);
-                }
-                else
-                    Toast.makeText(mActivity, R.string.toast_workmate_note_decided, Toast.LENGTH_SHORT).show();
+                mCallback.onSuccess(intent);
             }
+            else
+                Toast.makeText(mActivity, R.string.toast_workmate_note_decided, Toast.LENGTH_SHORT).show();
         });
     }
 }

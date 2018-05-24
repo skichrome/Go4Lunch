@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -12,7 +13,6 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.activities.RestaurantDetailsActivity;
 import com.skichrome.go4lunch.controllers.base.BaseFragment;
@@ -52,6 +52,7 @@ public class ListFragment extends BaseFragment implements GetPhotoOnGoogleApiAsy
 
     private FusedLocationProviderClient mLocationClient;
     private Disposable disposable;
+    GetPhotoOnGoogleApiAsyncTask asyncTask;
 
     //=========================================
     // New Instance method
@@ -89,8 +90,8 @@ public class ListFragment extends BaseFragment implements GetPhotoOnGoogleApiAsy
     public void onPause()
     {
         super.onPause();
-        if (!disposable.isDisposed())
-            disposable.dispose();
+        if (disposable != null && !disposable.isDisposed()) disposable.dispose();
+        if (asyncTask != null) asyncTask.cancel(true);
     }
 
     //=========================================
@@ -100,28 +101,24 @@ public class ListFragment extends BaseFragment implements GetPhotoOnGoogleApiAsy
     @SuppressLint("MissingPermission")
     private void getLastKnownLocation()
     {
-        mLocationClient.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>()
+        mLocationClient.getLastLocation().addOnSuccessListener(getActivity(), location ->
         {
-            @Override
-            public void onSuccess(Location location)
+            // Got last known location. In some rare situations this can be null.
+            if (location != null)
             {
-                // Got last known location. In some rare situations this can be null.
-                if (location != null)
+                for (FormattedPlace place : placesList)
                 {
-                    for (FormattedPlace place : placesList)
-                    {
-                        Location placeLocation = new Location("placeLocation");
-                        placeLocation.setLatitude(place.getLocationLatitude());
-                        placeLocation.setLongitude(place.getLocationLongitude());
+                    Location placeLocation = new Location("placeLocation");
+                    placeLocation.setLatitude(place.getLocationLatitude());
+                    placeLocation.setLongitude(place.getLocationLongitude());
 
-                        int distance = (int) location.distanceTo(placeLocation);
-                        place.setDistance(distance + "m");
-                    }
-                    adapter.notifyDataSetChanged();
+                    int distance = (int) location.distanceTo(placeLocation);
+                    place.setDistance(distance + "m");
                 }
-                else
-                    Toast.makeText(getContext(), R.string.toast_frag_no_location, Toast.LENGTH_SHORT).show();
+                adapter.notifyDataSetChanged();
             }
+            else
+                Toast.makeText(getContext(), R.string.toast_frag_no_location, Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -131,38 +128,35 @@ public class ListFragment extends BaseFragment implements GetPhotoOnGoogleApiAsy
 
     private void configureRecyclerView()
     {
-        this.placesList = new ArrayList<>();
-        this.adapter = new RestaurantsAdapter(placesList, Glide.with(this));
-        this.recyclerView.setAdapter(adapter);
-        this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        placesList = new ArrayList<>();
+        adapter = new RestaurantsAdapter(placesList, Glide.with(this));
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(adapter);
     }
 
     private void configureOnClickRV()
     {
         ItemClickSupportOnRecyclerView.addTo(recyclerView, R.layout.fragment_list_list_item_recycler_view)
-                .setOnItemClickListener(new ItemClickSupportOnRecyclerView.OnItemClickListener()
+                .setOnItemClickListener((recyclerView, position, v) ->
                 {
-                    @Override
-                    public void onItemClicked(RecyclerView recyclerView, int position, View v)
-                    {
-                        Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
-                        intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, adapter.getClickedPlace(position));
-                        startActivity(intent);
-                    }
+                    Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
+                    intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, adapter.getClickedPlace(position));
+                    startActivity(intent);
                 });
     }
 
     public void updatePlacesList(ArrayList<FormattedPlace> mPlaces)
     {
-        this.placesList.addAll(mPlaces);
+        Log.e("--- DEBUG ---", "updatePlacesList: " + placesList.size());
+        placesList.clear();
+        placesList.addAll(mPlaces);
+        Log.e("--- DEBUG ---", "updatePlacesList: " + placesList.size());
         adapter.notifyDataSetChanged();
         this.getLastKnownLocation();
 
         this.placesListDetails = new ArrayList<>();
         for (FormattedPlace place : placesList)
-        {
             this.getPlaceDetails(place);
-        }
     }
 
     //=========================================
@@ -194,7 +188,7 @@ public class ListFragment extends BaseFragment implements GetPhotoOnGoogleApiAsy
 
     private void executeAsyncTask(FormattedPlace mPlace)
     {
-        GetPhotoOnGoogleApiAsyncTask asyncTask = new GetPhotoOnGoogleApiAsyncTask(this, mPlace, getString(R.string.google_place_api_key));
+        asyncTask = new GetPhotoOnGoogleApiAsyncTask(this, mPlace, getString(R.string.google_place_api_key));
         asyncTask.execute();
     }
 
@@ -212,7 +206,7 @@ public class ListFragment extends BaseFragment implements GetPhotoOnGoogleApiAsy
     public void onPostExecute(FormattedPlace mPlace)
     {
         this.placesListDetails.add(mPlace);
-        this.placesList = new ArrayList<>();
+        this.placesList.clear();
         this.placesList.addAll(placesListDetails);
         this.adapter.notifyDataSetChanged();
         this.progressBar.setVisibility(View.INVISIBLE);

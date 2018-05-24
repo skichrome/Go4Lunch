@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources>
-
     <string name="app_name">Go4Lunch</string>
 
     <!-- Images descriptions -->
@@ -81,5 +80,8 @@
     <string name="view_holder_is_eating">se rend à</string>
     <string name="view_holder_not_eating">n\'a pas encore décidé</string>
     <string name="view_holder_is_joining">y va !</string>
+
+    <string name="error_unknown_error">Une erreur inconnue s\'est produite</string>
+    <string name="error_cancel_request">Requête annulée</string>
 
 </resources>

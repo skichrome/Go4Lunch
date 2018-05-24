@@ -1,0 +1,10 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+<!-- Facebook purpose -->
+    <string name="facebook_application_id" templateMergeStrategy="preserve" translatable="false">201499303910767</string>
+    <string name="facebook_login_protocol_scheme" templateMergeStrategy="preserve" translatable="false" tools:ignore="UnusedResources">fb201499303910767</string>
+
+    <!-- Twitter purpose -->
+    <string name="twitter_consumer_key" templateMergeStrategy="preserve" translatable="false">6RToavWmV33lymI0nOzTgJqx3</string>
+    <string name="twitter_consumer_secret" templateMergeStrategy="preserve" translatable="false">kBTwBQh4Iaf7Nw5S2JSjGOHcLcRVs8UKHzmASngeUXn2QEt6xf</string>
+</resources>

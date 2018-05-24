@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<resources xmlns:tools="http://schemas.android.com/tools">
-
+<resources>
     <string name="app_name">Go4Lunch</string>
 
     <!-- Images descriptions -->
@@ -51,14 +50,6 @@
     <string name="activity_details_resto_string_rate">Rate</string>
     <string name="activity_details_resto_string_website">Website</string>
 
-    <!-- Facebook purpose -->
-    <string name="facebook_application_id" translatable="false">201499303910767</string>
-    <string name="facebook_login_protocol_scheme" translatable="false" tools:ignore="UnusedResources">fb201499303910767</string>
-
-    <!-- Twitter purpose -->
-    <string name="twitter_consumer_key" translatable="false">7PhNYfOtEqdyJyGsMz1MfPLIT</string>
-    <string name="twitter_consumer_secret" translatable="false">Q3vKs0u6HagVbLkovl6AhCuWSJbWsyWquoZ7kGubETlbgvVVg1</string>
-
     <string name="alert_dialog_confirmation_msg">Are you sure that you want to delete your account ?</string>
     <string name="alert_dialog_no">No</string>
     <string name="alert_dialog_yes">Yes</string>
@@ -89,5 +80,8 @@
     <string name="view_holder_is_eating">is eating to</string>
     <string name="view_holder_not_eating">hasn\'t decided yet</string>
     <string name="view_holder_is_joining">is joining !</string>
+
+    <string name="error_unknown_error">An unknown error occurred</string>
+    <string name="error_cancel_request">Request canceled</string>
 
 </resources>

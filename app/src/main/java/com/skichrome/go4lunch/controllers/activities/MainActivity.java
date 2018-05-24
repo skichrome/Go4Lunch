@@ -11,6 +11,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,8 +21,8 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.base.BaseActivity;
 import com.skichrome.go4lunch.controllers.fragments.ListFragment;
@@ -34,7 +35,6 @@ import com.skichrome.go4lunch.utils.MapMethods;
 import com.skichrome.go4lunch.utils.firebase.UserHelper;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import butterknife.BindView;
 
@@ -43,7 +43,8 @@ import static com.skichrome.go4lunch.utils.FireStoreAuthentication.RC_SIGN_IN;
 public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener,
         MapFragment.MapFragmentListeners,
         ListFragment.OnFragmentReadyListener,
-        MapMethods.ListenersNearbyPlaces
+        MapMethods.ListenersNearbyPlaces,
+        MapMethods.PlaceAutocompleteListener
 {
     //=========================================
     // Fields
@@ -58,9 +59,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     private MapFragment mapFragment;
     private ListFragment listFragment;
     private WorkmatesFragment workmatesFragment;
-
-    private HashMap<String, FormattedPlace> placesHashMap;
-
+    private ArrayList<FormattedPlace> placesList;
     public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 4124;
 
     //=========================================
@@ -93,22 +92,44 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     protected void onResume()
     {
         super.onResume();
-        if (isCurrentUserLogged())
-            this.updateDrawerFields();
-        else
-            startActivityForResult(FireStoreAuthentication.startSignInActivity(), RC_SIGN_IN);
+        if (isCurrentUserLogged()) this.updateDrawerFields();
+        else startActivityForResult(FireStoreAuthentication.startSignInActivity(), RC_SIGN_IN);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode)
+        {
+            case PLACE_AUTOCOMPLETE_REQUEST_CODE:
+                if (resultCode == RESULT_OK)
+                {
+                    Place place = PlaceAutocomplete.getPlace(this, data);
+
+                    if (place != null)
+                    {
+                        FormattedPlace formattedPlace = new FormattedPlace(place.getId(),
+                                place.getName().toString(),
+                                place.getAddress() == null ? null : place.getAddress().toString(),
+                                place.getPhoneNumber() == null ? null : place.getPhoneNumber().toString(),
+                                place.getWebsiteUri() == null ? null : place.getWebsiteUri().toString(),
+                                place.getLatLng().latitude,
+                                place.getLatLng().longitude);
+                        ArrayList<FormattedPlace> list = new ArrayList<>();
+                        list.add(formattedPlace);
+                        updatePlacesHashMap(list);
+                        Log.e("Place Autocomplete", "onActivityResult: User typed this : " + place.getName());
+                    }
+                    return;
+                }
+        }
         String result = FireStoreAuthentication.onActivityResult(this, this.getCurrentUser(), requestCode, resultCode, data);
         if (result != null)
         {
             this.showSnackBarMessage(result);
-            if (result.equals(getString(R.string.firebase_login_cancel)))
-                this.finish();
+            if (result.equals(getString(R.string.firebase_login_cancel))) this.finish();
         }
     }
 
@@ -157,7 +178,8 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         switch (item.getItemId())
         {
             case R.id.activity_main_menu_search:
-                startActivityForResult(MapMethods.launchPlaceAutocompleteActivity(this), PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                if (workmatesFragment == null || !workmatesFragment.isVisible()) MapMethods.getLastKnownLocationForPlaceAutocomplete(this, this);
+                else Toast.makeText(this, "This feature isn't implemented yet !", Toast.LENGTH_SHORT).show();
                 return true;
 
             default:
@@ -206,10 +228,8 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     public void onBackPressed()
     {
-        if (this.drawerLayout.isDrawerOpen(GravityCompat.START))
-            this.drawerLayout.closeDrawer(GravityCompat.START);
-        else
-            super.onBackPressed();
+        if (this.drawerLayout.isDrawerOpen(GravityCompat.START)) this.drawerLayout.closeDrawer(GravityCompat.START);
+        else super.onBackPressed();
     }
 
     //=========================================
@@ -218,55 +238,45 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
 
     private void displayFragment(Fragment mFragment)
     {
-        if (!mFragment.isVisible())
-            getSupportFragmentManager().beginTransaction().replace(R.id.activity_main_frame_layout_for_fragments, mFragment).commit();
+        if (!mFragment.isVisible()) getSupportFragmentManager().beginTransaction().replace(R.id.activity_main_frame_layout_for_fragments, mFragment).commit();
     }
 
     private void configureMapFragment()
     {
-        if (mapFragment == null)
-            mapFragment = MapFragment.newInstance();
+        if (mapFragment == null) mapFragment = MapFragment.newInstance();
         displayFragment(mapFragment);
     }
 
     private void configureListFragment()
     {
-        if (listFragment == null)
-            listFragment = ListFragment.newInstance();
+        if (listFragment == null) listFragment = ListFragment.newInstance();
         displayFragment(listFragment);
     }
 
     private void configureWorkmatesFragment()
     {
-        if (workmatesFragment == null)
-            workmatesFragment = WorkmatesFragment.newInstance();
+        if (workmatesFragment == null) workmatesFragment = WorkmatesFragment.newInstance();
         displayFragment(workmatesFragment);
     }
 
     private void launchSettingActivityAndFragment()
     {
-        Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
+        startActivity(new Intent(this, SettingsActivity.class));
     }
 
     private void launchRestaurantDetailsActivity()
     {
-        UserHelper.getUser(getCurrentUser().getUid()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>()
+        UserHelper.getUser(getCurrentUser().getUid()).addOnSuccessListener(mDocumentSnapshot ->
         {
-            @Override
-            public void onSuccess(DocumentSnapshot mDocumentSnapshot)
+            User user = mDocumentSnapshot.toObject(User.class);
+            FormattedPlace place = user != null ? user.getSelectedPlace() : null;
+            if (place != null)
             {
-                User user = mDocumentSnapshot.toObject(User.class);
-                FormattedPlace place = user != null ? user.getSelectedPlace() : null;
-                if (place != null)
-                {
-                    Intent intent = new Intent(getApplicationContext(), RestaurantDetailsActivity.class);
-                    intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, place);
-                    startActivity(intent);
-                }
-                else
-                    Toast.makeText(getApplicationContext(), R.string.activity_main_toast_no_restaurant_selected, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getApplicationContext(), RestaurantDetailsActivity.class);
+                intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, place);
+                startActivity(intent);
             }
+            else Toast.makeText(getApplicationContext(), R.string.activity_main_toast_no_restaurant_selected, Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -274,13 +284,12 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Update Method
     //=========================================
 
-    private void updatePlacesHashMap(HashMap<String, FormattedPlace> mFormattedPlaceHashMap)
+    private void updatePlacesHashMap(ArrayList<FormattedPlace> mPlaces)
     {
-        this.placesHashMap = new HashMap<>();
-        this.placesHashMap.putAll(mFormattedPlaceHashMap);
-
-        if (mapFragment != null && mapFragment.isVisible())
-            mapFragment.updateMarkerOnMap(this.placesHashMap);
+        this.placesList = new ArrayList<>();
+        this.placesList.addAll(mPlaces);
+        if (mapFragment != null && mapFragment.isVisible()) mapFragment.updateMarkerOnMap(placesList);
+        if (listFragment != null && listFragment.isVisible()) listFragment.updatePlacesList(placesList);
     }
 
     public void showSnackBarMessage(String mMessage)
@@ -298,8 +307,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         name.setText(getCurrentUser().getDisplayName());
         email.setText(getCurrentUser().getEmail());
 
-        if (getCurrentUser().getPhotoUrl() != null)
-            Glide.with(headerView).load(getCurrentUser().getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(profilePicture);
+        if (getCurrentUser().getPhotoUrl() != null) Glide.with(headerView).load(getCurrentUser().getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(profilePicture);
     }
 
     //=========================================
@@ -309,11 +317,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     public void onListFragmentReady()
     {
-        if (placesHashMap != null)
-        {
-            ArrayList<FormattedPlace> places = new ArrayList<>(this.placesHashMap.values());
-            listFragment.updatePlacesList(places);
-        }
+        if (placesList != null) listFragment.updatePlacesList(placesList);
     }
 
     @Override
@@ -323,8 +327,14 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     }
 
     @Override
-    public void OnResult(HashMap<String, FormattedPlace> mPlaceHashMap)
+    public void onResult(ArrayList<FormattedPlace> mPlaceHashMap)
     {
         this.updatePlacesHashMap(mPlaceHashMap);
+    }
+
+    @Override
+    public void onPlaceAutocompleteReady(Intent mIntent)
+    {
+        startActivityForResult(mIntent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
     }
 }
