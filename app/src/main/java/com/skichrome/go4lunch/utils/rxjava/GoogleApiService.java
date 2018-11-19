@@ -1,6 +1,7 @@
 package com.skichrome.go4lunch.utils.rxjava;
 
-import com.skichrome.go4lunch.models.googleplace.MainGooglePlaceSearch;
+import com.skichrome.go4lunch.models.googleplacedetails.MainPlaceDetails;
+import com.skichrome.go4lunch.models.googleplacesearch.MainGooglePlaceAPI;
 
 import io.reactivex.Observable;
 import retrofit2.Retrofit;
@@ -13,11 +14,18 @@ public interface GoogleApiService
 {
     String baseUrl = "https://maps.googleapis.com/maps/api/place/";
 
-    @GET("details/json")
-    Observable<MainGooglePlaceSearch> getPlaceDetails(@Query("key") String mKey,
-                                                      @Query("placeid") String mId);
+    @GET("nearbysearch/json")
+    Observable<MainGooglePlaceAPI> getNearbyPlaces( @Query("key") String key,
+                                                    @Query("location") String location,
+                                                    @Query("radius") int radius,
+                                                    @Query("type") String placeType);
 
-    Retrofit retrofitGetPlaceDetails = new Retrofit.Builder()
+    @GET("details/json")
+    Observable<MainPlaceDetails> getPlaceDetails(@Query("key") String mKey,
+                                                 @Query("placeid") String mId,
+                                                 @Query("fields") String filters);
+
+    Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(baseUrl)
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())

@@ -23,10 +23,9 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.maps.android.SphericalUtil;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.models.FormattedPlace;
-import com.skichrome.go4lunch.models.googleplace.MainGooglePlaceSearch;
+import com.skichrome.go4lunch.models.googleplacedetails.MainPlaceDetails;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 public abstract class MapMethods
@@ -126,18 +125,18 @@ public abstract class MapMethods
         });
     }
 
-    public static void updatePlaceDetails(MainGooglePlaceSearch mMainGooglePlaceSearch, FormattedPlace mPlace)
+    public static void updatePlaceDetails(MainPlaceDetails mMainGooglePlaceSearch, FormattedPlace mPlace)
     {
         if (mMainGooglePlaceSearch.getStatus() != null) Log.i("RX_JAVA", "Response code " + mMainGooglePlaceSearch.getStatus());
 
-        if (mMainGooglePlaceSearch.getResult() != null && mMainGooglePlaceSearch.getResult().getPhotos() != null)
-        {
-            mPlace.setPhotoReference(mMainGooglePlaceSearch.getResult().getPhotos().get(0).getPhotoReference());
-
-            if (mMainGooglePlaceSearch.getResult().getOpeningHours() != null && mMainGooglePlaceSearch.getResult().getOpeningHours().getOpenNow())
-                mPlace.setAperture(convertAperture(mMainGooglePlaceSearch.getResult().getOpeningHours().getWeekdayText(), Calendar.getInstance().get(Calendar.DAY_OF_WEEK)));
-            else mPlace.setAperture("Closed now");
-        }
+//        if (mMainGooglePlaceSearch.getResult() != null && mMainGooglePlaceSearch.getResult().getPhotos() != null)
+//        {
+//            mPlace.setPhotoReference(mMainGooglePlaceSearch.getResults().getPhotos().get(0).getPhotoReference());
+//
+//            if (mMainGooglePlaceSearch.getResults().getOpeningHours() != null && mMainGooglePlaceSearch.getResults().getOpeningHours().getOpenNow())
+//                mPlace.setAperture(convertAperture(mMainGooglePlaceSearch.getResults().getOpeningHours().getWeekdayText(), Calendar.getInstance().get(Calendar.DAY_OF_WEEK)));
+//            else mPlace.setAperture("Closed now");
+//        }
     }
 
     public static String convertAperture(List<String> mOpeningHours, int mDayCalendar)

@@ -1,5 +1,5 @@
 
-package com.skichrome.go4lunch.models.googleplace;
+package com.skichrome.go4lunch.models.googleplacedetails;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

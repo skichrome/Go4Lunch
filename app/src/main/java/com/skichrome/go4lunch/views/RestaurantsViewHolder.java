@@ -6,7 +6,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
-import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.skichrome.go4lunch.R;
@@ -63,61 +62,51 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
         PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mPlace.getId()).addOnSuccessListener(onSuccessListener(ID_WORKMATES));
         PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_RATED_CLOUD_FIRESTORE, mPlace.getId()).addOnSuccessListener(onSuccessListener(ID_RATE));
 
-        if (mPlace.getPhoto() != null)
-        {
-            imageViewRestaurantImg.setBackgroundResource(0);
-            mGlide.load(mPlace.getPhoto()).apply(RequestOptions.centerCropTransform()).into(imageViewRestaurantImg);
-        }
-        else
-            imageViewRestaurantImg.setBackgroundResource(R.drawable.restaurant);
+        // Todo update photo field with Glide and Google Photo API here
     }
 
     private OnSuccessListener<QuerySnapshot> onSuccessListener(final int mOrigin)
     {
-        return new OnSuccessListener<QuerySnapshot>()
+        return mQueryDocumentSnapshots ->
         {
-            @Override
-            public void onSuccess(QuerySnapshot mQueryDocumentSnapshots)
+            switch (mOrigin)
             {
-                switch (mOrigin)
-                {
-                    case ID_WORKMATES :
-                        String textToDisplay = "(" + mQueryDocumentSnapshots.size() + ")";
-                        textViewNumberOfWorkMates.setText(textToDisplay);
-                        break;
+                case ID_WORKMATES :
+                    String textToDisplay = "(" + mQueryDocumentSnapshots.size() + ")";
+                    textViewNumberOfWorkMates.setText(textToDisplay);
+                    break;
 
-                    case ID_RATE :
-                        int size = mQueryDocumentSnapshots.size();
-                        switch (size)
-                        {
-                            case 0:
-                                imageViewRate1.setVisibility(View.INVISIBLE);
-                                imageViewRate2.setVisibility(View.INVISIBLE);
-                                imageViewRate3.setVisibility(View.INVISIBLE);
-                                break;
-                            case 1:
-                                imageViewRate1.setVisibility(View.VISIBLE);
-                                imageViewRate2.setVisibility(View.INVISIBLE);
-                                imageViewRate3.setVisibility(View.INVISIBLE);
-                                break;
+                case ID_RATE :
+                    int size = mQueryDocumentSnapshots.size(); // Todo update rating
+                    switch (size)
+                    {
+                        case 0:
+                            imageViewRate1.setVisibility(View.INVISIBLE);
+                            imageViewRate2.setVisibility(View.INVISIBLE);
+                            imageViewRate3.setVisibility(View.INVISIBLE);
+                            break;
+                        case 1:
+                            imageViewRate1.setVisibility(View.VISIBLE);
+                            imageViewRate2.setVisibility(View.INVISIBLE);
+                            imageViewRate3.setVisibility(View.INVISIBLE);
+                            break;
 
-                            case 2:
-                                imageViewRate1.setVisibility(View.VISIBLE);
-                                imageViewRate2.setVisibility(View.VISIBLE);
-                                imageViewRate3.setVisibility(View.INVISIBLE);
-                                break;
+                        case 2:
+                            imageViewRate1.setVisibility(View.VISIBLE);
+                            imageViewRate2.setVisibility(View.VISIBLE);
+                            imageViewRate3.setVisibility(View.INVISIBLE);
+                            break;
 
-                            default:
-                                imageViewRate1.setVisibility(View.VISIBLE);
-                                imageViewRate2.setVisibility(View.VISIBLE);
-                                imageViewRate3.setVisibility(View.VISIBLE);
-                                break;
-                        }
-                        break;
+                        default:
+                            imageViewRate1.setVisibility(View.VISIBLE);
+                            imageViewRate2.setVisibility(View.VISIBLE);
+                            imageViewRate3.setVisibility(View.VISIBLE);
+                            break;
+                    }
+                    break;
 
-                    default:
-                        break;
-                }
+                default:
+                    break;
             }
         };
     }

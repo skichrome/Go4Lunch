@@ -1,10 +1,11 @@
 
-package com.skichrome.go4lunch.models.googleplace;
+package com.skichrome.go4lunch.models.googleplacesearch;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Viewport {
+public class Viewport
+{
 
     @SerializedName("northeast")
     @Expose
@@ -13,19 +14,23 @@ public class Viewport {
     @Expose
     private Southwest southwest;
 
-    public Northeast getNortheast() {
+    public Northeast getNortheast()
+    {
         return northeast;
     }
 
-    public void setNortheast(Northeast northeast) {
+    public void setNortheast(Northeast northeast)
+    {
         this.northeast = northeast;
     }
 
-    public Southwest getSouthwest() {
+    public Southwest getSouthwest()
+    {
         return southwest;
     }
 
-    public void setSouthwest(Southwest southwest) {
+    public void setSouthwest(Southwest southwest)
+    {
         this.southwest = southwest;
     }
 

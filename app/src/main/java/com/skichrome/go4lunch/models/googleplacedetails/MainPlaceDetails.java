@@ -1,12 +1,12 @@
 
-package com.skichrome.go4lunch.models.googleplace;
+package com.skichrome.go4lunch.models.googleplacedetails;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class MainGooglePlaceSearch {
+public class MainPlaceDetails {
 
     @SerializedName("html_attributions")
     @Expose

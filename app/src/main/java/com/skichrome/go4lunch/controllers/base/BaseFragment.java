@@ -36,9 +36,7 @@ public abstract class BaseFragment extends Fragment
     /**
      * Empty constructor, needed for Fragment instantiation, not modifiable
      */
-    public BaseFragment()
-    {
-    }
+    public BaseFragment() { }
 
     //=========================================
     // Superclass Methods

@@ -1,10 +1,11 @@
 
-package com.skichrome.go4lunch.models.googleplace;
+package com.skichrome.go4lunch.models.googleplacesearch;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Geometry {
+public class Geometry
+{
 
     @SerializedName("location")
     @Expose
@@ -13,19 +14,23 @@ public class Geometry {
     @Expose
     private Viewport viewport;
 
-    public Location getLocation() {
+    public Location getLocation()
+    {
         return location;
     }
 
-    public void setLocation(Location location) {
+    public void setLocation(Location location)
+    {
         this.location = location;
     }
 
-    public Viewport getViewport() {
+    public Viewport getViewport()
+    {
         return viewport;
     }
 
-    public void setViewport(Viewport viewport) {
+    public void setViewport(Viewport viewport)
+    {
         this.viewport = viewport;
     }
 

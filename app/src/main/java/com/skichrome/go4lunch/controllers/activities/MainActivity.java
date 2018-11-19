@@ -1,6 +1,7 @@
 package com.skichrome.go4lunch.controllers.activities;
 
 import android.content.Intent;
+import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomNavigationView;
@@ -31,7 +32,6 @@ import com.skichrome.go4lunch.controllers.fragments.WorkmatesFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.firestore.User;
 import com.skichrome.go4lunch.utils.FireStoreAuthentication;
-import com.skichrome.go4lunch.utils.MapMethods;
 import com.skichrome.go4lunch.utils.firebase.UserHelper;
 
 import java.util.ArrayList;
@@ -40,11 +40,7 @@ import butterknife.BindView;
 
 import static com.skichrome.go4lunch.utils.FireStoreAuthentication.RC_SIGN_IN;
 
-public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener,
-        MapFragment.MapFragmentListeners,
-        ListFragment.OnFragmentReadyListener,
-        MapMethods.ListenersNearbyPlaces,
-        MapMethods.PlaceAutocompleteListener
+public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener
 {
     //=========================================
     // Fields
@@ -67,10 +63,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     //=========================================
 
     @Override
-    protected int getActivityLayout()
-    {
-        return R.layout.activity_main;
-    }
+    protected int getActivityLayout() { return R.layout.activity_main; }
 
     @Override
     protected void configureActivity()
@@ -82,10 +75,8 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     }
 
     @Override
-    protected void updateActivityWithPermissionGranted()
+    protected void updateActivityWithLocationUpdates(Location location)
     {
-        MapMethods.getNearbyPlaces(this, googleApiClient);
-        this.configureMapFragment();
     }
 
     @Override
@@ -178,8 +169,9 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         switch (item.getItemId())
         {
             case R.id.activity_main_menu_search:
-                if (workmatesFragment == null || !workmatesFragment.isVisible()) MapMethods.getLastKnownLocationForPlaceAutocomplete(this, this);
-                else Toast.makeText(this, "This feature isn't implemented yet !", Toast.LENGTH_SHORT).show();
+                //Todo implements place search feature with place autocomplete
+//                if (workmatesFragment == null || !workmatesFragment.isVisible()) MapMethods.getLastKnownLocationForPlaceAutocomplete(this, this);
+//                else Toast.makeText(this, "This feature isn't implemented yet !", Toast.LENGTH_SHORT).show();
                 return true;
 
             default:
@@ -308,33 +300,5 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         email.setText(getCurrentUser().getEmail());
 
         if (getCurrentUser().getPhotoUrl() != null) Glide.with(headerView).load(getCurrentUser().getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(profilePicture);
-    }
-
-    //=========================================
-    // Callback Methods
-    //=========================================
-
-    @Override
-    public void onListFragmentReady()
-    {
-        if (placesList != null) listFragment.updatePlacesList(placesList);
-    }
-
-    @Override
-    public void getResultOnClickFloatingActionBtn()
-    {
-        MapMethods.getNearbyPlaces(this, googleApiClient);
-    }
-
-    @Override
-    public void onResult(ArrayList<FormattedPlace> mPlaceHashMap)
-    {
-        this.updatePlacesHashMap(mPlaceHashMap);
-    }
-
-    @Override
-    public void onPlaceAutocompleteReady(Intent mIntent)
-    {
-        startActivityForResult(mIntent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
     }
 }

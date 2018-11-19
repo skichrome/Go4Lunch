@@ -1,7 +1,7 @@
 package com.skichrome.go4lunch.controllers.activities;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.location.Location;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.widget.Button;
@@ -55,7 +55,7 @@ public class SettingsActivity extends BaseActivity
     }
 
     @Override
-    protected void updateActivityWithPermissionGranted()
+    protected void updateActivityWithLocationUpdates(Location location)
     {
         getFragmentManager().beginTransaction().replace(R.id.activity_settings_fragment_container, new SettingFragment()).commit();
     }
@@ -74,14 +74,7 @@ public class SettingsActivity extends BaseActivity
     {
         new AlertDialog.Builder(this)
                 .setMessage(R.string.alert_dialog_confirmation_msg)
-                .setPositiveButton(R.string.alert_dialog_yes, new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        deleteAccountFromFireBase();
-                    }
-                })
+                .setPositiveButton(R.string.alert_dialog_yes, (dialog, which) -> deleteAccountFromFireBase())
                 .setNegativeButton(R.string.alert_dialog_no, null)
                 .show();
     }

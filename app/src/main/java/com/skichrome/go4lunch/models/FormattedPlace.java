@@ -1,9 +1,5 @@
 package com.skichrome.go4lunch.models;
 
-import android.graphics.Bitmap;
-
-import com.google.firebase.firestore.Exclude;
-
 import java.io.Serializable;
 
 public class FormattedPlace implements Serializable
@@ -23,9 +19,6 @@ public class FormattedPlace implements Serializable
     private String phoneNumber;
     private String distance;
     private String aperture;
-
-    @Exclude
-    private transient Bitmap photo;
 
     //=========================================
     // Constructor
@@ -54,86 +47,24 @@ public class FormattedPlace implements Serializable
     // Getters
     //=========================================
 
-    public String getId()
-    {
-        return id;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public String getAddress()
-    {
-        return address;
-    }
-
-    public String getPhotoReference()
-    {
-        return photoReference;
-    }
-
-    public String getAperture()
-    {
-        return aperture;
-    }
-
-    public double getLocationLatitude()
-    {
-        return locationLatitude;
-    }
-
-    public double getLocationLongitude()
-    {
-        return locationLongitude;
-    }
-
-    public String getDistance()
-    {
-        return distance;
-    }
-
-    public String getWebsite()
-    {
-        return website;
-    }
-
-    public String getPhoneNumber()
-    {
-        return phoneNumber;
-    }
-
-    @Exclude
-    public Bitmap getPhoto()
-    {
-        return photo;
-    }
+    public String getId() { return id; }
+    public String getName() { return name; }
+    public String getAddress() { return address; }
+    public String getPhotoReference() { return photoReference; }
+    public String getAperture() { return aperture; }
+    public double getLocationLatitude() { return locationLatitude; }
+    public double getLocationLongitude() { return locationLongitude; }
+    public String getDistance() { return distance; }
+    public String getWebsite() { return website; }
+    public String getPhoneNumber() { return phoneNumber; }
 
     //=========================================
     // Setters
     //=========================================
 
-    public void setPhotoReference(String mPhotoReference)
-    {
-        photoReference = mPhotoReference;
-    }
-
-    public void setDistance(String mDistance)
-    {
-        distance = mDistance;
-    }
-
-    public void setAperture(String mAperture)
-    {
-        aperture = mAperture;
-    }
-
-    @Exclude
-    public void setPhoto(Bitmap mPhoto)
-    {
-        photo = mPhoto;
-    }
+    public void setPhotoReference(String mPhotoReference) { photoReference = mPhotoReference; }
+    public void setDistance(String mDistance) { distance = mDistance; }
+    public void setAperture(String mAperture) { aperture = mAperture; }
 
     //=========================================
     // Method [DEBUG]

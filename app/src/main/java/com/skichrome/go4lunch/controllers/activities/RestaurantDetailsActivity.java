@@ -1,6 +1,7 @@
 package com.skichrome.go4lunch.controllers.activities;
 
 import android.content.Intent;
+import android.location.Location;
 import android.net.Uri;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -21,24 +22,18 @@ import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.base.BaseActivity;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.firestore.User;
-import com.skichrome.go4lunch.models.googleplace.MainGooglePlaceSearch;
 import com.skichrome.go4lunch.utils.FireStoreAuthentication;
-import com.skichrome.go4lunch.utils.GetPhotoOnGoogleApiAsyncTask;
 import com.skichrome.go4lunch.utils.ItemClickSupportOnRecyclerView;
-import com.skichrome.go4lunch.utils.MapMethods;
 import com.skichrome.go4lunch.utils.firebase.PlaceTypeHelper;
-import com.skichrome.go4lunch.utils.rxjava.GoogleApiStream;
 import com.skichrome.go4lunch.views.WorkmatesAdapter;
 
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.observers.DisposableObserver;
 
 import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_INTEREST_CLOUD_FIRESTORE;
-import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_RATED_CLOUD_FIRESTORE;
 
-public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoOnGoogleApiAsyncTask.AsyncTaskListeners, FireStoreAuthentication.GetUserListener
+public class RestaurantDetailsActivity extends BaseActivity implements  FireStoreAuthentication.GetUserListener
 {
     //=========================================
     // Fields
@@ -55,13 +50,11 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
     @BindView(R.id.activity_details_restaurant_container_rate) ConstraintLayout constraintLayoutRate;
     @BindView(R.id.activity_details_restaurant_container_website) ConstraintLayout constraintLayoutWebsite;
     @BindView(R.id.activity_details_progress_bar) ProgressBar progressBar;
-
     @BindView(R.id.activity_details_resto_revycler_view_container) RecyclerView recyclerView;
-    private WorkmatesAdapter adapter;
 
+    private WorkmatesAdapter adapter;
     private FormattedPlace restaurantDetails;
     Disposable disposable;
-    GetPhotoOnGoogleApiAsyncTask asyncTask;
 
     public static final String ACTIVITY_DETAILS_CODE = "ACTIVITY_DETAILS_INTENT_CODE";
     public static final String FIREBASE_TOPIC = "restaurant_selected";
@@ -69,12 +62,6 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
     //=========================================
     // Superclass Methods
     //=========================================
-
-    @Override
-    protected int getActivityLayout()
-    {
-        return R.layout.activity_details_restaurant;
-    }
 
     @Override
     protected void configureActivity()
@@ -87,17 +74,14 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
         this.configureOnClickRecyclerView();
     }
 
-    @Override
-    protected void updateActivityWithPermissionGranted()
-    {
-    }
+    @Override protected int getActivityLayout() { return R.layout.activity_details_restaurant; }
+    @Override protected void updateActivityWithLocationUpdates(Location location) { }
 
     @Override
     public void onPause()
     {
         super.onPause();
         if (disposable != null && !disposable.isDisposed()) disposable.dispose();
-        if (asyncTask != null) asyncTask.cancel(true);
     }
 
     //=========================================
@@ -121,38 +105,39 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
         this.textViewName.setText(restaurantDetails.getName());
         this.textViewAddress.setText(restaurantDetails.getAddress());
 
-        if (restaurantDetails.getPhoto() != null)
-            Glide.with(this).load(restaurantDetails.getPhoto()).into(imageViewPicture);
+        // Todo configure photo url with google api url and photo reference
+        String photoUrl = null;
 
-        PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_RATED_CLOUD_FIRESTORE, restaurantDetails.getId()).addOnSuccessListener(mQueryDocumentSnapshots ->
+        if (photoUrl != null)
+            Glide.with(this).load(photoUrl).into(imageViewPicture);
+
+        // Todo calc the rating of place with rating included in Google api
+        int size = 10;
+        switch (size)
         {
-            int size = mQueryDocumentSnapshots.size();
-            switch (size)
-            {
-                case 0:
-                    imageViewRate1.setVisibility(View.INVISIBLE);
-                    imageViewRate2.setVisibility(View.INVISIBLE);
-                    imageViewRate3.setVisibility(View.INVISIBLE);
-                    break;
-                case 1:
-                    imageViewRate1.setVisibility(View.VISIBLE);
-                    imageViewRate2.setVisibility(View.INVISIBLE);
-                    imageViewRate3.setVisibility(View.INVISIBLE);
-                    break;
+            case 0:
+                imageViewRate1.setVisibility(View.INVISIBLE);
+                imageViewRate2.setVisibility(View.INVISIBLE);
+                imageViewRate3.setVisibility(View.INVISIBLE);
+                break;
+            case 1:
+                imageViewRate1.setVisibility(View.VISIBLE);
+                imageViewRate2.setVisibility(View.INVISIBLE);
+                imageViewRate3.setVisibility(View.INVISIBLE);
+                break;
 
-                case 2:
-                    imageViewRate1.setVisibility(View.VISIBLE);
-                    imageViewRate2.setVisibility(View.VISIBLE);
-                    imageViewRate3.setVisibility(View.INVISIBLE);
-                    break;
+            case 2:
+                imageViewRate1.setVisibility(View.VISIBLE);
+                imageViewRate2.setVisibility(View.VISIBLE);
+                imageViewRate3.setVisibility(View.INVISIBLE);
+                break;
 
-                default:
-                    imageViewRate1.setVisibility(View.VISIBLE);
-                    imageViewRate2.setVisibility(View.VISIBLE);
-                    imageViewRate3.setVisibility(View.VISIBLE);
-                    break;
-            }
-        });
+            default:
+                imageViewRate1.setVisibility(View.VISIBLE);
+                imageViewRate2.setVisibility(View.VISIBLE);
+                imageViewRate3.setVisibility(View.VISIBLE);
+                break;
+        }
     }
 
         private void configureRecyclerView ()
@@ -191,7 +176,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
         {
             if (isCurrentUserLogged())
             {
-                FireStoreAuthentication.deleteUserFromPlace(this, getCurrentUser(), restaurantDetails);
+                FireStoreAuthentication.deleteUserFromPlace(this, getCurrentUser(), restaurantDetails); // Todo check the name of firebase method
                 this.floatingActionButton.setImageResource(R.drawable.baseline_check_circle_outline_white_24dp);
                 FirebaseMessaging.getInstance().subscribeToTopic(FIREBASE_TOPIC);
             }
@@ -247,43 +232,6 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
 
         private void getPlaceDetails ()
         {
-            this.disposable = GoogleApiStream.getNearbyPlacesOnGoogleWebApi(getString(R.string.google_place_api_key), restaurantDetails.getId()).subscribeWith(new DisposableObserver<MainGooglePlaceSearch>()
-            {
-                @Override
-                public void onNext(MainGooglePlaceSearch mMainGooglePlaceSearch)
-                {
-                    MapMethods.updatePlaceDetails(mMainGooglePlaceSearch, restaurantDetails);
-                }
-
-                @Override
-                public void onError(Throwable e) {}
-
-                @Override
-                public void onComplete()
-                {
-                    executeAsyncTask(restaurantDetails);
-                }
-            });
-        }
-
-        public void executeAsyncTask (FormattedPlace mPlace)
-        {
-            asyncTask = new GetPhotoOnGoogleApiAsyncTask(this, mPlace, getString(R.string.google_place_api_key));
-            asyncTask.execute();
-        }
-
-        @Override
-        public void onPreExecute () { }
-
-        @Override
-        public void doInBackground () { }
-
-        @Override
-        public void onPostExecute (FormattedPlace mPlace)
-        {
-            this.restaurantDetails = mPlace;
-            this.updateUIElements();
-            this.progressBar.setVisibility(View.INVISIBLE);
         }
 
         @Override
