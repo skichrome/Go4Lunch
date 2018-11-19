@@ -237,6 +237,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements GetPhotoO
 
         private void updateRatingOfRestaurant ()
         {
+            //todo change the way of rating a restaurant
             FireStoreAuthentication.updateRateRestaurant(this, getCurrentUser(), restaurantDetails, null);
         }
 
