@@ -63,9 +63,9 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     {
         super.onCreate(savedInstanceState);
         setContentView(getActivityLayout());
+        ButterKnife.bind(this);
         this.configureActivity();
         this.configurePermissions();
-        ButterKnife.bind(this);
     }
 
     @Override

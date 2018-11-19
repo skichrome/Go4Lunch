@@ -4,9 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.widget.Toast;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -20,7 +17,6 @@ import com.skichrome.go4lunch.controllers.base.BaseFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.utils.firebase.PlaceTypeHelper;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,11 +30,6 @@ import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_INTE
  */
 public class MapFragment extends BaseFragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener
 {
-    public interface MapFragmentListeners
-    {
-        void getResultOnClickFloatingActionBtn();
-    }
-
     //=========================================
     // Fields
     //=========================================
@@ -46,35 +37,20 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     private GoogleMap gMap;
     private Map<Marker, FormattedPlace> markers;
 
-    private FusedLocationProviderClient mLocationClient;
-    private WeakReference<MapFragmentListeners> markerCallback;
-
     //=========================================
     // New Instance method
     //=========================================
 
-    public static MapFragment newInstance()
-    {
-        return new MapFragment();
-    }
+    public static MapFragment newInstance() { return new MapFragment(); }
 
     //=========================================
     // Superclass Methods
     //=========================================
 
     @Override
-    protected void configureFragment()
-    {
-        this.markerCallback = new WeakReference<>((MapFragmentListeners) getActivity());
-        this.mLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
-        this.configureMapApi();
-    }
-
+    protected void configureFragment() { this.configureMapApi(); }
     @Override
-    protected int getFragmentLayout()
-    {
-        return R.layout.fragment_map;
-    }
+    protected int getFragmentLayout() { return R.layout.fragment_map; }
 
     //=========================================
     // Floating action btn Method
@@ -83,25 +59,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     @OnClick(R.id.fragment_map_floating_action_btn)
     public void onClickFloatingActionBtn()
     {
-        this.getLastKnownLocation();
-    }
-
-    //=========================================
-    // Location Method
-    //=========================================
-
-    @SuppressLint("MissingPermission")
-    private void getLastKnownLocation()
-    {
-        mLocationClient.getLastLocation().addOnSuccessListener(getActivity(), location ->
-        {
-            if (location != null)
-            {
-                gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 17));
-                markerCallback.get().getResultOnClickFloatingActionBtn();
-            }
-            else Toast.makeText(getContext(), R.string.toast_frag_no_location, Toast.LENGTH_SHORT).show();
-        });
+        // Todo update location
     }
 
     //=========================================
@@ -129,8 +87,6 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
 
         gMap.setMyLocationEnabled(true);
         gMap.getUiSettings().setMyLocationButtonEnabled(false); // delete default button
-
-        this.getLastKnownLocation();
     }
 
     public void updateMarkerOnMap(ArrayList<FormattedPlace> mPlaces)

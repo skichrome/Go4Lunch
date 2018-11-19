@@ -14,7 +14,6 @@ import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.utils.ItemClickSupportOnRecyclerView;
 import com.skichrome.go4lunch.views.RestaurantsAdapter;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,8 +21,6 @@ import butterknife.BindView;
 
 public class ListFragment extends BaseFragment
 {
-    public interface OnFragmentReadyListener { void onListFragmentReady();}
-
     //=========================================
     // Fields
     //=========================================
@@ -39,20 +36,14 @@ public class ListFragment extends BaseFragment
     // New Instance method
     //=========================================
 
-    public static ListFragment newInstance()
-    {
-        return new ListFragment();
-    }
+    public static ListFragment newInstance() { return new ListFragment(); }
 
     //=========================================
     // Superclass Methods
     //=========================================
 
     @Override
-    protected int getFragmentLayout()
-    {
-        return R.layout.fragment_list;
-    }
+    protected int getFragmentLayout() { return R.layout.fragment_list; }
 
     @Override
     protected void configureFragment()
@@ -61,9 +52,6 @@ public class ListFragment extends BaseFragment
 
         this.configureRecyclerView();
         this.configureOnClickRV();
-
-        WeakReference<OnFragmentReadyListener> callbackFragmentReady = new WeakReference<>((OnFragmentReadyListener) getActivity());
-        callbackFragmentReady.get().onListFragmentReady();
     }
 
     //=========================================

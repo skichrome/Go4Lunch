@@ -77,6 +77,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     protected void updateActivityWithLocationUpdates(Location location)
     {
+        // Todo execute http request with RxJava here
     }
 
     @Override

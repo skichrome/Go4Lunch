@@ -28,10 +28,7 @@ public class SettingsActivity extends BaseActivity
     @BindView(R.id.activity_settings_delete_account_btn) Button btn;
 
     @Override
-    protected int getActivityLayout()
-    {
-        return R.layout.activity_settings;
-    }
+    protected int getActivityLayout() { return R.layout.activity_settings; }
 
     @Override
     protected void configureActivity()
