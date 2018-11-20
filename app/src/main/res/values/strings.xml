@@ -86,4 +86,9 @@
 
     <string name="notification_channel_name">Notification service</string>
 
+    <!-- Permission request -->
+    <string name="permission_request_rationale">This app can\'t work without location access, authorize ?</string>
+    <string name="permission_request_yes">Yes</string>
+    <string name="permission_request_no">No</string>
+
 </resources>

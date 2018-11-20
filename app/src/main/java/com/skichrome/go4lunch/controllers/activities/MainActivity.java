@@ -31,12 +31,18 @@ import com.skichrome.go4lunch.controllers.fragments.MapFragment;
 import com.skichrome.go4lunch.controllers.fragments.WorkmatesFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.firestore.User;
+import com.skichrome.go4lunch.models.googleplacedetails.MainPlaceDetails;
+import com.skichrome.go4lunch.models.googleplacedetails.Result;
 import com.skichrome.go4lunch.utils.FireStoreAuthentication;
 import com.skichrome.go4lunch.utils.firebase.UserHelper;
+import com.skichrome.go4lunch.utils.rxjava.GoogleApiStream;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import butterknife.BindView;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
 
 import static com.skichrome.go4lunch.utils.FireStoreAuthentication.RC_SIGN_IN;
 
@@ -55,7 +61,11 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     private MapFragment mapFragment;
     private ListFragment listFragment;
     private WorkmatesFragment workmatesFragment;
-    private ArrayList<FormattedPlace> placesList;
+    private Location lastknownLocation;
+    private boolean isHttpRequestAlreadyLaunched = false;
+    private Disposable disposable;
+    private HashMap<String, FormattedPlace> placeHashMap;
+
     public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 4124;
 
     //=========================================
@@ -77,7 +87,9 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     protected void updateActivityWithLocationUpdates(Location location)
     {
+        this.lastknownLocation = location;
         // Todo execute http request with RxJava here
+        this.isHttpRequestAlreadyLaunched = true;
     }
 
     @Override
@@ -86,6 +98,13 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         super.onResume();
         if (isCurrentUserLogged()) this.updateDrawerFields();
         else startActivityForResult(FireStoreAuthentication.startSignInActivity(), RC_SIGN_IN);
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        if (this.disposable != null && !this.disposable.isDisposed()) this.disposable.dispose();
     }
 
     @Override
@@ -279,10 +298,6 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
 
     private void updatePlacesHashMap(ArrayList<FormattedPlace> mPlaces)
     {
-        this.placesList = new ArrayList<>();
-        this.placesList.addAll(mPlaces);
-        if (mapFragment != null && mapFragment.isVisible()) mapFragment.updateMarkerOnMap(placesList);
-        if (listFragment != null && listFragment.isVisible()) listFragment.updatePlacesList(placesList);
     }
 
     public void showSnackBarMessage(String mMessage)
@@ -301,5 +316,41 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         email.setText(getCurrentUser().getEmail());
 
         if (getCurrentUser().getPhotoUrl() != null) Glide.with(headerView).load(getCurrentUser().getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(profilePicture);
+    }
+
+    //=========================================
+    // Http request Method
+    //=========================================
+
+    private void executeHttpRequest(String location)
+    {
+        this.placeHashMap = new HashMap<>();
+        this.disposable = GoogleApiStream.streamFetchPlaces(getString(R.string.google_api_key), location, 20).subscribeWith(new DisposableObserver<MainPlaceDetails>()
+        {
+            @Override
+            public void onNext(MainPlaceDetails mainPlaceDetails)
+            {
+                Log.e("Main activity : ", "Observable emit some data : Status code : " + mainPlaceDetails.getStatus());
+            }
+            @Override
+            public void onError(Throwable e) { Log.e("Main activity : ", "Something went wrong with http request", e); }
+            @Override
+            public void onComplete() { Log.e("Main activity : ", "Observable has terminated emitting data !"); }
+        });
+    }
+
+    private FormattedPlace convertPlaceToFormattedPlace(Result result)
+    {
+        FormattedPlace place = new FormattedPlace(
+                result.getPlaceId(),
+                result.getName(),
+                result.getFormattedAddress(),
+                result.getFormattedPhoneNumber(),
+                result.getWebsite(),
+                0d,
+                0d
+        );
+
+        return null;
     }
 }

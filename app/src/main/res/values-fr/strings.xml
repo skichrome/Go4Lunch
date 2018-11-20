@@ -86,4 +86,9 @@
 
     <string name="notification_channel_name">Service de notification</string>
 
+    <!-- Permission request -->
+    <string name="permission_request_rationale">Autoriser l\'accès à la position de l\'appareil ?</string>
+    <string name="permission_request_yes">Oui</string>
+    <string name="permission_request_no">Non</string>
+
 </resources>

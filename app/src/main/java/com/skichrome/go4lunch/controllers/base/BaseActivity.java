@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.skichrome.go4lunch.R;
 
 import java.util.List;
 
@@ -101,14 +102,12 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
         {
             EasyPermissions.requestPermissions(
                     new PermissionRequest.Builder(this, RC_LOCATION_CODE, perms)
-                            .setRationale("Autoriser l'accès à la position de l'appareil ?")
-                            .setPositiveButtonText("Oui")
-                            .setNegativeButtonText("Non")
+                            .setRationale(R.string.permission_request_rationale)
+                            .setPositiveButtonText(R.string.permission_request_yes)
+                            .setNegativeButtonText(R.string.permission_request_no)
                             .build());
-        } else
-        {
-            this.configureLocation();
-        }
+        } else { this.configureLocation(); }
+
         Log.i("EasyPerm in activity", "askUserToEnableLocationPermission: Location Access granted");
     }
 
