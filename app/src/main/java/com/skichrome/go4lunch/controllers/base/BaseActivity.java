@@ -35,7 +35,6 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     public static final int RC_LOCATION_CODE = 4123;
     private LocationManager locationManager;
     private LocationListener locationListener;
-    private boolean isLocationListenerInitialized = false;
 
     //=========================================
     // Base Abstract Methods
@@ -65,7 +64,6 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
         super.onCreate(savedInstanceState);
         setContentView(getActivityLayout());
         ButterKnife.bind(this);
-        this.configureActivity();
         this.configurePermissions();
     }
 
@@ -73,7 +71,12 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     protected void onPause()
     {
         super.onPause();
-        if (isLocationListenerInitialized) locationManager.removeUpdates(locationListener);
+        if (this.locationManager != null)
+        {
+            this.locationManager.removeUpdates(locationListener);
+            this.locationManager = null;
+        }
+        if (this.locationListener != null) this.locationListener = null;
     }
 
     // ------------------------
@@ -106,16 +109,18 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
                             .setPositiveButtonText(R.string.permission_request_yes)
                             .setNegativeButtonText(R.string.permission_request_no)
                             .build());
-        } else { this.configureLocation(); }
-
-        Log.i("EasyPerm in activity", "askUserToEnableLocationPermission: Location Access granted");
+        } else
+            {
+                this.configureActivity();
+                this.configureLocation();
+            }
     }
 
     @SuppressLint("MissingPermission")
     private void configureLocation()
     {
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationListener = new LocationListener()
+        this.locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        this.locationListener = new LocationListener()
         {
             @Override
             public void onLocationChanged(Location location)
@@ -131,8 +136,7 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
             @Override public void onProviderEnabled(String provider) { }
             @Override public void onProviderDisabled(String provider) { }
         };
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener);
-        isLocationListenerInitialized = true;
+        this.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this.locationListener);
     }
 
     /**
@@ -150,7 +154,7 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     }
 
     @Override
-    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) { }
+    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) { this.configurePermissions(); }
 
     //=========================================
     // Firebase Utils

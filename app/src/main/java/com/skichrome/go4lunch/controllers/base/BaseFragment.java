@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import butterknife.ButterKnife;
-import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  * This abstract class is used to define common parts for fragments in this app
@@ -55,12 +54,5 @@ public abstract class BaseFragment extends Fragment
         this.configureFragment();
 
         return(view);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 }

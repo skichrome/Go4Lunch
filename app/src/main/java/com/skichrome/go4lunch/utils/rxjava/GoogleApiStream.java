@@ -1,7 +1,12 @@
 package com.skichrome.go4lunch.utils.rxjava;
 
+import android.util.Log;
+
+import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.googleplacedetails.MainPlaceDetails;
 import com.skichrome.go4lunch.models.googleplacesearch.MainGooglePlaceAPI;
+import com.skichrome.go4lunch.models.googleplacesearch.Result;
+import com.skichrome.go4lunch.utils.firebase.PlaceHelper;
 
 import java.util.concurrent.TimeUnit;
 
@@ -35,7 +40,26 @@ public class GoogleApiStream
     public static Observable<MainPlaceDetails> streamFetchPlaces(String key, String location, int radius)
     {
         return streamGetNearbyPlaces(key, location, radius)
-                .concatMapIterable(results -> results.getResults())
-                .concatMap(place -> streamGetPlaceDetails(key, place.getPlaceId()));
+                .concatMapIterable(MainGooglePlaceAPI::getResults)
+                .concatMap(result ->
+                {
+                    convertResults(result);
+                    return streamGetPlaceDetails(key, result.getPlaceId());
+                });
+    }
+
+    private static void convertResults(Result result)
+    {
+        FormattedPlace place = new FormattedPlace(
+                result.getPlaceId(),
+                result.getName(),
+                result.getGeometry().getLocation().getLat(),
+                result.getGeometry().getLocation().getLng(),
+                (result.getRating() != null ) ? result.getRating() : 0,
+                (result.getPhotos() != null && result.getPhotos().size() != 0) ? result.getPhotos().get(0).getPhotoReference() : null
+        );
+
+        PlaceHelper.updateRestaurant(place).addOnSuccessListener(aVoid -> Log.d("RxJava : ", "Saved place " + place.getName() + " to Firebase ! "))
+        .addOnFailureListener(throwable -> Log.e("RxJava", "Error when uploading place to Firebase; ", throwable));
     }
 }

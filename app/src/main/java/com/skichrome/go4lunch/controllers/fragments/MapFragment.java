@@ -17,6 +17,7 @@ import com.skichrome.go4lunch.controllers.base.BaseFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.utils.firebase.PlaceTypeHelper;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,10 +32,20 @@ import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_INTE
 public class MapFragment extends BaseFragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener
 {
     //=========================================
+    // Callback interface
+    //=========================================
+
+    public interface MapFragmentListeners
+    {
+        void fragmentNeedUpdateCallback();
+    }
+
+    //=========================================
     // Fields
     //=========================================
 
     private GoogleMap gMap;
+    private WeakReference<MapFragmentListeners> callback;
     private Map<Marker, FormattedPlace> markers;
 
     //=========================================
@@ -48,7 +59,12 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     //=========================================
 
     @Override
-    protected void configureFragment() { this.configureMapApi(); }
+    protected void configureFragment()
+    {
+        this.configureMapApi();
+        this.callback = new WeakReference<> ((MapFragmentListeners) getActivity());
+    }
+
     @Override
     protected int getFragmentLayout() { return R.layout.fragment_map; }
 
@@ -59,7 +75,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     @OnClick(R.id.fragment_map_floating_action_btn)
     public void onClickFloatingActionBtn()
     {
-        // Todo update location
+        this.callback.get().fragmentNeedUpdateCallback();
     }
 
     //=========================================
@@ -99,8 +115,8 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
             for (FormattedPlace place : mPlaces)
                 PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, place.getId())
                         .addOnSuccessListener(mQueryDocumentSnapshots -> addMarkerToMap(mQueryDocumentSnapshots.size() != 0, place));
-        }
-        else Toast.makeText(getContext(), R.string.toast_frag_no_restaurant_detected, Toast.LENGTH_SHORT).show();
+        } else
+            Toast.makeText(getContext(), R.string.toast_frag_no_restaurant_detected, Toast.LENGTH_SHORT).show();
     }
 
     private void addMarkerToMap(boolean someoneIsJoining, FormattedPlace mPlace)

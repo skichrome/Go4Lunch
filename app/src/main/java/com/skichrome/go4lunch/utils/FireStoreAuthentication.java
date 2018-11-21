@@ -65,8 +65,8 @@ public abstract class FireStoreAuthentication
                 .setAvailableProviders(
                         Arrays.asList(new AuthUI.IdpConfig.EmailBuilder().build(),          // EMAIL
                                 new AuthUI.IdpConfig.GoogleBuilder().build(),               // GOOGLE
-                                new AuthUI.IdpConfig.FacebookBuilder().build(),           // FACEBOOK
-                                new AuthUI.IdpConfig.TwitterBuilder().build()))
+                                new AuthUI.IdpConfig.FacebookBuilder().build(),             // FACEBOOK
+                                new AuthUI.IdpConfig.TwitterBuilder().build()))             // Twitter
                 .setIsSmartLockEnabled(false, true)
                 .setLogo(R.drawable.lunch_logo_makers)
                 .build();

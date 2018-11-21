@@ -8,17 +8,23 @@ public class FormattedPlace implements Serializable
     // Fields
     //=========================================
 
+    // Fields completed by first Google API
     private String id;
     private String name;
-    private String address;
     private double locationLatitude;
     private double locationLongitude;
-
+    private double rating;
     private String photoReference;
+
+    // Fields completed by second Google API
+    private String address;
     private String website;
     private String phoneNumber;
-    private String distance;
     private String aperture;
+    private String isOpenNow;
+
+    // Field calculated from second Google API
+    private String distance;
 
     //=========================================
     // Constructor
@@ -43,6 +49,21 @@ public class FormattedPlace implements Serializable
         this.locationLongitude = mLocationLongitude;
     }
 
+    public FormattedPlace(String mId,
+                          String mName,
+                          double mLocationLatitude,
+                          double mLocationLongitude,
+                          double mRating,
+                          String mPhotoRef)
+    {
+        this.id = mId;
+        this.name = mName;
+        this.locationLatitude = mLocationLatitude;
+        this.locationLongitude = mLocationLongitude;
+        this.rating = mRating;
+        this.photoReference = mPhotoRef;
+    }
+
     //=========================================
     // Getters
     //=========================================
@@ -57,14 +78,18 @@ public class FormattedPlace implements Serializable
     public String getDistance() { return distance; }
     public String getWebsite() { return website; }
     public String getPhoneNumber() { return phoneNumber; }
+    public double getRating() { return rating; }
+    public String getIsOpenNow() { return isOpenNow; }
 
     //=========================================
     // Setters
     //=========================================
 
-    public void setPhotoReference(String mPhotoReference) { photoReference = mPhotoReference; }
+    public void setWebsite(String mWebsite) { website = mWebsite; }
+    public void setPhoneNumber(String mPhoneNumber) { phoneNumber = mPhoneNumber; }
     public void setDistance(String mDistance) { distance = mDistance; }
     public void setAperture(String mAperture) { aperture = mAperture; }
+    public void setIsOpenNow(String mIsOpenNow) { isOpenNow = mIsOpenNow; }
 
     //=========================================
     // Method [DEBUG]

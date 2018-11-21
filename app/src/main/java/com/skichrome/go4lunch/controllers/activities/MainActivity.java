@@ -1,5 +1,6 @@
 package com.skichrome.go4lunch.controllers.activities;
 
+import android.Manifest;
 import android.content.Intent;
 import android.location.Location;
 import android.support.annotation.NonNull;
@@ -34,19 +35,21 @@ import com.skichrome.go4lunch.models.firestore.User;
 import com.skichrome.go4lunch.models.googleplacedetails.MainPlaceDetails;
 import com.skichrome.go4lunch.models.googleplacedetails.Result;
 import com.skichrome.go4lunch.utils.FireStoreAuthentication;
+import com.skichrome.go4lunch.utils.MapMethods;
+import com.skichrome.go4lunch.utils.firebase.PlaceHelper;
 import com.skichrome.go4lunch.utils.firebase.UserHelper;
 import com.skichrome.go4lunch.utils.rxjava.GoogleApiStream;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Calendar;
 
 import butterknife.BindView;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
+import pub.devrel.easypermissions.EasyPermissions;
 
 import static com.skichrome.go4lunch.utils.FireStoreAuthentication.RC_SIGN_IN;
 
-public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener
+public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener, MapFragment.MapFragmentListeners
 {
     //=========================================
     // Fields
@@ -64,7 +67,6 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     private Location lastknownLocation;
     private boolean isHttpRequestAlreadyLaunched = false;
     private Disposable disposable;
-    private HashMap<String, FormattedPlace> placeHashMap;
 
     public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 4124;
 
@@ -82,13 +84,19 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         this.configureMenuDrawer();
         this.configureNavigationView();
         this.configureBottomNavigationView();
+        if (EasyPermissions.hasPermissions(this, Manifest.permission.ACCESS_FINE_LOCATION))
+            this.configureMapFragment();
     }
 
     @Override
     protected void updateActivityWithLocationUpdates(Location location)
     {
         this.lastknownLocation = location;
-        // Todo execute http request with RxJava here
+        if (!isHttpRequestAlreadyLaunched)
+        {
+            this.executeHttpRequest(location.getLatitude() + "," + location.getLongitude());
+            // Todo update fragment with results if (mapFragment != null && mapFragment.isVisible()) this.updateFragment (mapFragment)
+        }
         this.isHttpRequestAlreadyLaunched = true;
     }
 
@@ -128,9 +136,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
                                 place.getWebsiteUri() == null ? null : place.getWebsiteUri().toString(),
                                 place.getLatLng().latitude,
                                 place.getLatLng().longitude);
-                        ArrayList<FormattedPlace> list = new ArrayList<>();
-                        list.add(formattedPlace);
-                        updatePlacesHashMap(list);
+                        // Todo use downloaded place here
                         Log.e("Place Autocomplete", "onActivityResult: User typed this : " + place.getName());
                     }
                     return;
@@ -273,7 +279,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
 
     private void launchSettingActivityAndFragment()
     {
-        startActivity(new Intent(this, SettingsActivity.class));
+        startActivity(new Intent(MainActivity.this, SettingsActivity.class));
     }
 
     private void launchRestaurantDetailsActivity()
@@ -295,10 +301,6 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     //=========================================
     // Update Method
     //=========================================
-
-    private void updatePlacesHashMap(ArrayList<FormattedPlace> mPlaces)
-    {
-    }
 
     public void showSnackBarMessage(String mMessage)
     {
@@ -324,33 +326,34 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
 
     private void executeHttpRequest(String location)
     {
-        this.placeHashMap = new HashMap<>();
         this.disposable = GoogleApiStream.streamFetchPlaces(getString(R.string.google_api_key), location, 20).subscribeWith(new DisposableObserver<MainPlaceDetails>()
         {
             @Override
-            public void onNext(MainPlaceDetails mainPlaceDetails)
-            {
-                Log.e("Main activity : ", "Observable emit some data : Status code : " + mainPlaceDetails.getStatus());
-            }
+            public void onNext(MainPlaceDetails mainPlaceDetails) { updateDetailsOnFirebase(mainPlaceDetails.getResult(), mainPlaceDetails.getStatus()); }
             @Override
             public void onError(Throwable e) { Log.e("Main activity : ", "Something went wrong with http request", e); }
             @Override
-            public void onComplete() { Log.e("Main activity : ", "Observable has terminated emitting data !"); }
+            public void onComplete() {  }
         });
     }
 
-    private FormattedPlace convertPlaceToFormattedPlace(Result result)
+    private void updateDetailsOnFirebase(Result result, String statusCode)
     {
-        FormattedPlace place = new FormattedPlace(
+        PlaceHelper.updateRestaurantDetails(
                 result.getPlaceId(),
-                result.getName(),
-                result.getFormattedAddress(),
-                result.getFormattedPhoneNumber(),
                 result.getWebsite(),
-                0d,
-                0d
-        );
-
-        return null;
+                result.getFormattedPhoneNumber(),
+                result.getFormattedAddress(),
+                result.getOpeningHours() != null ? MapMethods.convertAperture(result.getOpeningHours().getWeekdayText(), Calendar.DAY_OF_WEEK) : null,
+                result.getOpeningHours() != null ? result.getOpeningHours().getOpenNow().toString() : "Don't know")
+        .addOnSuccessListener(aVoid -> Log.d("RxJava", "Successfully updated place details : " + result.getName()))
+        .addOnFailureListener(throwable -> Log.e("RxJava", "Error when update place to Firebase : status code : " + statusCode, throwable));
     }
+
+    //=========================================
+    // Fragment Callbacks Method
+    //=========================================
+
+    @Override
+    public void fragmentNeedUpdateCallback() { this.isHttpRequestAlreadyLaunched = false; }
 }
