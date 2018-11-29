@@ -2,16 +2,20 @@ package com.skichrome.go4lunch.utils.rxjava;
 
 import android.util.Log;
 
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.googleplacedetails.MainPlaceDetails;
 import com.skichrome.go4lunch.models.googleplacesearch.MainGooglePlaceAPI;
 import com.skichrome.go4lunch.models.googleplacesearch.Result;
 import com.skichrome.go4lunch.utils.firebase.PlaceHelper;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 public class GoogleApiStream
@@ -40,17 +44,21 @@ public class GoogleApiStream
     public static Observable<MainPlaceDetails> streamFetchPlaces(String key, String location, int radius)
     {
         return streamGetNearbyPlaces(key, location, radius)
-                .concatMapIterable(MainGooglePlaceAPI::getResults)
+                .concatMapIterable((Function<MainGooglePlaceAPI, Iterable<Result>>) results ->
+                {
+                    updateFirebaseList(results.getResults());
+                    return results.getResults();
+                })
                 .concatMap(result ->
                 {
-                    convertResults(result);
+                    updateFirecloudPlace(convertResults(result));
                     return streamGetPlaceDetails(key, result.getPlaceId());
                 });
     }
 
-    private static void convertResults(Result result)
+    private static FormattedPlace convertResults(Result result)
     {
-        FormattedPlace place = new FormattedPlace(
+        return new  FormattedPlace(
                 result.getPlaceId(),
                 result.getName(),
                 result.getGeometry().getLocation().getLat(),
@@ -58,8 +66,33 @@ public class GoogleApiStream
                 (result.getRating() != null ) ? result.getRating() : 0,
                 (result.getPhotos() != null && result.getPhotos().size() != 0) ? result.getPhotos().get(0).getPhotoReference() : null
         );
+    }
 
+    private static void updateFirecloudPlace(FormattedPlace place)
+    {
         PlaceHelper.updateRestaurant(place).addOnSuccessListener(aVoid -> Log.d("RxJava : ", "Saved place " + place.getName() + " to Firebase ! "))
         .addOnFailureListener(throwable -> Log.e("RxJava", "Error when uploading place to Firebase; ", throwable));
+    }
+
+    private static void updateFirebaseList(List<Result> apiResults)
+    {
+        List<String> fromApiFormattedPlaces = new ArrayList<>();
+        for (Result result : apiResults)
+            fromApiFormattedPlaces.add(result.getPlaceId());
+
+        PlaceHelper.getAllPlaces().addOnSuccessListener(firecloudSuccess ->
+        {
+            for (DocumentSnapshot snap : firecloudSuccess)
+            {
+                FormattedPlace firecloudPlace = snap.toObject(FormattedPlace.class);
+
+                if (!fromApiFormattedPlaces.contains(firecloudPlace.getId()))
+                {
+                    Log.e("updateFirebaseList : ", "Firebase doesn't contains results !");
+                    PlaceHelper.deleteRestaurants(firecloudPlace.getId()).addOnSuccessListener(successDeleted ->
+                            Log.d("updateFirebaseList : ", "Successfully deleted " + firecloudPlace.getName()));
+                }
+            }
+        });
     }
 }

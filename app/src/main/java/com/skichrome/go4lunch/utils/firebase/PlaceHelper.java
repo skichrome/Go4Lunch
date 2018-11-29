@@ -3,6 +3,7 @@ package com.skichrome.go4lunch.utils.firebase;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.skichrome.go4lunch.models.FormattedPlace;
 
@@ -17,6 +18,11 @@ public class PlaceHelper
     }
 
     // Get
+    public static Task<QuerySnapshot> getAllPlaces()
+    {
+        return PlaceHelper.getPlaceCollection()
+                .get();
+    }
 
     // Create
 
@@ -42,5 +48,10 @@ public class PlaceHelper
     }
 
     // Delete
-    //public static Task<Void> deleteRestaurants
+    public static Task<Void> deleteRestaurants(String restaurantId)
+    {
+        return PlaceHelper.getPlaceCollection()
+                .document(restaurantId)
+                .delete();
+    }
 }
