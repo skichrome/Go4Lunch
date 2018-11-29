@@ -49,7 +49,9 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 import static com.skichrome.go4lunch.utils.FireStoreAuthentication.RC_SIGN_IN;
 
-public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, NavigationView.OnNavigationItemSelectedListener, MapFragment.MapFragmentListeners
+public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener,
+        NavigationView.OnNavigationItemSelectedListener,
+        MapFragment.MapFragmentListeners
 {
     //=========================================
     // Fields
@@ -64,7 +66,6 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     private MapFragment mapFragment;
     private ListFragment listFragment;
     private WorkmatesFragment workmatesFragment;
-    private Location lastknownLocation;
     private boolean isHttpRequestAlreadyLaunched = false;
     private Disposable disposable;
 
@@ -91,13 +92,12 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     protected void updateActivityWithLocationUpdates(Location location)
     {
-        this.lastknownLocation = location;
+        if (mapFragment != null && mapFragment.isVisible()) mapFragment.updateLocation(location);
         if (!isHttpRequestAlreadyLaunched)
         {
             this.executeHttpRequest(location.getLatitude() + "," + location.getLongitude());
-            // Todo update fragment with results if (mapFragment != null && mapFragment.isVisible()) this.updateFragment (mapFragment)
+            this.isHttpRequestAlreadyLaunched = true;
         }
-        this.isHttpRequestAlreadyLaunched = true;
     }
 
     @Override
@@ -256,7 +256,10 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
 
     private void displayFragment(Fragment mFragment)
     {
-        if (!mFragment.isVisible()) getSupportFragmentManager().beginTransaction().replace(R.id.activity_main_frame_layout_for_fragments, mFragment).commit();
+        if (!mFragment.isVisible()) getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.activity_main_frame_layout_for_fragments, mFragment)
+                .commit();
     }
 
     private void configureMapFragment()
@@ -329,15 +332,19 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         this.disposable = GoogleApiStream.streamFetchPlaces(getString(R.string.google_api_key), location, 20).subscribeWith(new DisposableObserver<MainPlaceDetails>()
         {
             @Override
-            public void onNext(MainPlaceDetails mainPlaceDetails) { updateDetailsOnFirebase(mainPlaceDetails.getResult(), mainPlaceDetails.getStatus()); }
+            public void onNext(MainPlaceDetails mainPlaceDetails) { updateDetailsOnFirecloud(mainPlaceDetails.getResult(), mainPlaceDetails.getStatus()); }
             @Override
             public void onError(Throwable e) { Log.e("Main activity : ", "Something went wrong with http request", e); }
             @Override
-            public void onComplete() {  }
+            public void onComplete()
+            {
+                if (mapFragment != null && mapFragment.isVisible()) mapFragment.updateMarkerOnMap();
+                if (listFragment != null && listFragment.isVisible()) listFragment.updatePlacesList();
+            }
         });
     }
 
-    private void updateDetailsOnFirebase(Result result, String statusCode)
+    private void updateDetailsOnFirecloud(Result result, String statusCode)
     {
         PlaceHelper.updateRestaurantDetails(
                 result.getPlaceId(),
