@@ -1,8 +1,12 @@
 package com.skichrome.go4lunch.controllers.activities;
 
-import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomNavigationView;
@@ -43,9 +47,9 @@ import com.skichrome.go4lunch.utils.rxjava.GoogleApiStream;
 import java.util.Calendar;
 
 import butterknife.BindView;
+import icepick.State;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
-import pub.devrel.easypermissions.EasyPermissions;
 
 import static com.skichrome.go4lunch.utils.FireStoreAuthentication.RC_SIGN_IN;
 
@@ -62,13 +66,16 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @BindView(R.id.activity_toolbar) Toolbar toolbar;
     @BindView(R.id.activity_main_menu_drawer_layout) DrawerLayout drawerLayout;
     @BindView(R.id.activity_main_navigation_view) NavigationView navigationView;
+    @State int fragmentDisplayed;
 
     private MapFragment mapFragment;
     private ListFragment listFragment;
     private WorkmatesFragment workmatesFragment;
     private boolean isHttpRequestAlreadyLaunched = false;
+    private boolean isFragmentLocationUpdated = false;
     private Disposable disposable;
-
+    private LocationManager locationManager;
+    private LocationListener locationListener;
     public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 4124;
 
     //=========================================
@@ -85,19 +92,20 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         this.configureMenuDrawer();
         this.configureNavigationView();
         this.configureBottomNavigationView();
-        if (EasyPermissions.hasPermissions(this, Manifest.permission.ACCESS_FINE_LOCATION))
-            this.configureMapFragment();
     }
 
     @Override
-    protected void updateActivityWithLocationUpdates(Location location)
+    protected void updateActivity()
     {
-        if (mapFragment != null && mapFragment.isVisible()) mapFragment.updateLocation(location);
-        if (!isHttpRequestAlreadyLaunched)
+        switch (this.fragmentDisplayed)
         {
-            this.executeHttpRequest(location.getLatitude() + "," + location.getLongitude());
-            this.isHttpRequestAlreadyLaunched = true;
+            case 1 : this.configureListFragment();
+                break;
+            case 2 : this.configureWorkmatesFragment();
+                break;
+                default: this.configureMapFragment();
         }
+        this.configureLocation();
     }
 
     @Override
@@ -109,10 +117,16 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     }
 
     @Override
-    protected void onPause()
+    protected void onStop()
     {
-        super.onPause();
+        super.onStop();
         if (this.disposable != null && !this.disposable.isDisposed()) this.disposable.dispose();
+        if (this.locationManager != null)
+        {
+            this.locationManager.removeUpdates(locationListener);
+            this.locationManager = null;
+        }
+        if (this.locationListener != null) this.locationListener = null;
     }
 
     @Override
@@ -168,10 +182,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
             getSupportActionBar().setElevation(4);
     }
 
-    private void configureNavigationView()
-    {
-        navigationView.setNavigationItemSelectedListener(this);
-    }
+    private void configureNavigationView() { navigationView.setNavigationItemSelectedListener(this); }
 
     private void configureMenuDrawer()
     {
@@ -180,9 +191,43 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         toggle.syncState();
     }
 
-    private void configureBottomNavigationView()
+    private void configureBottomNavigationView() { bottomNavigationView.setOnNavigationItemSelectedListener(this); }
+
+    @SuppressLint("MissingPermission")
+    private void configureLocation()
     {
-        bottomNavigationView.setOnNavigationItemSelectedListener(this);
+        this.locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        this.locationListener = new LocationListener()
+        {
+            @Override
+            public void onLocationChanged(Location location)
+            {
+                if (location != null)
+                {
+                    Log.d("BaseActivity : ", "You have a location request : " + location.toString());
+                    locationUpdates(location);
+                } else
+                    Log.e("BaseActivity : ", "Error, location is null, cancel PlaceApi request");
+            }
+            @Override public void onStatusChanged(String provider, int status, Bundle extras) { }
+            @Override public void onProviderEnabled(String provider) { }
+            @Override public void onProviderDisabled(String provider) { }
+        };
+        this.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this.locationListener);
+    }
+
+    private void locationUpdates(Location location)
+    {
+        if (!this.isFragmentLocationUpdated && this.mapFragment != null && this.mapFragment.isVisible())
+        {
+            this.mapFragment.updateLocation(location);
+            this.isFragmentLocationUpdated = true;
+        }
+        if (!this.isHttpRequestAlreadyLaunched)
+        {
+            this.executeHttpRequest(location.getLatitude() + "," + location.getLongitude());
+            this.isHttpRequestAlreadyLaunched = true;
+        }
     }
 
     //=========================================
@@ -266,24 +311,25 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     {
         if (mapFragment == null) mapFragment = MapFragment.newInstance();
         displayFragment(mapFragment);
+        this.isFragmentLocationUpdated = false;
+        this.fragmentDisplayed = 0;
     }
 
     private void configureListFragment()
     {
         if (listFragment == null) listFragment = ListFragment.newInstance();
         displayFragment(listFragment);
+        this.fragmentDisplayed = 1;
     }
 
     private void configureWorkmatesFragment()
     {
         if (workmatesFragment == null) workmatesFragment = WorkmatesFragment.newInstance();
         displayFragment(workmatesFragment);
+        this.fragmentDisplayed = 2;
     }
 
-    private void launchSettingActivityAndFragment()
-    {
-        startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-    }
+    private void launchSettingActivityAndFragment() { startActivity(new Intent(MainActivity.this, SettingsActivity.class)); }
 
     private void launchRestaurantDetailsActivity()
     {
@@ -305,10 +351,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Update Method
     //=========================================
 
-    public void showSnackBarMessage(String mMessage)
-    {
-        Snackbar.make(this.constraintLayout, mMessage, Snackbar.LENGTH_SHORT).show();
-    }
+    public void showSnackBarMessage(String mMessage) { Snackbar.make(this.constraintLayout, mMessage, Snackbar.LENGTH_SHORT).show(); }
 
     private void updateDrawerFields()
     {
@@ -338,7 +381,11 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
             @Override
             public void onComplete()
             {
-                if (mapFragment != null && mapFragment.isVisible()) mapFragment.updateMarkerOnMap();
+                if (mapFragment != null && mapFragment.isVisible())
+                {
+                    mapFragment.updateMarkerOnMap();
+                    isFragmentLocationUpdated = false;
+                }
                 if (listFragment != null && listFragment.isVisible()) listFragment.updatePlacesList();
             }
         });

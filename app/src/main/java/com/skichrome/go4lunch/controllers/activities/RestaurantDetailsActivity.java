@@ -1,7 +1,6 @@
 package com.skichrome.go4lunch.controllers.activities;
 
 import android.content.Intent;
-import android.location.Location;
 import android.net.Uri;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -63,19 +62,17 @@ public class RestaurantDetailsActivity extends BaseActivity implements  FireStor
     // Superclass Methods
     //=========================================
 
+    @Override protected int getActivityLayout() { return R.layout.activity_details_restaurant; }
     @Override
     protected void configureActivity()
     {
         this.progressBar.setVisibility(View.VISIBLE);
         this.getDataFromBundle();
         this.updateUIElements();
-        this.getPlaceDetails();
         this.configureRecyclerView();
         this.configureOnClickRecyclerView();
     }
-
-    @Override protected int getActivityLayout() { return R.layout.activity_details_restaurant; }
-    @Override protected void updateActivityWithLocationUpdates(Location location) { }
+    @Override protected void updateActivity() { }
 
     @Override
     public void onPause()
@@ -227,12 +224,8 @@ public class RestaurantDetailsActivity extends BaseActivity implements  FireStor
         }
 
         //=========================================
-        // AsyncTask Methods
+        // Callback Methods
         //=========================================
-
-        private void getPlaceDetails ()
-        {
-        }
 
         @Override
         public void onSuccess (Intent mIntent)

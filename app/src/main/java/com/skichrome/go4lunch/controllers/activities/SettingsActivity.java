@@ -1,7 +1,6 @@
 package com.skichrome.go4lunch.controllers.activities;
 
 import android.app.AlertDialog;
-import android.location.Location;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.widget.Button;
@@ -37,6 +36,11 @@ public class SettingsActivity extends BaseActivity
         this.updateUserInfo();
     }
 
+    @Override protected void updateActivity()
+    {
+        getFragmentManager().beginTransaction().replace(R.id.activity_settings_fragment_container, new SettingFragment()).commit();
+    }
+
     private void updateUserInfo()
     {
         if (isCurrentUserLogged())
@@ -49,12 +53,6 @@ public class SettingsActivity extends BaseActivity
             if (user.getPhotoUrl() != null)
                 Glide.with(this).load(user.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(imageViewProfile);
         }
-    }
-
-    @Override
-    protected void updateActivityWithLocationUpdates(Location location)
-    {
-        getFragmentManager().beginTransaction().replace(R.id.activity_settings_fragment_container, new SettingFragment()).commit();
     }
 
     private void configureToolbar()

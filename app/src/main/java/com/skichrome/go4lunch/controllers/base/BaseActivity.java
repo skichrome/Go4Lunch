@@ -1,11 +1,6 @@
 package com.skichrome.go4lunch.controllers.base;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -20,6 +15,7 @@ import com.skichrome.go4lunch.R;
 import java.util.List;
 
 import butterknife.ButterKnife;
+import icepick.Icepick;
 import pub.devrel.easypermissions.EasyPermissions;
 import pub.devrel.easypermissions.PermissionRequest;
 
@@ -33,8 +29,6 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     //=========================================
 
     public static final int RC_LOCATION_CODE = 4123;
-    private LocationManager locationManager;
-    private LocationListener locationListener;
 
     //=========================================
     // Base Abstract Methods
@@ -52,7 +46,7 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
      * Used to update activities only when user has granted the requested permissions, without these permissions the user can't
      * access to the app
      */
-    protected abstract void updateActivityWithLocationUpdates(Location location);
+    protected abstract void updateActivity();
 
     //=========================================
     // Superclass Methods
@@ -62,21 +56,24 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     protected void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        Icepick.restoreInstanceState(this, savedInstanceState);
         setContentView(getActivityLayout());
         ButterKnife.bind(this);
+        this.configureActivity();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
         this.configurePermissions();
     }
 
     @Override
-    protected void onPause()
+    protected void onSaveInstanceState(Bundle outState)
     {
-        super.onPause();
-        if (this.locationManager != null)
-        {
-            this.locationManager.removeUpdates(locationListener);
-            this.locationManager = null;
-        }
-        if (this.locationListener != null) this.locationListener = null;
+        super.onSaveInstanceState(outState);
+        Icepick.saveInstanceState(this, outState);
     }
 
     // ------------------------
@@ -111,32 +108,8 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
                             .build());
         } else
             {
-                this.configureActivity();
-                this.configureLocation();
+                this.updateActivity();
             }
-    }
-
-    @SuppressLint("MissingPermission")
-    private void configureLocation()
-    {
-        this.locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        this.locationListener = new LocationListener()
-        {
-            @Override
-            public void onLocationChanged(Location location)
-            {
-                if (location != null)
-                {
-                    Log.d("BaseActivity : ", "You have a location request : " + location.toString());
-                    updateActivityWithLocationUpdates(location);
-                } else
-                    Log.e("BaseActivity : ", "Error, location is null, cancel PlaceApi request");
-            }
-            @Override public void onStatusChanged(String provider, int status, Bundle extras) { }
-            @Override public void onProviderEnabled(String provider) { }
-            @Override public void onProviderDisabled(String provider) { }
-        };
-        this.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this.locationListener);
     }
 
     /**
