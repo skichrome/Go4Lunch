@@ -18,17 +18,17 @@ public class RestaurantsAdapter extends RecyclerView.Adapter<RestaurantsViewHold
     // Fields
     //=========================================
 
-    private List<FormattedPlace> placeList;
-    private RequestManager glide;
+    private List<FormattedPlace> mPlaceList;
+    private RequestManager mGlide;
 
     //=========================================
     // Constructor
     //=========================================
 
-    public RestaurantsAdapter(List<FormattedPlace> mPlaceList, RequestManager mGlide)
+    public RestaurantsAdapter(List<FormattedPlace> placeList, RequestManager glide)
     {
-        this.placeList = mPlaceList;
-        this.glide = mGlide;
+        this.mPlaceList = placeList;
+        this.mGlide = glide;
     }
 
     //=========================================
@@ -41,24 +41,17 @@ public class RestaurantsAdapter extends RecyclerView.Adapter<RestaurantsViewHold
     {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.fragment_list_list_item_recycler_view, parent, false);
-
         return new RestaurantsViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RestaurantsViewHolder holder, int position)
     {
-        holder.updateUI(placeList.get(position), glide);
+        holder.updateUI(mPlaceList.get(position), mGlide);
     }
 
     @Override
-    public int getItemCount()
-    {
-        return placeList.size();
-    }
+    public int getItemCount() { return mPlaceList.size(); }
 
-    public FormattedPlace getClickedPlace(int mPosition)
-    {
-        return this.placeList.get(mPosition);
-    }
+    public FormattedPlace getClickedPlace(int mPosition) { return this.mPlaceList.get(mPosition); }
 }

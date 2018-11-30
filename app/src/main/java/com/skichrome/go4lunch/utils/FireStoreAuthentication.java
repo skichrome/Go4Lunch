@@ -28,10 +28,7 @@ public abstract class FireStoreAuthentication
     // Callback
     //=========================================
 
-    public interface GetUserListener
-    {
-        void onSuccess(Intent mIntent);
-    }
+    public interface GetUserListener { void onSuccess(Intent intent);}
 
     //=========================================
     // Fields
@@ -74,38 +71,38 @@ public abstract class FireStoreAuthentication
 
     // manage activities results cases
     @Nullable
-    public static String onActivityResult(Activity mActivity, FirebaseUser mUser, int mRequestCode, int mResultCode, Intent mData)
+    public static String onActivityResult(Activity activity, FirebaseUser user, int requestCode, int resultCode, Intent data)
     {
-        IdpResponse response = IdpResponse.fromResultIntent(mData);
+        IdpResponse response = IdpResponse.fromResultIntent(data);
 
-        switch (mRequestCode)
+        switch (requestCode)
         {
             case RC_SIGN_IN :
-                if (mResultCode == Activity.RESULT_OK)                                                  // SUCCESS
+                if (resultCode == Activity.RESULT_OK)                                                  // SUCCESS
                 {
-                    createUserInFirebase(mActivity, mUser);
-                    return mActivity.getString(R.string.firebase_auth_success);
+                    createUserInFirebase(activity, user);
+                    return activity.getString(R.string.firebase_auth_success);
                 }
                 else                                                                                    // ERRORS
                 {
                     if (response == null)
-                        return mActivity.getString(R.string.firebase_login_cancel);
+                        return activity.getString(R.string.firebase_login_cancel);
                     if (response.getError().getErrorCode() == ErrorCodes.NO_NETWORK)
-                        return mActivity.getString(R.string.firebase_no_network_detected);
+                        return activity.getString(R.string.firebase_no_network_detected);
                     if (response.getError().getErrorCode() == ErrorCodes.UNKNOWN_ERROR)
-                        return mActivity.getString(R.string.firebase_error_login);
+                        return activity.getString(R.string.firebase_error_login);
                 }
 
             case MainActivity.PLACE_AUTOCOMPLETE_REQUEST_CODE :
-                if (mResultCode == PlaceAutocomplete.RESULT_ERROR)
-                    return mActivity.getString(R.string.error_unknown_error);
-                if (mResultCode == Activity.RESULT_CANCELED)
-                    return mActivity.getString(R.string.error_cancel_request);
+                if (resultCode == PlaceAutocomplete.RESULT_ERROR)
+                    return activity.getString(R.string.error_unknown_error);
+                if (resultCode == Activity.RESULT_CANCELED)
+                    return activity.getString(R.string.error_cancel_request);
 
             case REQUEST_CHECK_SETTINGS :
-                if (mResultCode == Activity.RESULT_OK)
+                if (resultCode == Activity.RESULT_OK)
                     return "Google location updates granted";
-                if (mResultCode == Activity.RESULT_CANCELED)
+                if (resultCode == Activity.RESULT_CANCELED)
                     return "User has denied uses of location updates";
 
             default:
@@ -113,15 +110,15 @@ public abstract class FireStoreAuthentication
         }
     }
 
-    private static void createUserInFirebase(Activity mActivity, FirebaseUser mUser)
+    private static void createUserInFirebase(Activity activity, FirebaseUser user)
     {
-        if (mUser != null)
+        if (user != null)
         {
-            String uuid = mUser.getUid();
-            String username = mUser.getDisplayName();
-            String urlPicture = mUser.getPhotoUrl() == null ? null : mUser.getPhotoUrl().toString();
+            String uuid = user.getUid();
+            String username = user.getDisplayName();
+            String urlPicture = user.getPhotoUrl() == null ? null : user.getPhotoUrl().toString();
 
-            UserHelper.createUser(uuid, username, urlPicture, null).addOnFailureListener(onFailureListener(mActivity));
+            UserHelper.createUser(uuid, username, urlPicture, null).addOnFailureListener(onFailureListener(activity));
         }
     }
 
@@ -129,39 +126,39 @@ public abstract class FireStoreAuthentication
     // Log out and delete methods
     //=========================================
 
-    public static void logoutFromFirestore(Activity mActivity)
+    public static void logoutFromFirestore(Activity activity)
     {
         AuthUI.getInstance()
-                .signOut(mActivity)
-                .addOnSuccessListener(mActivity, updateUIAfterRESTRequestsCompleted(mActivity, SIGN_OUT_TASK));
+                .signOut(activity)
+                .addOnSuccessListener(activity, updateUIAfterRESTRequestsCompleted(activity, SIGN_OUT_TASK));
     }
 
-    public static void deleteAccountFromFirebase(Activity mActivity, FirebaseUser mUser)
+    public static void deleteAccountFromFirebase(Activity activity, FirebaseUser user)
     {
-        if (mUser != null)
+        if (user != null)
         {
-            UserHelper.deleteUser(mUser.getUid()).addOnFailureListener(onFailureListener(mActivity));
+            UserHelper.deleteUser(user.getUid()).addOnFailureListener(onFailureListener(activity));
 
             AuthUI.getInstance()
-                    .delete(mActivity)
-                    .addOnSuccessListener(mActivity, updateUIAfterRESTRequestsCompleted(mActivity, DELETE_USER_TASK));
+                    .delete(activity)
+                    .addOnSuccessListener(activity, updateUIAfterRESTRequestsCompleted(activity, DELETE_USER_TASK));
         }
     }
 
-    private static OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(final Activity mActivity, final int origin)
+    private static OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(final Activity activity, final int origin)
     {
         return aVoid ->
         {
             switch (origin)
             {
                 case SIGN_OUT_TASK:
-                    mActivity.recreate();
+                    activity.recreate();
                     break;
 
                 case DELETE_USER_TASK:
-                    Intent intent = new Intent(mActivity, MainActivity.class);
-                    mActivity.startActivity(intent);
-                    mActivity.finish();
+                    Intent intent = new Intent(activity, MainActivity.class);
+                    activity.startActivity(intent);
+                    activity.finish();
                     break;
 
                 default:
@@ -170,26 +167,18 @@ public abstract class FireStoreAuthentication
         };
     }
 
-    private static OnFailureListener onFailureListener(final Activity mActivity)
+    private static OnFailureListener onFailureListener(final Activity activity)
     {
-        return mE -> Toast.makeText(mActivity.getApplicationContext(), mActivity.getString(R.string.fui_error_unknown), Toast.LENGTH_SHORT).show();
+        return mE -> Toast.makeText(activity.getApplicationContext(), activity.getString(R.string.fui_error_unknown), Toast.LENGTH_SHORT).show();
     }
 
     //=========================================
     // Update Methods
     //=========================================
 
-    private static void updateChosenRestaurant(Activity mActivity, final FirebaseUser mUser, FormattedPlace mPlace, FormattedPlace mPlaceInterest)
+    private static void updateChosenRestaurant(Activity activity, final FirebaseUser user, FormattedPlace place, FormattedPlace placeInterest)
     {
-        UserHelper.updateChosenPlace(mUser.getUid(), mPlace).addOnFailureListener(onFailureListener(mActivity));
-        PlaceTypeHelper.createPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mPlace).addOnFailureListener(onFailureListener(mActivity));
-        PlaceTypeHelper.createUserIntoPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mUser, mPlace, mPlaceInterest).addOnFailureListener(onFailureListener(mActivity));
-    }
-
-    public static void updateRateRestaurant(Activity mActivity, FirebaseUser mUser, FormattedPlace mPlace, FormattedPlace mPlaceInterest)
-    {
-        PlaceTypeHelper.createPlace(ID_PLACE_RATED_CLOUD_FIRESTORE, mPlace).addOnFailureListener(onFailureListener(mActivity));
-        PlaceTypeHelper.createUserIntoPlace(ID_PLACE_RATED_CLOUD_FIRESTORE, mUser, mPlace, mPlaceInterest).addOnFailureListener(onFailureListener(mActivity));
+        UserHelper.updateChosenPlace(user.getUid(), place).addOnFailureListener(onFailureListener(activity));
     }
 
     public static void deleteUserFromPlace(final Activity mActivity, final FirebaseUser mUser, final FormattedPlace mPlace)
@@ -211,26 +200,26 @@ public abstract class FireStoreAuthentication
         });
     }
 
-    private static void updateRestaurant(Activity mActivity, FirebaseUser mUser, FormattedPlace mPlace)
+    private static void updateRestaurant(Activity activity, FirebaseUser user, FormattedPlace place)
     {
-        FireStoreAuthentication.updateChosenRestaurant(mActivity, mUser, mPlace, mPlace);
+        FireStoreAuthentication.updateChosenRestaurant(activity, user, place, place);
     }
 
-    public static void getUserPlace(final GetUserListener mCallback, final Activity mActivity, User mUser)
+    public static void getUserPlace(final GetUserListener callback, final Activity activity, User user)
     {
-        UserHelper.getUser(mUser.getUid()).addOnSuccessListener(mDocumentSnapshot ->
+        UserHelper.getUser(user.getUid()).addOnSuccessListener(mDocumentSnapshot ->
         {
-            User user = mDocumentSnapshot.toObject(User.class);
-            FormattedPlace place = user != null ? user.getSelectedPlace() : null;
+            User databaseUser = mDocumentSnapshot.toObject(User.class);
+            FormattedPlace place = databaseUser != null ? databaseUser.getSelectedPlace() : null;
             if (place != null)
             {
-               Intent intent = new Intent(mActivity, RestaurantDetailsActivity.class);
+               Intent intent = new Intent(activity, RestaurantDetailsActivity.class);
                 intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, place);
 
-                mCallback.onSuccess(intent);
+                callback.onSuccess(intent);
             }
             else
-                Toast.makeText(mActivity, R.string.toast_workmate_note_decided, Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, R.string.toast_workmate_note_decided, Toast.LENGTH_SHORT).show();
         });
     }
 }

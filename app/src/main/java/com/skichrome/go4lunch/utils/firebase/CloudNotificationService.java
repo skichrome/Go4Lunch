@@ -29,12 +29,12 @@ public class CloudNotificationService extends FirebaseMessagingService
     private final String NOTIFICATION_TAG = "Go4Lunch";
 
     @Override
-    public void onMessageReceived(RemoteMessage mRemoteMessage)
+    public void onMessageReceived(RemoteMessage remoteMessage)
     {
-        super.onMessageReceived(mRemoteMessage);
-        if (mRemoteMessage.getNotification() != null)
+        super.onMessageReceived(remoteMessage);
+        if (remoteMessage.getNotification() != null)
         {
-            String message = mRemoteMessage.getNotification().getBody();
+            String message = remoteMessage.getNotification().getBody();
             updateDatabase();
             FirebaseMessaging.getInstance().unsubscribeFromTopic(RestaurantDetailsActivity.FIREBASE_TOPIC);
             sendVisualNotification(message);

@@ -29,12 +29,12 @@ public class ListFragment extends BaseFragment
     // Fields
     //=========================================
 
-    @BindView(R.id.fragment_list_recycler_view_container) RecyclerView recyclerView;
-    @BindView(R.id.fragment_list_progress_bar) ProgressBar progressBar;
-    @BindView(R.id.list_fragment_swipe_refresh_layout) SwipeRefreshLayout swipeRefreshLayout;
+    @BindView(R.id.fragment_list_recycler_view_container) RecyclerView mRecyclerView;
+    @BindView(R.id.fragment_list_progress_bar) ProgressBar mProgressBar;
+    @BindView(R.id.list_fragment_swipe_refresh_layout) SwipeRefreshLayout mSwipeRefreshLayout;
 
-    private List<FormattedPlace> placesList;
-    private RestaurantsAdapter adapter;
+    private List<FormattedPlace> mPlacesList;
+    private RestaurantsAdapter mAdapter;
 
     //=========================================
     // New Instance method
@@ -52,7 +52,7 @@ public class ListFragment extends BaseFragment
     @Override
     protected void configureFragment()
     {
-        this.progressBar.setVisibility(View.VISIBLE);
+        this.mProgressBar.setVisibility(View.VISIBLE);
         this.configureRecyclerView();
         this.configureOnClickRV();
         this.configureSwipeRefreshLayout();
@@ -65,24 +65,24 @@ public class ListFragment extends BaseFragment
 
     private void configureRecyclerView()
     {
-        this.placesList = new ArrayList<>();
-        this.adapter = new RestaurantsAdapter(placesList, Glide.with(this));
-        this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        this.recyclerView.setAdapter(adapter);
+        this.mPlacesList = new ArrayList<>();
+        this.mAdapter = new RestaurantsAdapter(mPlacesList, Glide.with(this));
+        this.mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        this.mRecyclerView.setAdapter(mAdapter);
     }
 
     private void configureOnClickRV()
     {
-        ItemClickSupportOnRecyclerView.addTo(this.recyclerView, R.layout.fragment_list_list_item_recycler_view)
+        ItemClickSupportOnRecyclerView.addTo(this.mRecyclerView, R.layout.fragment_list_list_item_recycler_view)
                 .setOnItemClickListener((recyclerView, position, v) ->
                 {
                     Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
-                    intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, this.adapter.getClickedPlace(position));
+                    intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, this.mAdapter.getClickedPlace(position));
                     startActivity(intent);
                 });
     }
 
-    private void configureSwipeRefreshLayout() { this.swipeRefreshLayout.setOnRefreshListener(this::updatePlacesList); }
+    private void configureSwipeRefreshLayout() { this.mSwipeRefreshLayout.setOnRefreshListener(this::updatePlacesList); }
 
     //=========================================
     // Update Methods
@@ -90,17 +90,17 @@ public class ListFragment extends BaseFragment
 
     public void updatePlacesList()
     {
-        this.placesList.clear();
+        this.mPlacesList.clear();
         PlaceHelper.getAllPlaces().addOnSuccessListener(success ->
         {
             for (DocumentSnapshot snap : success)
             {
                 FormattedPlace place = snap.toObject(FormattedPlace.class);
-                this.placesList.add(place);
+                this.mPlacesList.add(place);
             }
-            this.adapter.notifyDataSetChanged();
-            this.progressBar.setVisibility(View.INVISIBLE);
-            this.swipeRefreshLayout.setRefreshing(false);
+            this.mAdapter.notifyDataSetChanged();
+            this.mProgressBar.setVisibility(View.INVISIBLE);
+            this.mSwipeRefreshLayout.setRefreshing(false);
         }).addOnFailureListener(throwable -> Log.e("ListFragment : ", "An error occurred when downloading all places.", throwable));
     }
 }

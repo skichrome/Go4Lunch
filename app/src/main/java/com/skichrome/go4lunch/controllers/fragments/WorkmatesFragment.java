@@ -3,7 +3,6 @@ package com.skichrome.go4lunch.controllers.fragments;
 import android.content.Intent;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
@@ -24,28 +23,21 @@ public class WorkmatesFragment extends BaseFragment implements FireStoreAuthenti
     // Fields
     //=========================================
 
-    @BindView(R.id.fragment_workmates_recycler_view)
-    RecyclerView recyclerView;
-    private WorkmatesAdapter adapterWorkmates;
+    @BindView(R.id.fragment_workmates_recycler_view) RecyclerView mRecyclerView;
+    private WorkmatesAdapter mAdapterWorkmates;
 
     //=========================================
     // New Instance method
     //=========================================
 
-    public static WorkmatesFragment newInstance()
-    {
-        return new WorkmatesFragment();
-    }
+    public static WorkmatesFragment newInstance() { return new WorkmatesFragment(); }
 
     //=========================================
     // Superclass Methods
     //=========================================
 
     @Override
-    protected int getFragmentLayout()
-    {
-        return R.layout.fragment_workmates;
-    }
+    protected int getFragmentLayout() { return R.layout.fragment_workmates; }
 
     @Override
     protected void configureFragment()
@@ -62,39 +54,29 @@ public class WorkmatesFragment extends BaseFragment implements FireStoreAuthenti
     {
         String[] text = {getString(R.string.view_holder_is_eating), getString(R.string.view_holder_not_eating)};
 
-        this.adapterWorkmates = new WorkmatesAdapter(generateOptionsForAdapter(UserHelper.getAllUsers()), Glide.with(this), null, text);
-        this.recyclerView.setAdapter(adapterWorkmates);
-        this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        this.mAdapterWorkmates = new WorkmatesAdapter(generateOptionsForAdapter(UserHelper.getAllUsers()), Glide.with(this), null, text);
+        this.mRecyclerView.setAdapter(mAdapterWorkmates);
+        this.mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }
 
     private void configureOnClickRecyclerView()
     {
-        ItemClickSupportOnRecyclerView.addTo(recyclerView, R.id.fragment_workmates_recycler_view).setOnItemClickListener(new ItemClickSupportOnRecyclerView.OnItemClickListener()
-        {
-            @Override
-            public void onItemClicked(RecyclerView recyclerView, int position, View v)
-            {
-                launchActivity(position);
-            }
-        });
+        ItemClickSupportOnRecyclerView.addTo(mRecyclerView, R.id.fragment_workmates_recycler_view).setOnItemClickListener((recyclerView, position, v) -> launchActivity(position));
     }
 
     private void launchActivity(int position)
     {
-        FireStoreAuthentication.getUserPlace(this, getActivity(), adapterWorkmates.getItem(position));
+        FireStoreAuthentication.getUserPlace(this, getActivity(), mAdapterWorkmates.getItem(position));
     }
 
-    private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query mQuery)
+    private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query query)
     {
         return new FirestoreRecyclerOptions.Builder<User>()
-                .setQuery(mQuery, User.class)
+                .setQuery(query, User.class)
                 .setLifecycleOwner(this)
                 .build();
     }
 
     @Override
-    public void onSuccess(Intent mIntent)
-    {
-        startActivity(mIntent);
-    }
+    public void onSuccess(Intent intent) { startActivity(intent); }
 }

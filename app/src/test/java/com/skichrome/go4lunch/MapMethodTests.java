@@ -13,94 +13,94 @@ import static org.junit.Assert.assertEquals;
 
 public class MapMethodTests
 {
-    private List<String> apertureRaw;
-    private List<String> aperture;
+    private List<String> mApertureRaw;
+    private List<String> mAperture;
 
-    private List<String> apertureSundayClosedRaw;
-    private List<String> apertureSundayClosed;
+    private List<String> mApertureSundayClosedRaw;
+    private List<String> mApertureSundayClosed;
 
-    private int[] calendarInstance = {Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY,  Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY};
-    private int indexOfDay = 0;
+    private int[] mCalendarInstance = {Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY,  Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY};
+    private int mIndexOfDay = 0;
 
     @Before
     public void configureMapMethods()
     {
-        this.aperture = new ArrayList<>();
-        this.apertureRaw = new ArrayList<>();
+        this.mAperture = new ArrayList<>();
+        this.mApertureRaw = new ArrayList<>();
 
-        this.apertureSundayClosed = new ArrayList<>();
-        this.apertureSundayClosedRaw = new ArrayList<>();
+        this.mApertureSundayClosed = new ArrayList<>();
+        this.mApertureSundayClosedRaw = new ArrayList<>();
 
-        this.apertureRaw.add("lundi: 10:00 – 14:30, 18:30 – 22:00");
-        this.apertureRaw.add("mardi: 10:00 – 14:30, 18:30 – 22:00");
-        this.apertureRaw.add("mercredi: 10:00 – 14:30, 18:30 – 22:00");
-        this.apertureRaw.add("jeudi: 10:00 – 22:00");
-        this.apertureRaw.add("vendredi: 10:00 – 14:30, 18:30 – 22:00");
-        this.apertureRaw.add("samedi: 10:00 – 14:30, 18:30 – 22:00");
-        this.apertureRaw.add("dimanche: 10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureRaw.add("lundi: 10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureRaw.add("mardi: 10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureRaw.add("mercredi: 10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureRaw.add("jeudi: 10:00 – 22:00");
+        this.mApertureRaw.add("vendredi: 10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureRaw.add("samedi: 10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureRaw.add("dimanche: 10:00 – 14:30, 18:30 – 22:00");
 
-        this.aperture.add("10:00 – 14:30, 18:30 – 22:00");
-        this.aperture.add("10:00 – 14:30, 18:30 – 22:00");
-        this.aperture.add("10:00 – 14:30, 18:30 – 22:00");
-        this.aperture.add("10:00 – 22:00");
-        this.aperture.add("10:00 – 14:30, 18:30 – 22:00");
-        this.aperture.add("10:00 – 14:30, 18:30 – 22:00");
-        this.aperture.add("10:00 – 14:30, 18:30 – 22:00");
+        this.mAperture.add("10:00 – 14:30, 18:30 – 22:00");
+        this.mAperture.add("10:00 – 14:30, 18:30 – 22:00");
+        this.mAperture.add("10:00 – 14:30, 18:30 – 22:00");
+        this.mAperture.add("10:00 – 22:00");
+        this.mAperture.add("10:00 – 14:30, 18:30 – 22:00");
+        this.mAperture.add("10:00 – 14:30, 18:30 – 22:00");
+        this.mAperture.add("10:00 – 14:30, 18:30 – 22:00");
 
-        this.apertureSundayClosedRaw.add("lundi: 10:00 – 14:30, 18:30 – 22:00");
-        this.apertureSundayClosedRaw.add("mardi: 10:00 – 14:30, 18:30 – 22:00");
-        this.apertureSundayClosedRaw.add("mercredi: 10:00 – 14:30, 18:30 – 22:00");
-        this.apertureSundayClosedRaw.add("jeudi: 10:00 – 22:00");
-        this.apertureSundayClosedRaw.add("vendredi: 10:00 – 14:30, 18:30 – 22:00");
-        this.apertureSundayClosedRaw.add("samedi: 10:00 – 14:30, 18:30 – 22:00");
-        this.apertureSundayClosedRaw.add("dimanche: Fermé");
+        this.mApertureSundayClosedRaw.add("lundi: 10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureSundayClosedRaw.add("mardi: 10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureSundayClosedRaw.add("mercredi: 10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureSundayClosedRaw.add("jeudi: 10:00 – 22:00");
+        this.mApertureSundayClosedRaw.add("vendredi: 10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureSundayClosedRaw.add("samedi: 10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureSundayClosedRaw.add("dimanche: Fermé");
 
-        this.apertureSundayClosed.add("10:00 – 14:30, 18:30 – 22:00");
-        this.apertureSundayClosed.add("10:00 – 14:30, 18:30 – 22:00");
-        this.apertureSundayClosed.add("10:00 – 14:30, 18:30 – 22:00");
-        this.apertureSundayClosed.add("10:00 – 22:00");
-        this.apertureSundayClosed.add("10:00 – 14:30, 18:30 – 22:00");
-        this.apertureSundayClosed.add("10:00 – 14:30, 18:30 – 22:00");
-        this.apertureSundayClosed.add("Closed Today");
+        this.mApertureSundayClosed.add("10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureSundayClosed.add("10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureSundayClosed.add("10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureSundayClosed.add("10:00 – 22:00");
+        this.mApertureSundayClosed.add("10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureSundayClosed.add("10:00 – 14:30, 18:30 – 22:00");
+        this.mApertureSundayClosed.add("Closed Today");
     }
 
     @Test
     public void shouldRemoveAllFirstCharacters()
     {
-        String result = MapMethods.convertAperture(apertureRaw, calendarInstance[indexOfDay]);
+        String result = MapMethods.convertAperture(mApertureRaw, mCalendarInstance[mIndexOfDay]);
         assertEquals("10:00 – 14:30, 18:30 – 22:00", result);
     }
 
     @Test
     public void shouldReturnMondayIfTodayIsMonday()
     {
-        String result = MapMethods.convertAperture(apertureRaw, calendarInstance[indexOfDay]);
-        assertEquals(aperture.get(indexOfDay), result);
+        String result = MapMethods.convertAperture(mApertureRaw, mCalendarInstance[mIndexOfDay]);
+        assertEquals(mAperture.get(mIndexOfDay), result);
     }
 
     @Test
     public void shouldReturnSundayIfTodayIsSunday()
     {
-        indexOfDay = 6;
-        String result = MapMethods.convertAperture(apertureRaw, calendarInstance[indexOfDay]);
-        assertEquals(aperture.get(indexOfDay), result);
+        mIndexOfDay = 6;
+        String result = MapMethods.convertAperture(mApertureRaw, mCalendarInstance[mIndexOfDay]);
+        assertEquals(mAperture.get(mIndexOfDay), result);
     }
 
     @Test
     public void shouldReturnCorrectDayOfWeek()
     {
-        for (int i = 0; i < apertureRaw.size(); i++)
+        for (int i = 0; i < mApertureRaw.size(); i++)
         {
-            String result = MapMethods.convertAperture(apertureRaw, calendarInstance[i]);
-            assertEquals(aperture.get(i), result);
+            String result = MapMethods.convertAperture(mApertureRaw, mCalendarInstance[i]);
+            assertEquals(mAperture.get(i), result);
         }
     }
 
     @Test
     public void shouldReturnClosedIfNoOpenHoursIsSpecified()
     {
-        indexOfDay = 6;
-        String result = MapMethods.convertAperture(apertureSundayClosedRaw, calendarInstance[indexOfDay]);
-        assertEquals(apertureSundayClosed.get(indexOfDay), result);
+        mIndexOfDay = 6;
+        String result = MapMethods.convertAperture(mApertureSundayClosedRaw, mCalendarInstance[mIndexOfDay]);
+        assertEquals(mApertureSundayClosed.get(mIndexOfDay), result);
     }
 }

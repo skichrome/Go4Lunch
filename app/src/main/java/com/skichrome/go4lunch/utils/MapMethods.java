@@ -1,83 +1,65 @@
 package com.skichrome.go4lunch.utils;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.location.Location;
+import android.util.Log;
 
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.location.places.AutocompleteFilter;
-import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.maps.android.SphericalUtil;
+import com.skichrome.go4lunch.models.googleplacedetails.Result;
+import com.skichrome.go4lunch.utils.firebase.PlaceHelper;
 
+import java.util.Calendar;
 import java.util.List;
 
 public abstract class MapMethods
 {
-    //=========================================
-    // Callback interfaces
-    //=========================================
-
-    public interface PlaceAutocompleteListener
-    {
-        void onPlaceAutocompleteReady(Intent mIntent);
-    }
-
-    //=========================================
+    //=========================================================
     // Constructor
-    //=========================================
+    //=========================================================
 
     private MapMethods() {}
 
-    //=========================================
+    //=========================================================
     // Methods
-    //=========================================
+    //=========================================================
 
-    private static void launchPlaceAutocompleteActivity(PlaceAutocompleteListener mCallback, Activity mActivity, Location mLocation)
+    public static LatLngBounds convertToBounds(Location location, double radiusInMeters)
     {
-        try
-        {
-            AutocompleteFilter filter = new AutocompleteFilter.Builder()                             // Define a research filter for possible places
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
-                    .build();
-            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)      // Create an intent and start an activity with request code
-                    .setFilter(filter)
-                    .setBoundsBias(convertToBounds(mLocation, 30))
-                    .build(mActivity);
-            mCallback.onPlaceAutocompleteReady(intent);
-        }
-        catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException mE) { mE.printStackTrace(); }
-    }
-
-    // ------------------------
-    // Location updates
-    // ------------------------
-
-    private static LatLngBounds convertToBounds(Location mLocation, double mRadiusInMeters)
-    {
-        LatLng center = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
-        double distanceFromCenterToCorner = mRadiusInMeters * Math.sqrt(2.0);
+        LatLng center = new LatLng(location.getLatitude(), location.getLongitude());
+        double distanceFromCenterToCorner = radiusInMeters * Math.sqrt(2.0);
         LatLng southWest = SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 225.0);
         LatLng northEast = SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 45.0);
         return new LatLngBounds(southWest, northEast);
     }
 
-    public static String convertAperture(List<String> mOpeningHours, int mDayCalendar)
+    public static String convertAperture(List<String> openingHours, int dayCalendar)
     {
         int correctedIndex;
-        switch (mDayCalendar)
+        switch (dayCalendar)
         {
             case 1: correctedIndex = 6;
                 break;
 
-            default: correctedIndex = mDayCalendar - 2;
+            default: correctedIndex = dayCalendar - 2;
                 break;
         }
-        String currentOpeningHours = mOpeningHours.get(correctedIndex);
+        String currentOpeningHours = openingHours.get(correctedIndex);
 
-        if (!mOpeningHours.get(correctedIndex).contains("0")) return "Closed Today";
+        if (!openingHours.get(correctedIndex).contains("0")) return "Closed Today";
         return currentOpeningHours.replaceAll("[a-zA-Z]+","").replace(": ", "");
+    }
+
+    public static void updateDetailsOnFirecloud(Result result, String statusCode)
+    {
+        PlaceHelper.updateRestaurantDetails(
+                result.getPlaceId(),
+                result.getWebsite(),
+                result.getFormattedPhoneNumber(),
+                result.getFormattedAddress(),
+                result.getOpeningHours() != null ? MapMethods.convertAperture(result.getOpeningHours().getWeekdayText(), Calendar.DAY_OF_WEEK) : null,
+                result.getOpeningHours() != null ? result.getOpeningHours().getOpenNow().toString() : "Don't know")
+                .addOnSuccessListener(aVoid -> Log.d("RxJava", "Successfully updated place details : " + result.getName()))
+                .addOnFailureListener(throwable -> Log.e("RxJava", "Error when update place to Firebase : status code : " + statusCode, throwable));
     }
 }

@@ -21,8 +21,8 @@ public interface GoogleApiService
                                                     @Query("type") String placeType);
 
     @GET("details/json")
-    Observable<MainPlaceDetails> getPlaceDetails(@Query("key") String mKey,
-                                                 @Query("placeid") String mId,
+    Observable<MainPlaceDetails> getPlaceDetails(@Query("key") String key,
+                                                 @Query("placeid") String id,
                                                  @Query("fields") String filters);
 
     Retrofit retrofit = new Retrofit.Builder()

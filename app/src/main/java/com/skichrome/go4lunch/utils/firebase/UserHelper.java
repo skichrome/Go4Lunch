@@ -22,16 +22,16 @@ public class UserHelper
     }
 
     // Create
-    public static Task<Void> createUser(String mUid, String mUsername, String mUrlPicture, FormattedPlace mSelectedPlace)
+    public static Task<Void> createUser(String uid, String username, String urlPicture, FormattedPlace selectedPlace)
     {
-        User user = new User(mUid, mUsername, mUrlPicture, mSelectedPlace);
-        return UserHelper.getUsersCollection().document(mUid).set(user);
+        User user = new User(uid, username, urlPicture, selectedPlace);
+        return UserHelper.getUsersCollection().document(uid).set(user);
     }
 
     // Get
-    public static Task<DocumentSnapshot> getUser(String mUid)
+    public static Task<DocumentSnapshot> getUser(String uid)
     {
-        return UserHelper.getUsersCollection().document(mUid).get();
+        return UserHelper.getUsersCollection().document(uid).get();
     }
 
     // Get all users
@@ -42,23 +42,23 @@ public class UserHelper
     }
 
     // Update username
-    public static Task<Void> updateUsername(String mUid, String mUsername)
+    public static Task<Void> updateUsername(String uid, String username)
     {
-        return UserHelper.getUsersCollection().document(mUid).update("username", mUsername);
+        return UserHelper.getUsersCollection().document(uid).update("username", username);
     }
 
     // Update chosen place
-    public static Task<Void> updateChosenPlace(String mUid, FormattedPlace mPlace)
+    public static Task<Void> updateChosenPlace(String uid, FormattedPlace place)
     {
         HashMap<String, FormattedPlace> map = new HashMap<>();
-        map.put("selectedPlace", mPlace);
+        map.put("selectedPlace", place);
 
-        return UserHelper.getUsersCollection().document(mUid).set(map, SetOptions.mergeFields("selectedPlace"));
+        return UserHelper.getUsersCollection().document(uid).set(map, SetOptions.mergeFields("selectedPlace"));
     }
 
     // delete
-    public static Task<Void> deleteUser(String mUid)
+    public static Task<Void> deleteUser(String uid)
     {
-        return UserHelper.getUsersCollection().document(mUid).delete();
+        return UserHelper.getUsersCollection().document(uid).delete();
     }
 }

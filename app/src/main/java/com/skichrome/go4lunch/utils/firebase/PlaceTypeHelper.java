@@ -12,54 +12,54 @@ public class PlaceTypeHelper
     private static final String COLLECTION_NAME = "places";
     private static final String SUB_COLLECTION_NAME = "users_linked";
 
-    public static Query getWorkMatesInPlace(String mSortedPlaceKey, String mPlaceId)
+    public static Query getWorkMatesInPlace(String sortedPlaceKey, String placeId)
     {
         return PlaceHelper.getPlaceCollection()
-                .document(mSortedPlaceKey)
+                .document(sortedPlaceKey)
                 .collection(COLLECTION_NAME)
-                .document(mPlaceId)
+                .document(placeId)
                 .collection(SUB_COLLECTION_NAME);
     }
 
-    public static Task<Void> createPlace(String mSortedPlaceKey, FormattedPlace mPlace)
+    public static Task<Void> createPlace(String sortedPlaceKey, FormattedPlace place)
     {
         return PlaceHelper.getPlaceCollection()
-                .document(mSortedPlaceKey)
+                .document(sortedPlaceKey)
                 .collection(COLLECTION_NAME)
-                .document(mPlace.getId())
-                .set(mPlace);
+                .document(place.getId())
+                .set(place);
     }
 
-    public static Task<Void> createUserIntoPlace(String mSortedPlaceKey, FirebaseUser mUser, FormattedPlace mPlace, FormattedPlace mPlaceInterest)
+    public static Task<Void> createUserIntoPlace(String sortedPlaceKey, FirebaseUser user, FormattedPlace place, FormattedPlace placeInterest)
     {
-        User user = new User(mUser.getUid(), mUser.getDisplayName(), mUser.getPhotoUrl() == null ? null : mUser.getPhotoUrl().toString(), mPlaceInterest);
+        User userModel = new User(user.getUid(), user.getDisplayName(), user.getPhotoUrl() == null ? null : user.getPhotoUrl().toString(), placeInterest);
 
         return PlaceHelper.getPlaceCollection()
-                .document(mSortedPlaceKey)
+                .document(sortedPlaceKey)
                 .collection(COLLECTION_NAME)
-                .document(mPlace.getId())
+                .document(place.getId())
                 .collection(SUB_COLLECTION_NAME)
-                .document(user.getUid())
-                .set(user);
+                .document(userModel.getUid())
+                .set(userModel);
     }
 
-    public static Task<Void> removeUserIntoPlace(String mSortedPlaceKey, String mUserId, String mPlaceId)
+    public static Task<Void> removeUserIntoPlace(String sortedPlaceKey, String userId, String placeId)
     {
         return PlaceHelper.getPlaceCollection()
-                .document(mSortedPlaceKey)
+                .document(sortedPlaceKey)
                 .collection(COLLECTION_NAME)
-                .document(mPlaceId)
+                .document(placeId)
                 .collection(SUB_COLLECTION_NAME)
-                .document(mUserId)
+                .document(userId)
                 .delete();
     }
 
-    public static Task<QuerySnapshot> getNumberOfWorkmates(String mSortedPlaceKey, String mPlaceId)
+    public static Task<QuerySnapshot> getNumberOfWorkmates(String sortedPlaceKey, String placeId)
     {
         return PlaceHelper.getPlaceCollection()
-                .document(mSortedPlaceKey)
+                .document(sortedPlaceKey)
                 .collection(COLLECTION_NAME)
-                .document(mPlaceId)
+                .document(placeId)
                 .collection(SUB_COLLECTION_NAME)
                 .get();
     }

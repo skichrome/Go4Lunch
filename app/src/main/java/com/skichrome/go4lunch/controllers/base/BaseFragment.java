@@ -45,14 +45,9 @@ public abstract class BaseFragment extends Fragment
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        // Get layout identifier from abstract method
         View view = inflater.inflate(getFragmentLayout(), container, false);
-        //bind view
         ButterKnife.bind(this, view);
-
-        // Configure and update Design (Developer will implement these method instead of override onCreateView())
         this.configureFragment();
-
         return(view);
     }
 }

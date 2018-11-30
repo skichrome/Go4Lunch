@@ -41,9 +41,9 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     // Fields
     //=========================================
 
-    private GoogleMap gMap;
-    private WeakReference<MapFragmentListeners> callback;
-    private Map<Marker, FormattedPlace> markers;
+    private GoogleMap mGMap;
+    private WeakReference<MapFragmentListeners> mCallback;
+    private Map<Marker, FormattedPlace> mMarkers;
 
     //=========================================
     // New Instance method
@@ -59,7 +59,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     protected void configureFragment()
     {
         this.configureMapApi();
-        this.callback = new WeakReference<> ((MapFragmentListeners) getActivity());
+        this.mCallback = new WeakReference<> ((MapFragmentListeners) getActivity());
     }
 
     @Override
@@ -70,7 +70,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     //=========================================
 
     @OnClick(R.id.fragment_map_floating_action_btn)
-    public void onClickFloatingActionBtn() { this.callback.get().fragmentNeedUpdateCallback(); }
+    public void onClickFloatingActionBtn() { this.mCallback.get().fragmentNeedUpdateCallback(); }
 
     //=========================================
     // Methods
@@ -88,29 +88,29 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
 
     @SuppressLint("MissingPermission")
     @Override
-    public void onMapReady(GoogleMap mGoogleMap)
+    public void onMapReady(GoogleMap googleMap)
     {
-        this.gMap = mGoogleMap;
-        this.gMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        this.gMap.setIndoorEnabled(true);
-        this.gMap.setOnMarkerClickListener(this);
-        this.gMap.setMyLocationEnabled(true);
-        this.gMap.getUiSettings().setMyLocationButtonEnabled(false); // delete default button
+        this.mGMap = googleMap;
+        this.mGMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        this.mGMap.setIndoorEnabled(true);
+        this.mGMap.setOnMarkerClickListener(this);
+        this.mGMap.setMyLocationEnabled(true);
+        this.mGMap.getUiSettings().setMyLocationButtonEnabled(false); // delete default button
         this.updateMarkerOnMap();
     }
 
     public void updateLocation(Location location)
     {
         Log.e("MapFragment : ", "ERROR DEBUG FUCK YOU");
-        if (this.gMap == null) return;
+        if (this.mGMap == null) return;
         LatLng lastKnownLocation = new LatLng(location.getLatitude(), location.getLongitude());
-        this.gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastKnownLocation, 20.0f));
+        this.mGMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastKnownLocation, 20.0f));
     }
 
     public void updateMarkerOnMap()
     {
-        gMap.clear();
-        this.markers = new HashMap<>();
+        mGMap.clear();
+        this.mMarkers = new HashMap<>();
         PlaceHelper.getAllPlaces().addOnSuccessListener(success ->
         {
             for (DocumentSnapshot snap : success)
@@ -131,20 +131,20 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
             Toast.makeText(getContext(), R.string.toast_frag_no_restaurant_detected, Toast.LENGTH_SHORT).show();
     }
 
-    private void addMarkerToMap(boolean someoneIsJoining, FormattedPlace mPlace)
+    private void addMarkerToMap(boolean someoneIsJoining, FormattedPlace place)
     {
-        LatLng location = new LatLng(mPlace.getLocationLatitude(), mPlace.getLocationLongitude());
-        Marker marker = this.gMap.addMarker(new MarkerOptions()
+        LatLng location = new LatLng(place.getLocationLatitude(), place.getLocationLongitude());
+        Marker marker = this.mGMap.addMarker(new MarkerOptions()
                 .position(location)
-                .title(mPlace.getName())
+                .title(place.getName())
                 .icon(BitmapDescriptorFactory.fromResource(someoneIsJoining ? R.drawable.lunch_marker_someone_here : R.drawable.lunch_marker_nobody)));
-        this.markers.put(marker, mPlace);
+        this.mMarkers.put(marker, place);
     }
 
     @Override
-    public boolean onMarkerClick(Marker mMarker)
+    public boolean onMarkerClick(Marker marker)
     {
-        FormattedPlace restaurantDetails = this.markers.get(mMarker);
+        FormattedPlace restaurantDetails = this.mMarkers.get(marker);
         Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
         intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, restaurantDetails);
         startActivity(intent);

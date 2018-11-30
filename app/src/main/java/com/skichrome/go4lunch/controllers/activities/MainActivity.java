@@ -27,6 +27,9 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.skichrome.go4lunch.R;
@@ -37,14 +40,10 @@ import com.skichrome.go4lunch.controllers.fragments.WorkmatesFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.firestore.User;
 import com.skichrome.go4lunch.models.googleplacedetails.MainPlaceDetails;
-import com.skichrome.go4lunch.models.googleplacedetails.Result;
 import com.skichrome.go4lunch.utils.FireStoreAuthentication;
 import com.skichrome.go4lunch.utils.MapMethods;
-import com.skichrome.go4lunch.utils.firebase.PlaceHelper;
 import com.skichrome.go4lunch.utils.firebase.UserHelper;
 import com.skichrome.go4lunch.utils.rxjava.GoogleApiStream;
-
-import java.util.Calendar;
 
 import butterknife.BindView;
 import icepick.State;
@@ -61,21 +60,22 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Fields
     //=========================================
 
-    @BindView(R.id.main_activity_constraint_layout_container) ConstraintLayout constraintLayout;
-    @BindView(R.id.activity_main_bottomNavigationView) BottomNavigationView bottomNavigationView;
-    @BindView(R.id.activity_toolbar) Toolbar toolbar;
-    @BindView(R.id.activity_main_menu_drawer_layout) DrawerLayout drawerLayout;
-    @BindView(R.id.activity_main_navigation_view) NavigationView navigationView;
-    @State int fragmentDisplayed;
+    @BindView(R.id.main_activity_constraint_layout_container) ConstraintLayout mConstraintLayout;
+    @BindView(R.id.activity_main_bottomNavigationView) BottomNavigationView mBottomNavigationView;
+    @BindView(R.id.activity_toolbar) Toolbar mToolbar;
+    @BindView(R.id.activity_main_menu_drawer_layout) DrawerLayout mDrawerLayout;
+    @BindView(R.id.activity_main_navigation_view) NavigationView mNavigationView;
+    @State int mFragmentDisplayed;
 
-    private MapFragment mapFragment;
-    private ListFragment listFragment;
-    private WorkmatesFragment workmatesFragment;
-    private boolean isHttpRequestAlreadyLaunched = false;
-    private boolean isFragmentLocationUpdated = false;
-    private Disposable disposable;
-    private LocationManager locationManager;
-    private LocationListener locationListener;
+    private MapFragment mMapFragment;
+    private ListFragment mListFragment;
+    private WorkmatesFragment mWorkmatesFragment;
+    private boolean mIsHttpRequestAlreadyLaunched = false;
+    private boolean mIsFragmentLocationUpdated = false;
+    private Disposable mDisposable;
+    private LocationManager mLocationManager;
+    private LocationListener mLocationListener;
+    private Location mLastKnownLocation;
     public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 4124;
 
     //=========================================
@@ -97,7 +97,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     @Override
     protected void updateActivity()
     {
-        switch (this.fragmentDisplayed)
+        switch (this.mFragmentDisplayed)
         {
             case 1 : this.configureListFragment();
                 break;
@@ -120,20 +120,19 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     protected void onStop()
     {
         super.onStop();
-        if (this.disposable != null && !this.disposable.isDisposed()) this.disposable.dispose();
-        if (this.locationManager != null)
+        if (this.mDisposable != null && !this.mDisposable.isDisposed()) this.mDisposable.dispose();
+        if (this.mLocationManager != null)
         {
-            this.locationManager.removeUpdates(locationListener);
-            this.locationManager = null;
+            this.mLocationManager.removeUpdates(mLocationListener);
+            this.mLocationManager = null;
         }
-        if (this.locationListener != null) this.locationListener = null;
+        if (this.mLocationListener != null) this.mLocationListener = null;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
-
         switch (requestCode)
         {
             case PLACE_AUTOCOMPLETE_REQUEST_CODE:
@@ -177,27 +176,27 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
 
     private void configureToolBar()
     {
-        setSupportActionBar(toolbar);
+        setSupportActionBar(mToolbar);
         if (getSupportActionBar() != null)
             getSupportActionBar().setElevation(4);
     }
 
-    private void configureNavigationView() { navigationView.setNavigationItemSelectedListener(this); }
+    private void configureNavigationView() { mNavigationView.setNavigationItemSelectedListener(this); }
 
     private void configureMenuDrawer()
     {
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        mDrawerLayout.addDrawerListener(toggle);
         toggle.syncState();
     }
 
-    private void configureBottomNavigationView() { bottomNavigationView.setOnNavigationItemSelectedListener(this); }
+    private void configureBottomNavigationView() { mBottomNavigationView.setOnNavigationItemSelectedListener(this); }
 
     @SuppressLint("MissingPermission")
     private void configureLocation()
     {
-        this.locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        this.locationListener = new LocationListener()
+        this.mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        this.mLocationListener = new LocationListener()
         {
             @Override
             public void onLocationChanged(Location location)
@@ -205,6 +204,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
                 if (location != null)
                 {
                     Log.d("BaseActivity : ", "You have a location request : " + location.toString());
+                    mLastKnownLocation = location;
                     locationUpdates(location);
                 } else
                     Log.e("BaseActivity : ", "Error, location is null, cancel PlaceApi request");
@@ -213,20 +213,20 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
             @Override public void onProviderEnabled(String provider) { }
             @Override public void onProviderDisabled(String provider) { }
         };
-        this.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this.locationListener);
+        this.mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this.mLocationListener);
     }
 
     private void locationUpdates(Location location)
     {
-        if (!this.isFragmentLocationUpdated && this.mapFragment != null && this.mapFragment.isVisible())
+        if (!this.mIsFragmentLocationUpdated && this.mMapFragment != null && this.mMapFragment.isVisible())
         {
-            this.mapFragment.updateLocation(location);
-            this.isFragmentLocationUpdated = true;
+            this.mMapFragment.updateLocation(location);
+            this.mIsFragmentLocationUpdated = true;
         }
-        if (!this.isHttpRequestAlreadyLaunched)
+        if (!this.mIsHttpRequestAlreadyLaunched)
         {
             this.executeHttpRequest(location.getLatitude() + "," + location.getLongitude());
-            this.isHttpRequestAlreadyLaunched = true;
+            this.mIsHttpRequestAlreadyLaunched = true;
         }
     }
 
@@ -240,9 +240,8 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         switch (item.getItemId())
         {
             case R.id.activity_main_menu_search:
-                //Todo implements place search feature with place autocomplete
-//                if (workmatesFragment == null || !workmatesFragment.isVisible()) MapMethods.getLastKnownLocationForPlaceAutocomplete(this, this);
-//                else Toast.makeText(this, "This feature isn't implemented yet !", Toast.LENGTH_SHORT).show();
+                if (mLastKnownLocation != null && mWorkmatesFragment == null || !mWorkmatesFragment.isVisible()) launchPlaceAutocompleteActivity();
+                else Toast.makeText(this, "This feature isn't implemented yet !", Toast.LENGTH_SHORT).show();
                 return true;
 
             default:
@@ -251,9 +250,9 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     }
 
     @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem mItem)
+    public boolean onNavigationItemSelected(@NonNull MenuItem item)
     {
-        switch (mItem.getItemId())
+        switch (item.getItemId())
         {
             // For Bottom Navigation View
             case R.id.menu_bottom_nav_view_map_view:
@@ -284,14 +283,14 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
             default:
                 return false;
         }
-        drawerLayout.closeDrawer(GravityCompat.START);
+        mDrawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
 
     @Override
     public void onBackPressed()
     {
-        if (this.drawerLayout.isDrawerOpen(GravityCompat.START)) this.drawerLayout.closeDrawer(GravityCompat.START);
+        if (this.mDrawerLayout.isDrawerOpen(GravityCompat.START)) this.mDrawerLayout.closeDrawer(GravityCompat.START);
         else super.onBackPressed();
     }
 
@@ -299,34 +298,34 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Fragment Methods
     //=========================================
 
-    private void displayFragment(Fragment mFragment)
+    private void displayFragment(Fragment fragment)
     {
-        if (!mFragment.isVisible()) getSupportFragmentManager()
+        if (!fragment.isVisible()) getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.activity_main_frame_layout_for_fragments, mFragment)
+                .replace(R.id.activity_main_frame_layout_for_fragments, fragment)
                 .commit();
     }
 
     private void configureMapFragment()
     {
-        if (mapFragment == null) mapFragment = MapFragment.newInstance();
-        displayFragment(mapFragment);
-        this.isFragmentLocationUpdated = false;
-        this.fragmentDisplayed = 0;
+        if (mMapFragment == null) mMapFragment = MapFragment.newInstance();
+        displayFragment(mMapFragment);
+        this.mIsFragmentLocationUpdated = false;
+        this.mFragmentDisplayed = 0;
     }
 
     private void configureListFragment()
     {
-        if (listFragment == null) listFragment = ListFragment.newInstance();
-        displayFragment(listFragment);
-        this.fragmentDisplayed = 1;
+        if (mListFragment == null) mListFragment = ListFragment.newInstance();
+        displayFragment(mListFragment);
+        this.mFragmentDisplayed = 1;
     }
 
     private void configureWorkmatesFragment()
     {
-        if (workmatesFragment == null) workmatesFragment = WorkmatesFragment.newInstance();
-        displayFragment(workmatesFragment);
-        this.fragmentDisplayed = 2;
+        if (mWorkmatesFragment == null) mWorkmatesFragment = WorkmatesFragment.newInstance();
+        displayFragment(mWorkmatesFragment);
+        this.mFragmentDisplayed = 2;
     }
 
     private void launchSettingActivityAndFragment() { startActivity(new Intent(MainActivity.this, SettingsActivity.class)); }
@@ -351,11 +350,11 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Update Method
     //=========================================
 
-    public void showSnackBarMessage(String mMessage) { Snackbar.make(this.constraintLayout, mMessage, Snackbar.LENGTH_SHORT).show(); }
+    public void showSnackBarMessage(String message) { Snackbar.make(this.mConstraintLayout, message, Snackbar.LENGTH_SHORT).show(); }
 
     private void updateDrawerFields()
     {
-        View headerView = navigationView.getHeaderView(0);
+        View headerView = mNavigationView.getHeaderView(0);
         TextView name = headerView.findViewById(R.id.nav_drawer_header_username);
         TextView email = headerView.findViewById(R.id.nav_drawer_header_email);
         ImageView profilePicture = headerView.findViewById(R.id.nav_drawer_header_user_image_profile);
@@ -372,36 +371,40 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
 
     private void executeHttpRequest(String location)
     {
-        this.disposable = GoogleApiStream.streamFetchPlaces(getString(R.string.google_api_key), location, 20).subscribeWith(new DisposableObserver<MainPlaceDetails>()
+        this.mDisposable = GoogleApiStream.streamFetchPlaces(getString(R.string.google_api_key), location, 20).subscribeWith(new DisposableObserver<MainPlaceDetails>()
         {
             @Override
-            public void onNext(MainPlaceDetails mainPlaceDetails) { updateDetailsOnFirecloud(mainPlaceDetails.getResult(), mainPlaceDetails.getStatus()); }
+            public void onNext(MainPlaceDetails mainPlaceDetails) { MapMethods.updateDetailsOnFirecloud(mainPlaceDetails.getResult(), mainPlaceDetails.getStatus()); }
             @Override
             public void onError(Throwable e) { Log.e("Main activity : ", "Something went wrong with http request", e); }
             @Override
             public void onComplete()
             {
-                if (mapFragment != null && mapFragment.isVisible())
+                if (mMapFragment != null && mMapFragment.isVisible())
                 {
-                    mapFragment.updateMarkerOnMap();
-                    isFragmentLocationUpdated = false;
+                    mMapFragment.updateMarkerOnMap();
+                    mIsFragmentLocationUpdated = false;
                 }
-                if (listFragment != null && listFragment.isVisible()) listFragment.updatePlacesList();
+                if (mListFragment != null && mListFragment.isVisible()) mListFragment.updatePlacesList();
             }
         });
     }
 
-    private void updateDetailsOnFirecloud(Result result, String statusCode)
+    private void launchPlaceAutocompleteActivity()
     {
-        PlaceHelper.updateRestaurantDetails(
-                result.getPlaceId(),
-                result.getWebsite(),
-                result.getFormattedPhoneNumber(),
-                result.getFormattedAddress(),
-                result.getOpeningHours() != null ? MapMethods.convertAperture(result.getOpeningHours().getWeekdayText(), Calendar.DAY_OF_WEEK) : null,
-                result.getOpeningHours() != null ? result.getOpeningHours().getOpenNow().toString() : "Don't know")
-        .addOnSuccessListener(aVoid -> Log.d("RxJava", "Successfully updated place details : " + result.getName()))
-        .addOnFailureListener(throwable -> Log.e("RxJava", "Error when update place to Firebase : status code : " + statusCode, throwable));
+        try
+        {
+            AutocompleteFilter filter = new AutocompleteFilter.Builder()                             // Define a research filter for possible places
+                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
+                    .build();
+            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)      // Create an intent and start an activity with request code
+                    .setFilter(filter)
+                    .setBoundsBias(MapMethods.convertToBounds(mLastKnownLocation, 30))
+                    .build(this);
+
+            startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+        }
+        catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException mE) { mE.printStackTrace(); }
     }
 
     //=========================================
@@ -409,5 +412,5 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     //=========================================
 
     @Override
-    public void fragmentNeedUpdateCallback() { this.isHttpRequestAlreadyLaunched = false; }
+    public void fragmentNeedUpdateCallback() { this.mIsHttpRequestAlreadyLaunched = false; }
 }

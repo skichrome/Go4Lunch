@@ -24,14 +24,14 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
     // Fields
     //=========================================
 
-    @BindView(R.id.fragment_list_item_restaurant_name) TextView textViewName;
-    @BindView(R.id.fragment_list_item_restaurant_distance) TextView textViewDistance;
-    @BindView(R.id.fragment_list_item_restaurant_address) TextView textViewAddress;
-    @BindView(R.id.fragment_list_item_number_of_workmates_in_this_restaurant) TextView textViewNumberOfWorkMates;
-    @BindView(R.id.fragment_list_item_restaurant_aperture) TextView textViewAperture;
-    @BindView(R.id.fragment_list_item_rate_1_star) ImageView imageViewRate1;
-    @BindView(R.id.fragment_list_item_rate_2_stars) ImageView imageViewRate2;
-    @BindView(R.id.fragment_list_item_rate_3_stars) ImageView imageViewRate3;
+    @BindView(R.id.fragment_list_item_restaurant_name) TextView mTextViewName;
+    @BindView(R.id.fragment_list_item_restaurant_distance) TextView mTextViewDistance;
+    @BindView(R.id.fragment_list_item_restaurant_address) TextView mTextViewAddress;
+    @BindView(R.id.fragment_list_item_number_of_workmates_in_this_restaurant) TextView mTextViewNumberOfWorkMates;
+    @BindView(R.id.fragment_list_item_restaurant_aperture) TextView mTextViewAperture;
+    @BindView(R.id.fragment_list_item_rate_1_star) ImageView mImageViewRate1;
+    @BindView(R.id.fragment_list_item_rate_2_stars) ImageView mImageViewRate2;
+    @BindView(R.id.fragment_list_item_rate_3_stars) ImageView mImageViewRate3;
     @BindView(R.id.fragment_list_item_restaurant_image) ImageView imageViewRestaurantImg;
 
     private static final int ID_WORKMATES = 100;
@@ -51,16 +51,16 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
     // UI Methods
     //=========================================
 
-    void updateUI(FormattedPlace mPlace, RequestManager mGlide)
+    void updateUI(FormattedPlace place, RequestManager glide)
     {
-        this.textViewName.setText(mPlace.getName());
-        this.textViewDistance.setText(mPlace.getDistance());
-        this.textViewAddress.setText(mPlace.getAddress());
-        this.textViewAperture.setText(mPlace.getAperture());
-        this.textViewDistance.setText(mPlace.getDistance() == null ? "-" : mPlace.getDistance());
+        this.mTextViewName.setText(place.getName());
+        this.mTextViewDistance.setText(place.getDistance());
+        this.mTextViewAddress.setText(place.getAddress());
+        this.mTextViewAperture.setText(place.getAperture());
+        this.mTextViewDistance.setText(place.getDistance() == null ? "-" : place.getDistance());
 
-        PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mPlace.getId()).addOnSuccessListener(onSuccessListener(ID_WORKMATES));
-        PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_RATED_CLOUD_FIRESTORE, mPlace.getId()).addOnSuccessListener(onSuccessListener(ID_RATE));
+        PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, place.getId()).addOnSuccessListener(onSuccessListener(ID_WORKMATES));
+        PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_RATED_CLOUD_FIRESTORE, place.getId()).addOnSuccessListener(onSuccessListener(ID_RATE));
 
         // Todo update photo field with Glide and Google Photo API here
     }
@@ -73,7 +73,7 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
             {
                 case ID_WORKMATES :
                     String textToDisplay = "(" + mQueryDocumentSnapshots.size() + ")";
-                    textViewNumberOfWorkMates.setText(textToDisplay);
+                    mTextViewNumberOfWorkMates.setText(textToDisplay);
                     break;
 
                 case ID_RATE :
@@ -81,26 +81,26 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
                     switch (size)
                     {
                         case 0:
-                            imageViewRate1.setVisibility(View.INVISIBLE);
-                            imageViewRate2.setVisibility(View.INVISIBLE);
-                            imageViewRate3.setVisibility(View.INVISIBLE);
+                            mImageViewRate1.setVisibility(View.INVISIBLE);
+                            mImageViewRate2.setVisibility(View.INVISIBLE);
+                            mImageViewRate3.setVisibility(View.INVISIBLE);
                             break;
                         case 1:
-                            imageViewRate1.setVisibility(View.VISIBLE);
-                            imageViewRate2.setVisibility(View.INVISIBLE);
-                            imageViewRate3.setVisibility(View.INVISIBLE);
+                            mImageViewRate1.setVisibility(View.VISIBLE);
+                            mImageViewRate2.setVisibility(View.INVISIBLE);
+                            mImageViewRate3.setVisibility(View.INVISIBLE);
                             break;
 
                         case 2:
-                            imageViewRate1.setVisibility(View.VISIBLE);
-                            imageViewRate2.setVisibility(View.VISIBLE);
-                            imageViewRate3.setVisibility(View.INVISIBLE);
+                            mImageViewRate1.setVisibility(View.VISIBLE);
+                            mImageViewRate2.setVisibility(View.VISIBLE);
+                            mImageViewRate3.setVisibility(View.INVISIBLE);
                             break;
 
                         default:
-                            imageViewRate1.setVisibility(View.VISIBLE);
-                            imageViewRate2.setVisibility(View.VISIBLE);
-                            imageViewRate3.setVisibility(View.VISIBLE);
+                            mImageViewRate1.setVisibility(View.VISIBLE);
+                            mImageViewRate2.setVisibility(View.VISIBLE);
+                            mImageViewRate3.setVisibility(View.VISIBLE);
                             break;
                     }
                     break;
