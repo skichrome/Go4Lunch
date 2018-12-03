@@ -44,6 +44,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     private GoogleMap mGMap;
     private WeakReference<MapFragmentListeners> mCallback;
     private Map<Marker, FormattedPlace> mMarkers;
+    private boolean mOrigin = false;
 
     //=========================================
     // New Instance method
@@ -101,10 +102,19 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
 
     public void updateLocation(Location location)
     {
-        Log.e("MapFragment : ", "ERROR DEBUG FUCK YOU");
-        if (this.mGMap == null) return;
-        LatLng lastKnownLocation = new LatLng(location.getLatitude(), location.getLongitude());
-        this.mGMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastKnownLocation, 20.0f));
+        if (this.mGMap == null || this.mOrigin) return;
+        LatLng lastKnownLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        this.mGMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastKnownLatLng, 19.0f));
+    }
+
+    public void updateMapForAutocomplete(FormattedPlace place)
+    {
+        mGMap.clear();
+        this.mMarkers = new HashMap<>();
+        this.addMarkerToMap(true, place);
+        LatLng placeLatLng = new LatLng(place.getLocationLatitude(), place.getLocationLongitude());
+        this.mGMap.moveCamera(CameraUpdateFactory.newLatLngZoom(placeLatLng, 19.0f));
+        this.mOrigin = true;
     }
 
     public void updateMarkerOnMap()
@@ -116,19 +126,12 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
             for (DocumentSnapshot snap : success)
             {
                 FormattedPlace place = snap.toObject(FormattedPlace.class);
-                addMarkerToMap(false, place);
-                // Todo update color of marker if there is at least one workmate insterested
+
+                // Todo update color of marker if there is at least one workmate interested (with boolean)
+                PlaceHelper.getUsersInterested(place.getId()).addOnSuccessListener(queryDocumentSnapshots -> addMarkerToMap(queryDocumentSnapshots.isEmpty(), place));
             }
         }).addOnFailureListener(throwable -> Log.e("MapFragment : ", "An error occurred when downloading all places.", throwable));
-
-        if (mPlaces != null && mPlaces.size() != 0)
-        {
-            gMap.clear();
-            for (FormattedPlace place : mPlaces)
-                PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, place.getId())
-                        .addOnSuccessListener(mQueryDocumentSnapshots -> addMarkerToMap(mQueryDocumentSnapshots.size() != 0, place));
-        } else
-            Toast.makeText(getContext(), R.string.toast_frag_no_restaurant_detected, Toast.LENGTH_SHORT).show();
+        this.mOrigin = false;
     }
 
     private void addMarkerToMap(boolean someoneIsJoining, FormattedPlace place)

@@ -14,7 +14,7 @@ import com.skichrome.go4lunch.utils.firebase.UserHelper;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class WorkmatesViewHolder extends RecyclerView.ViewHolder
+class WorkmatesViewHolder extends RecyclerView.ViewHolder
 {
     @BindView(R.id.fragment_workmates_item_profile_image) ImageView mProfileImage;
     @BindView(R.id.fragment_workmates_item_join_or_not_text_view) TextView mTextView;
@@ -40,9 +40,9 @@ public class WorkmatesViewHolder extends RecyclerView.ViewHolder
             if (user1 != null)
             {
                 if (mOrigin == null)
-                    result = user1.getUsername() + " " + (user1.getSelectedPlace() != null ? mTexts[0] + " " + user1.getSelectedPlace().getName() : mTexts[1]);
+                    result = user1.getUsername() + " " + (user1.getSelectedPlaceId() != null ? mTexts[0] + " " + user1.getSelectedPlace().getName() : mTexts[1]);
                 else
-                    result = (user1.getSelectedPlace() != null && user1.getSelectedPlace().getId().equals(mOrigin) ? user1.getUsername() + " " + mTexts[0] : "");
+                    result = (user1.getSelectedPlaceId() != null && user1.getSelectedPlace().getId().equals(mOrigin) ? user1.getUsername() + " " + mTexts[0] : "");
             }
             mTextView.setText(result);
         });

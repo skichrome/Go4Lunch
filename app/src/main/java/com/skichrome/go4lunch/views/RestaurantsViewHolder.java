@@ -1,22 +1,18 @@
 package com.skichrome.go4lunch.views;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.models.FormattedPlace;
-import com.skichrome.go4lunch.utils.firebase.PlaceTypeHelper;
+import com.skichrome.go4lunch.utils.firebase.UserHelper;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_INTEREST_CLOUD_FIRESTORE;
-import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_RATED_CLOUD_FIRESTORE;
 
 class RestaurantsViewHolder extends RecyclerView.ViewHolder
 {
@@ -32,18 +28,19 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
     @BindView(R.id.fragment_list_item_rate_1_star) ImageView mImageViewRate1;
     @BindView(R.id.fragment_list_item_rate_2_stars) ImageView mImageViewRate2;
     @BindView(R.id.fragment_list_item_rate_3_stars) ImageView mImageViewRate3;
-    @BindView(R.id.fragment_list_item_restaurant_image) ImageView imageViewRestaurantImg;
+    @BindView(R.id.fragment_list_item_restaurant_image) ImageView mImageViewRestaurantImg;
 
-    private static final int ID_WORKMATES = 100;
-    private static final int ID_RATE = 200;
+    private String MAP_API_KEY;
+    private static final String GLIDE_BASE_GOOGLE_URL = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=";
 
     //=========================================
     // Constructor
     //=========================================
 
-    RestaurantsViewHolder(View itemView)
+    RestaurantsViewHolder(View itemView, String googleApiKey)
     {
         super(itemView);
+        this.MAP_API_KEY = googleApiKey;
         ButterKnife.bind(this, itemView);
     }
 
@@ -59,55 +56,44 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
         this.mTextViewAperture.setText(place.getAperture());
         this.mTextViewDistance.setText(place.getDistance() == null ? "-" : place.getDistance());
 
-        PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_INTEREST_CLOUD_FIRESTORE, place.getId()).addOnSuccessListener(onSuccessListener(ID_WORKMATES));
-        PlaceTypeHelper.getNumberOfWorkmates(ID_PLACE_RATED_CLOUD_FIRESTORE, place.getId()).addOnSuccessListener(onSuccessListener(ID_RATE));
-
-        // Todo update photo field with Glide and Google Photo API here
-    }
-
-    private OnSuccessListener<QuerySnapshot> onSuccessListener(final int mOrigin)
-    {
-        return mQueryDocumentSnapshots ->
+        UserHelper.getUsersInterestedByPlace(place.getId()).get().addOnSuccessListener(success ->
         {
-            switch (mOrigin)
-            {
-                case ID_WORKMATES :
-                    String textToDisplay = "(" + mQueryDocumentSnapshots.size() + ")";
-                    mTextViewNumberOfWorkMates.setText(textToDisplay);
-                    break;
+            String textToDisplay = "(" + success.size() + ")";
+            mTextViewNumberOfWorkMates.setText(textToDisplay);
+        });
 
-                case ID_RATE :
-                    int size = mQueryDocumentSnapshots.size(); // Todo update rating
-                    switch (size)
-                    {
-                        case 0:
-                            mImageViewRate1.setVisibility(View.INVISIBLE);
-                            mImageViewRate2.setVisibility(View.INVISIBLE);
-                            mImageViewRate3.setVisibility(View.INVISIBLE);
-                            break;
-                        case 1:
-                            mImageViewRate1.setVisibility(View.VISIBLE);
-                            mImageViewRate2.setVisibility(View.INVISIBLE);
-                            mImageViewRate3.setVisibility(View.INVISIBLE);
-                            break;
+        int rate = (int) Math.round(place.getRating()*3/5);
+        switch (rate)
+        {
+            case 0:
+                mImageViewRate1.setVisibility(View.INVISIBLE);
+                mImageViewRate2.setVisibility(View.INVISIBLE);
+                mImageViewRate3.setVisibility(View.INVISIBLE);
+                break;
+            case 1:
+                mImageViewRate1.setVisibility(View.VISIBLE);
+                mImageViewRate2.setVisibility(View.INVISIBLE);
+                mImageViewRate3.setVisibility(View.INVISIBLE);
+                break;
 
-                        case 2:
-                            mImageViewRate1.setVisibility(View.VISIBLE);
-                            mImageViewRate2.setVisibility(View.VISIBLE);
-                            mImageViewRate3.setVisibility(View.INVISIBLE);
-                            break;
+            case 2:
+                mImageViewRate1.setVisibility(View.VISIBLE);
+                mImageViewRate2.setVisibility(View.VISIBLE);
+                mImageViewRate3.setVisibility(View.INVISIBLE);
+                break;
 
-                        default:
-                            mImageViewRate1.setVisibility(View.VISIBLE);
-                            mImageViewRate2.setVisibility(View.VISIBLE);
-                            mImageViewRate3.setVisibility(View.VISIBLE);
-                            break;
-                    }
-                    break;
+            default:
+                mImageViewRate1.setVisibility(View.VISIBLE);
+                mImageViewRate2.setVisibility(View.VISIBLE);
+                mImageViewRate3.setVisibility(View.VISIBLE);
+                break;
+        }
 
-                default:
-                    break;
-            }
-        };
+        if (place.getPhotoReference() != null)
+        {
+            String photoUrl = GLIDE_BASE_GOOGLE_URL + place.getPhotoReference() + "&key=" + MAP_API_KEY;
+            Log.e(getClass().getSimpleName(), "updateUIElements : " + photoUrl);
+            glide.load(photoUrl).into(mImageViewRestaurantImg);
+        }
     }
 }

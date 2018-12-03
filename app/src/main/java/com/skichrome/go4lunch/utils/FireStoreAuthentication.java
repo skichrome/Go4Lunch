@@ -3,6 +3,7 @@ package com.skichrome.go4lunch.utils;
 import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
@@ -17,7 +18,6 @@ import com.skichrome.go4lunch.controllers.activities.MainActivity;
 import com.skichrome.go4lunch.controllers.activities.RestaurantDetailsActivity;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.firestore.User;
-import com.skichrome.go4lunch.utils.firebase.PlaceTypeHelper;
 import com.skichrome.go4lunch.utils.firebase.UserHelper;
 
 import java.util.Arrays;
@@ -40,6 +40,7 @@ public abstract class FireStoreAuthentication
 
     public static final String ID_PLACE_RATED_CLOUD_FIRESTORE = "places_rated";
     public static final String ID_PLACE_INTEREST_CLOUD_FIRESTORE = "places_interest";
+    private static final String LOG_TAG = "FireStoreAuth : ";
 
     private static final int REQUEST_CHECK_SETTINGS = 12000;
 
@@ -80,7 +81,7 @@ public abstract class FireStoreAuthentication
             case RC_SIGN_IN :
                 if (resultCode == Activity.RESULT_OK)                                                  // SUCCESS
                 {
-                    createUserInFirebase(activity, user);
+                    createUserInCloud(activity, user);
                     return activity.getString(R.string.firebase_auth_success);
                 }
                 else                                                                                    // ERRORS
@@ -110,7 +111,7 @@ public abstract class FireStoreAuthentication
         }
     }
 
-    private static void createUserInFirebase(Activity activity, FirebaseUser user)
+    private static void createUserInCloud(Activity activity, FirebaseUser user)
     {
         if (user != null)
         {
@@ -126,14 +127,14 @@ public abstract class FireStoreAuthentication
     // Log out and delete methods
     //=========================================
 
-    public static void logoutFromFirestore(Activity activity)
+    public static void logout(Activity activity)
     {
         AuthUI.getInstance()
                 .signOut(activity)
                 .addOnSuccessListener(activity, updateUIAfterRESTRequestsCompleted(activity, SIGN_OUT_TASK));
     }
 
-    public static void deleteAccountFromFirebase(Activity activity, FirebaseUser user)
+    public static void deleteAccount(Activity activity, FirebaseUser user)
     {
         if (user != null)
         {
@@ -176,33 +177,11 @@ public abstract class FireStoreAuthentication
     // Update Methods
     //=========================================
 
-    private static void updateChosenRestaurant(Activity activity, final FirebaseUser user, FormattedPlace place, FormattedPlace placeInterest)
+    public static void updateChosenRestaurant(Activity activity, final FirebaseUser user, FormattedPlace placeInterest)
     {
-        UserHelper.updateChosenPlace(user.getUid(), place).addOnFailureListener(onFailureListener(activity));
-    }
-
-    public static void deleteUserFromPlace(final Activity mActivity, final FirebaseUser mUser, final FormattedPlace mPlace)
-    {
-        UserHelper.getUser(mUser.getUid()).addOnSuccessListener(mDocumentSnapshot ->
-        {
-            User user = mDocumentSnapshot.toObject(User.class);
-            String placeId = user != null ? user.getSelectedPlace() != null ? user.getSelectedPlace().getId() : null : null;
-
-            if (placeId != null)
-            {
-                PlaceTypeHelper.removeUserIntoPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mUser.getUid(), placeId).addOnSuccessListener(mVoid ->
-                {
-                    updateRestaurant(mActivity, mUser, mPlace); // Calling this method here because we have to wait success of deleting previous place before update new place
-                });
-            }
-            else
-                updateRestaurant(mActivity, mUser, mPlace);
-        });
-    }
-
-    private static void updateRestaurant(Activity activity, FirebaseUser user, FormattedPlace place)
-    {
-        FireStoreAuthentication.updateChosenRestaurant(activity, user, place, place);
+        UserHelper.updateChosenPlace(user.getUid(), placeInterest)
+                .addOnSuccessListener( success -> Log.i(LOG_TAG, "Successfully updated chosen restaurant !"))
+                .addOnFailureListener(onFailureListener(activity));
     }
 
     public static void getUserPlace(final GetUserListener callback, final Activity activity, User user)

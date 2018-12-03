@@ -1,5 +1,7 @@
 package com.skichrome.go4lunch.models;
 
+import android.support.annotation.NonNull;
+
 import java.io.Serializable;
 
 public class FormattedPlace implements Serializable
@@ -32,36 +34,36 @@ public class FormattedPlace implements Serializable
 
     public FormattedPlace() { }
 
-    public FormattedPlace(String mId,
-                          String mName,
-                          String mAddress,
-                          String mPhoneNumber,
-                          String mWebsite,
-                          double mLocationLatitude,
-                          double mLocationLongitude)
+    public FormattedPlace(String id,
+                          String name,
+                          String address,
+                          String phoneNumber,
+                          String website,
+                          double locationLatitude,
+                          double locationLongitude)
     {
-        this.id = mId;
-        this.name = mName;
-        this.address = mAddress;
-        this.phoneNumber = mPhoneNumber;
-        this.website = mWebsite;
-        this.locationLatitude = mLocationLatitude;
-        this.locationLongitude = mLocationLongitude;
+        this.id = id;
+        this.name = name;
+        this.address = address;
+        this.phoneNumber = phoneNumber;
+        this.website = website;
+        this.locationLatitude = locationLatitude;
+        this.locationLongitude = locationLongitude;
     }
 
-    public FormattedPlace(String mId,
-                          String mName,
-                          double mLocationLatitude,
-                          double mLocationLongitude,
-                          double mRating,
-                          String mPhotoRef)
+    public FormattedPlace(String id,
+                          String name,
+                          double locationLatitude,
+                          double locationLongitude,
+                          double rating,
+                          String photoRef)
     {
-        this.id = mId;
-        this.name = mName;
-        this.locationLatitude = mLocationLatitude;
-        this.locationLongitude = mLocationLongitude;
-        this.rating = mRating;
-        this.photoReference = mPhotoRef;
+        this.id = id;
+        this.name = name;
+        this.locationLatitude = locationLatitude;
+        this.locationLongitude = locationLongitude;
+        this.rating = rating;
+        this.photoReference = photoRef;
     }
 
     //=========================================
@@ -70,45 +72,48 @@ public class FormattedPlace implements Serializable
 
     public String getId() { return id; }
     public String getName() { return name; }
-    public String getAddress() { return address; }
-    public String getPhotoReference() { return photoReference; }
-    public String getAperture() { return aperture; }
     public double getLocationLatitude() { return locationLatitude; }
     public double getLocationLongitude() { return locationLongitude; }
-    public String getDistance() { return distance; }
+    public double getRating() { return rating; }
+    public String getPhotoReference() { return photoReference; }
+    public String getAddress() { return address; }
     public String getWebsite() { return website; }
     public String getPhoneNumber() { return phoneNumber; }
-    public double getRating() { return rating; }
+    public String getAperture() { return aperture; }
     public String getIsOpenNow() { return isOpenNow; }
+    public String getDistance() { return distance; }
 
     //=========================================
     // Setters
     //=========================================
 
-    public void setWebsite(String mWebsite) { website = mWebsite; }
-    public void setPhoneNumber(String mPhoneNumber) { phoneNumber = mPhoneNumber; }
-    public void setDistance(String mDistance) { distance = mDistance; }
-    public void setAperture(String mAperture) { aperture = mAperture; }
-    public void setIsOpenNow(String mIsOpenNow) { isOpenNow = mIsOpenNow; }
+    public void setWebsite(String website) { this.website = website; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+    public void setDistance(String distance) { this.distance = distance; }
+    public void setAperture(String aperture) { this.aperture = aperture; }
+    public void setIsOpenNow(String isOpenNow) { this.isOpenNow = isOpenNow; }
 
     //=========================================
     // Method [DEBUG]
     //=========================================
 
+    @NonNull
     @Override
     public String toString()
     {
         return "FormattedPlace{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
+                ", locationLatitude=" + locationLatitude +
+                ", locationLongitude=" + locationLongitude +
+                ", rating=" + rating +
+                ", photoReference='" + photoReference + '\'' +
                 ", address='" + address + '\'' +
-                ", latitude='" + locationLatitude + '\'' +
-                ", longitude='" + locationLongitude + '\'' +
-                ", aperture='" + aperture + '\'' +
-                ", distance='" + distance + '\'' +
                 ", website='" + website + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
-                ", imageUrl='" + photoReference + '\'' +
+                ", aperture='" + aperture + '\'' +
+                ", isOpenNow='" + isOpenNow + '\'' +
+                ", distance='" + distance + '\'' +
                 '}';
     }
 }

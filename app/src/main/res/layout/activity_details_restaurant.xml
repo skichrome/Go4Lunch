@@ -6,18 +6,6 @@
     android:layout_height="match_parent"
     tools:layout_editor_absoluteY="25dp">
 
-    <ProgressBar
-        android:id="@+id/activity_details_progress_bar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:indeterminate="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:visibility="visible" />
-
     <ImageView
         android:id="@+id/activity_details_resto_picture"
         android:layout_width="0dp"

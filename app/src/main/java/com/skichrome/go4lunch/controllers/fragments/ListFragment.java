@@ -66,7 +66,7 @@ public class ListFragment extends BaseFragment
     private void configureRecyclerView()
     {
         this.mPlacesList = new ArrayList<>();
-        this.mAdapter = new RestaurantsAdapter(mPlacesList, Glide.with(this));
+        this.mAdapter = new RestaurantsAdapter(mPlacesList, Glide.with(this), getString(R.string.google_place_api_key));
         this.mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         this.mRecyclerView.setAdapter(mAdapter);
     }
@@ -102,5 +102,12 @@ public class ListFragment extends BaseFragment
             this.mProgressBar.setVisibility(View.INVISIBLE);
             this.mSwipeRefreshLayout.setRefreshing(false);
         }).addOnFailureListener(throwable -> Log.e("ListFragment : ", "An error occurred when downloading all places.", throwable));
+    }
+
+    public void updateListForAutocomplete(FormattedPlace formattedPlace)
+    {
+        this.mPlacesList.clear();
+        this.mPlacesList.add(formattedPlace);
+        this.mAdapter.notifyDataSetChanged();
     }
 }

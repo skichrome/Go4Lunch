@@ -81,6 +81,6 @@ public class SettingsActivity extends BaseActivity
 
     private void deleteAccountFromFireBase()
     {
-        FireStoreAuthentication.deleteAccountFromFirebase(this, getCurrentUser());
+        FireStoreAuthentication.deleteAccount(this, getCurrentUser());
     }
 }

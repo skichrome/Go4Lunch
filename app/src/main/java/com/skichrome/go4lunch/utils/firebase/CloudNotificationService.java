@@ -8,25 +8,18 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
-import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.activities.MainActivity;
 import com.skichrome.go4lunch.controllers.activities.RestaurantDetailsActivity;
-import com.skichrome.go4lunch.models.firestore.User;
-
-import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_INTEREST_CLOUD_FIRESTORE;
 
 public class CloudNotificationService extends FirebaseMessagingService
 {
-    private final int NOTIFICATION_ID = 78;
-    private final String NOTIFICATION_TAG = "Go4Lunch";
+    private static final int NOTIFICATION_ID = 78;
+    private static final String NOTIFICATION_TAG = "Go4Lunch";
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage)
@@ -35,7 +28,6 @@ public class CloudNotificationService extends FirebaseMessagingService
         if (remoteMessage.getNotification() != null)
         {
             String message = remoteMessage.getNotification().getBody();
-            updateDatabase();
             FirebaseMessaging.getInstance().unsubscribeFromTopic(RestaurantDetailsActivity.FIREBASE_TOPIC);
             sendVisualNotification(message);
         }
@@ -72,21 +64,6 @@ public class CloudNotificationService extends FirebaseMessagingService
                 manager.createNotificationChannel(channel);
             }
             manager.notify(NOTIFICATION_TAG, NOTIFICATION_ID, builder.build());
-        }
-    }
-
-    private void updateDatabase()  // Todo change this implementation to activity
-    {
-        final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        Log.e("---- Debug ----", "updateDatabase: " + (firebaseUser == null));
-        if (firebaseUser != null)
-        {
-            UserHelper.getUser(firebaseUser.getUid()).addOnSuccessListener(mDocumentSnapshot ->
-            {
-                User user = mDocumentSnapshot.toObject(User.class);
-                if (user != null && user.getSelectedPlace() != null) PlaceTypeHelper.removeUserIntoPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, user.getUid(), user.getSelectedPlace().getId())
-                        .addOnSuccessListener(mVoid -> Toast.makeText(getApplicationContext(), "Update Successful !", Toast.LENGTH_SHORT).show());
-            });
         }
     }
 }

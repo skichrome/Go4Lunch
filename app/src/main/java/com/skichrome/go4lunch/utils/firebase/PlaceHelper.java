@@ -12,7 +12,7 @@ public class PlaceHelper
     private static final String COLLECTION_NAME = "restaurants";
 
     // Collection reference
-    static CollectionReference getPlaceCollection()
+    private static CollectionReference getPlaceCollection()
     {
         return FirebaseFirestore.getInstance().collection(COLLECTION_NAME);
     }
@@ -21,6 +21,13 @@ public class PlaceHelper
     public static Task<QuerySnapshot> getAllPlaces()
     {
         return PlaceHelper.getPlaceCollection()
+                .get();
+    }
+
+    public static Task<QuerySnapshot> getUsersInterested(String placeId)
+    {
+        return PlaceHelper.getPlaceCollection()
+                .whereEqualTo("selectedPlace", placeId)
                 .get();
     }
 

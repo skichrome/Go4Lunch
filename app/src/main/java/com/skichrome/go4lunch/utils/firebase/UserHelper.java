@@ -5,11 +5,10 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.SetOptions;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.firestore.User;
 
-import java.util.HashMap;
+import java.util.Calendar;
 
 public class UserHelper
 {
@@ -24,7 +23,11 @@ public class UserHelper
     // Create
     public static Task<Void> createUser(String uid, String username, String urlPicture, FormattedPlace selectedPlace)
     {
-        User user = new User(uid, username, urlPicture, selectedPlace);
+        int date;
+        if (selectedPlace != null) date = Calendar.DAY_OF_MONTH;
+        else date = -1;
+
+        User user = new User(uid, username, urlPicture, selectedPlace, date);
         return UserHelper.getUsersCollection().document(uid).set(user);
     }
 
@@ -34,11 +37,16 @@ public class UserHelper
         return UserHelper.getUsersCollection().document(uid).get();
     }
 
+    // Get users that have subscribed to a place
+    public static Query getUsersInterestedByPlace(String placeId)
+    {
+        return UserHelper.getUsersCollection().whereEqualTo("selectedPlaceId", placeId);
+    }
+
     // Get all users
     public static Query getAllUsers()
     {
-        return FirebaseFirestore.getInstance().collection(COLLECTION_NAME)
-                .limit(50);
+        return UserHelper.getUsersCollection().limit(50);
     }
 
     // Update username
@@ -50,10 +58,29 @@ public class UserHelper
     // Update chosen place
     public static Task<Void> updateChosenPlace(String uid, FormattedPlace place)
     {
-        HashMap<String, FormattedPlace> map = new HashMap<>();
-        map.put("selectedPlace", place);
+        if (place != null)
+        return UserHelper.getUsersCollection().document(uid)
+                .update(
+                        "selectedPlace.address", place.getAddress(),
+                        "selectedPlace.aperture", place.getAperture(),
+                        "selectedPlace.distance", place.getDistance(),
+                        "selectedPlace.id", place.getId(),
+                        "selectedPlace.isOpenNow", place.getIsOpenNow(),
+                        "selectedPlace.locationLongitude", place.getLocationLongitude(),
+                        "selectedPlace.locationLatitude", place.getLocationLatitude(),
+                        "selectedPlace.name", place.getName(),
+                        "selectedPlace.phoneNumber", place.getPhoneNumber(),
+                        "selectedPlace.photoReference", place.getPhotoReference(),
+                        "selectedPlace.rating", place.getRating(),
+                        "selectedPlace.website", place.getWebsite(),
 
-        return UserHelper.getUsersCollection().document(uid).set(map, SetOptions.mergeFields("selectedPlace"));
+                        "selectedPlaceId", place.getId(),
+                        "dateForSelectedPlace", Calendar.DAY_OF_MONTH
+                );
+        else return UserHelper.getUsersCollection().document(uid).update(
+                "selectedPlace", null,
+                "selectedPlaceId", null,
+                "dateForSelectedPlace", -1);
     }
 
     // delete

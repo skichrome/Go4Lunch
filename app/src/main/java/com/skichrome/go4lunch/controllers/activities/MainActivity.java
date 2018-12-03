@@ -149,8 +149,8 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
                                 place.getWebsiteUri() == null ? null : place.getWebsiteUri().toString(),
                                 place.getLatLng().latitude,
                                 place.getLatLng().longitude);
-                        // Todo use downloaded place here
-                        Log.e("Place Autocomplete", "onActivityResult: User typed this : " + place.getName());
+                        if (mMapFragment != null && mMapFragment.isVisible()) mMapFragment.updateMapForAutocomplete(formattedPlace);
+                        if (mListFragment != null && mListFragment.isVisible()) mListFragment.updateListForAutocomplete(formattedPlace);
                     }
                     return;
                 }
@@ -277,7 +277,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
                 break;
 
             case R.id.activity_main_menu_drawer_logout:
-                FireStoreAuthentication.logoutFromFirestore(this);
+                FireStoreAuthentication.logout(this);
                 break;
 
             default:

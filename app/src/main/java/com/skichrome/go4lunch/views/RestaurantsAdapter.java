@@ -20,15 +20,17 @@ public class RestaurantsAdapter extends RecyclerView.Adapter<RestaurantsViewHold
 
     private List<FormattedPlace> mPlaceList;
     private RequestManager mGlide;
+    private String MAP_API_KEY;
 
     //=========================================
     // Constructor
     //=========================================
 
-    public RestaurantsAdapter(List<FormattedPlace> placeList, RequestManager glide)
+    public RestaurantsAdapter(List<FormattedPlace> placeList, RequestManager glide, String googleApiKey)
     {
         this.mPlaceList = placeList;
         this.mGlide = glide;
+        this.MAP_API_KEY = googleApiKey;
     }
 
     //=========================================
@@ -41,7 +43,7 @@ public class RestaurantsAdapter extends RecyclerView.Adapter<RestaurantsViewHold
     {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.fragment_list_list_item_recycler_view, parent, false);
-        return new RestaurantsViewHolder(view);
+        return new RestaurantsViewHolder(view, MAP_API_KEY);
     }
 
     @Override

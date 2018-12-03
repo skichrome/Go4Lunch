@@ -9,7 +9,6 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,13 +22,11 @@ import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.firestore.User;
 import com.skichrome.go4lunch.utils.FireStoreAuthentication;
 import com.skichrome.go4lunch.utils.ItemClickSupportOnRecyclerView;
-import com.skichrome.go4lunch.utils.firebase.PlaceTypeHelper;
+import com.skichrome.go4lunch.utils.firebase.UserHelper;
 import com.skichrome.go4lunch.views.WorkmatesAdapter;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-
-import static com.skichrome.go4lunch.utils.FireStoreAuthentication.ID_PLACE_INTEREST_CLOUD_FIRESTORE;
 
 public class RestaurantDetailsActivity extends BaseActivity implements  FireStoreAuthentication.GetUserListener
 {
@@ -47,7 +44,6 @@ public class RestaurantDetailsActivity extends BaseActivity implements  FireStor
     @BindView(R.id.activity_details_restaurant_container_call) ConstraintLayout mConstraintLayoutCall;
     @BindView(R.id.activity_details_restaurant_container_rate) ConstraintLayout mConstraintLayoutRate;
     @BindView(R.id.activity_details_restaurant_container_website) ConstraintLayout mConstraintLayoutWebsite;
-    @BindView(R.id.activity_details_progress_bar) ProgressBar mProgressBar;
     @BindView(R.id.activity_details_resto_revycler_view_container) RecyclerView mRecyclerView;
 
     private WorkmatesAdapter mAdapter;
@@ -65,7 +61,6 @@ public class RestaurantDetailsActivity extends BaseActivity implements  FireStor
     @Override
     protected void configureActivity()
     {
-        this.mProgressBar.setVisibility(View.VISIBLE);
         this.getDataFromBundle();
         this.updateUIElements();
         this.configureRecyclerView();
@@ -97,13 +92,11 @@ public class RestaurantDetailsActivity extends BaseActivity implements  FireStor
         if (mRestaurantDetails.getPhotoReference() != null)
         {
             String photoUrl = GLIDE_BASE_GOOGLE_URL + mRestaurantDetails.getPhotoReference() + "&key=" + getString(R.string.google_place_api_key);
-            Log.e(getClass().getSimpleName(), "updateUIElements : " + photoUrl); // Todo Check error on Google API
+            Log.e(getClass().getSimpleName(), "updateUIElements : " + photoUrl);
             Glide.with(this).load(photoUrl).into(mImageViewPicture);
         }
-
-        // Todo calc the rating of place with rating included in Google api
-        int size = 10;
-        switch (size)
+        int rate = (int) Math.round(mRestaurantDetails.getRating()*3/5);
+        switch (rate)
         {
             case 0:
                 mImageViewRate1.setVisibility(View.INVISIBLE);
@@ -128,13 +121,21 @@ public class RestaurantDetailsActivity extends BaseActivity implements  FireStor
                 mImageViewRate3.setVisibility(View.VISIBLE);
                 break;
         }
+        UserHelper.getUser(getCurrentUser().getUid()).addOnSuccessListener(success ->
+                {
+                    User userLogged = success.toObject(User.class);
+                    if (userLogged.getSelectedPlace() == null || !userLogged.getSelectedPlace().getId().equals(mRestaurantDetails.getId()))
+                        mFloatingActionButton.setImageResource(R.drawable.baseline_add_white_24dp);
+                    else
+                        mFloatingActionButton.setImageResource(R.drawable.baseline_check_circle_outline_white_24dp);
+                });
     }
 
     private void configureRecyclerView ()
     {
         String[] text = {getString(R.string.view_holder_is_joining)};
 
-        this.mAdapter = new WorkmatesAdapter(generateOptionsForAdapter(PlaceTypeHelper.getWorkMatesInPlace(ID_PLACE_INTEREST_CLOUD_FIRESTORE, mRestaurantDetails.getId())), Glide.with(this), mRestaurantDetails.getId(), text);
+        this.mAdapter = new WorkmatesAdapter(generateOptionsForAdapter(UserHelper.getUsersInterestedByPlace(mRestaurantDetails.getId())), Glide.with(this), mRestaurantDetails.getId(), text);
         this.mRecyclerView.setAdapter(mAdapter);
         this.mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
@@ -166,9 +167,22 @@ public class RestaurantDetailsActivity extends BaseActivity implements  FireStor
     {
         if (isCurrentUserLogged())
         {
-            FireStoreAuthentication.deleteUserFromPlace(this, getCurrentUser(), mRestaurantDetails); // Todo check the name of firebase method
-            this.mFloatingActionButton.setImageResource(R.drawable.baseline_check_circle_outline_white_24dp);
-            FirebaseMessaging.getInstance().subscribeToTopic(FIREBASE_TOPIC);
+            UserHelper.getUser(getCurrentUser().getUid()).addOnSuccessListener(success ->
+            {
+                User loggedUser = success.toObject(User.class);
+                if (loggedUser.getSelectedPlace() == null || !loggedUser.getSelectedPlace().getId().equals(this.mRestaurantDetails.getId()))
+                {
+                    this.mFloatingActionButton.setImageResource(R.drawable.baseline_check_circle_outline_white_24dp);
+                    FireStoreAuthentication.updateChosenRestaurant(this, getCurrentUser(), mRestaurantDetails);
+                    FirebaseMessaging.getInstance().subscribeToTopic(FIREBASE_TOPIC);
+                }
+                else
+                {
+                    this.mFloatingActionButton.setImageResource(R.drawable.baseline_add_white_24dp);
+                    this.mRestaurantDetails = null;
+                    FireStoreAuthentication.updateChosenRestaurant(this, getCurrentUser(), null);
+                }
+            });
         }
     }
 
