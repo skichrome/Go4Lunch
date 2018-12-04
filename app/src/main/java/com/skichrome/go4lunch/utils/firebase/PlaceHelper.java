@@ -24,15 +24,6 @@ public class PlaceHelper
                 .get();
     }
 
-    public static Task<QuerySnapshot> getUsersInterested(String placeId)
-    {
-        return PlaceHelper.getPlaceCollection()
-                .whereEqualTo("selectedPlace", placeId)
-                .get();
-    }
-
-    // Create
-
     // update
     public static Task<Void> updateRestaurant(FormattedPlace place)
     {
@@ -52,6 +43,13 @@ public class PlaceHelper
                         "aperture", aperture,
                         "isOpenNow", isOpenNow
                 );
+    }
+
+    public static Task<Void> updateRatingOfRestaurant(String placeId)
+    {
+        return PlaceHelper.getPlaceCollection()
+                .document(placeId)
+                .update("rated_by_user", true);
     }
 
     // Delete

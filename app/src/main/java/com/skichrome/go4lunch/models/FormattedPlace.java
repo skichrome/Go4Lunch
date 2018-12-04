@@ -26,7 +26,7 @@ public class FormattedPlace implements Serializable
     private String isOpenNow;
 
     // Field calculated from second Google API
-    private String distance;
+    private int distance;
 
     //=========================================
     // Constructor
@@ -56,7 +56,8 @@ public class FormattedPlace implements Serializable
                           double locationLatitude,
                           double locationLongitude,
                           double rating,
-                          String photoRef)
+                          String photoRef,
+                          int distanceTo)
     {
         this.id = id;
         this.name = name;
@@ -64,6 +65,7 @@ public class FormattedPlace implements Serializable
         this.locationLongitude = locationLongitude;
         this.rating = rating;
         this.photoReference = photoRef;
+        this.distance = distanceTo;
     }
 
     //=========================================
@@ -81,7 +83,7 @@ public class FormattedPlace implements Serializable
     public String getPhoneNumber() { return phoneNumber; }
     public String getAperture() { return aperture; }
     public String getIsOpenNow() { return isOpenNow; }
-    public String getDistance() { return distance; }
+    public int getDistance() { return distance; }
 
     //=========================================
     // Setters
@@ -89,7 +91,7 @@ public class FormattedPlace implements Serializable
 
     public void setWebsite(String website) { this.website = website; }
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
-    public void setDistance(String distance) { this.distance = distance; }
+    public void setDistance(int distance) { this.distance = distance; }
     public void setAperture(String aperture) { this.aperture = aperture; }
     public void setIsOpenNow(String isOpenNow) { this.isOpenNow = isOpenNow; }
 

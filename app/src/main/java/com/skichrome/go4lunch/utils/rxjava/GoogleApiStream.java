@@ -1,5 +1,6 @@
 package com.skichrome.go4lunch.utils.rxjava;
 
+import android.location.Location;
 import android.util.Log;
 
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -41,9 +42,11 @@ public class GoogleApiStream
                 .timeout(20, TimeUnit.SECONDS);
     }
 
-    public static Observable<MainPlaceDetails> streamFetchPlaces(String key, String location, int radius)
+    public static Observable<MainPlaceDetails> streamFetchPlaces(final String key, final Location location, final int radius)
     {
-        return streamGetNearbyPlaces(key, location, radius)
+        String locationStr = location.getLatitude() + "," + location.getLongitude();
+
+        return streamGetNearbyPlaces(key, locationStr, radius)
                 .concatMapIterable((Function<MainGooglePlaceAPI, Iterable<Result>>) results ->
                 {
                     updateFirebaseList(results.getResults());
@@ -51,20 +54,27 @@ public class GoogleApiStream
                 })
                 .concatMap(result ->
                 {
-                    updateFirecloudPlace(convertResults(result));
+                    updateFirecloudPlace(convertResults(result, location));
                     return streamGetPlaceDetails(key, result.getPlaceId());
                 });
     }
 
-    private static FormattedPlace convertResults(Result result)
+    private static FormattedPlace convertResults(Result result, Location location)
     {
+        final Location placeLocation = new Location("placeLocation");
+        placeLocation.setLatitude(result.getGeometry().getLocation().getLat());
+        placeLocation.setLongitude(result.getGeometry().getLocation().getLng());
+
+        int distance = (int) location.distanceTo(placeLocation);
+
         return new  FormattedPlace(
                 result.getPlaceId(),
                 result.getName(),
                 result.getGeometry().getLocation().getLat(),
                 result.getGeometry().getLocation().getLng(),
                 (result.getRating() != null ) ? result.getRating() : 0,
-                (result.getPhotos() != null && result.getPhotos().size() != 0) ? result.getPhotos().get(0).getPhotoReference() : null
+                (result.getPhotos() != null && result.getPhotos().size() != 0) ? result.getPhotos().get(0).getPhotoReference() : null,
+                distance
         );
     }
 

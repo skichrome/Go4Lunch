@@ -117,9 +117,9 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     }
 
     @Override
-    protected void onStop()
+    protected void onPause()
     {
-        super.onStop();
+        super.onPause();
         if (this.mDisposable != null && !this.mDisposable.isDisposed()) this.mDisposable.dispose();
         if (this.mLocationManager != null)
         {
@@ -225,7 +225,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         }
         if (!this.mIsHttpRequestAlreadyLaunched)
         {
-            this.executeHttpRequest(location.getLatitude() + "," + location.getLongitude());
+            this.executeHttpRequest(location);
             this.mIsHttpRequestAlreadyLaunched = true;
         }
     }
@@ -369,7 +369,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Http request Method
     //=========================================
 
-    private void executeHttpRequest(String location)
+    private void executeHttpRequest(Location location)
     {
         this.mDisposable = GoogleApiStream.streamFetchPlaces(getString(R.string.google_api_key), location, 20).subscribeWith(new DisposableObserver<MainPlaceDetails>()
         {

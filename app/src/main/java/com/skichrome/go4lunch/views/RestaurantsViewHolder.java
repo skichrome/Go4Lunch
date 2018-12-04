@@ -1,7 +1,6 @@
 package com.skichrome.go4lunch.views;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -51,10 +50,9 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
     void updateUI(FormattedPlace place, RequestManager glide)
     {
         this.mTextViewName.setText(place.getName());
-        this.mTextViewDistance.setText(place.getDistance());
+        this.mTextViewDistance.setText(place.getDistance() + "m");
         this.mTextViewAddress.setText(place.getAddress());
         this.mTextViewAperture.setText(place.getAperture());
-        this.mTextViewDistance.setText(place.getDistance() == null ? "-" : place.getDistance());
 
         UserHelper.getUsersInterestedByPlace(place.getId()).get().addOnSuccessListener(success ->
         {
@@ -92,7 +90,6 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
         if (place.getPhotoReference() != null)
         {
             String photoUrl = GLIDE_BASE_GOOGLE_URL + place.getPhotoReference() + "&key=" + MAP_API_KEY;
-            Log.e(getClass().getSimpleName(), "updateUIElements : " + photoUrl);
             glide.load(photoUrl).into(mImageViewRestaurantImg);
         }
     }

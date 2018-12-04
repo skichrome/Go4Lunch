@@ -10,6 +10,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -19,6 +20,7 @@ import com.skichrome.go4lunch.controllers.activities.RestaurantDetailsActivity;
 import com.skichrome.go4lunch.controllers.base.BaseFragment;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.utils.firebase.PlaceHelper;
+import com.skichrome.go4lunch.utils.firebase.UserHelper;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -35,11 +37,13 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     // Callback interface
     //=========================================
 
-    public interface MapFragmentListeners { void fragmentNeedUpdateCallback();}
+    public interface MapFragmentListeners { void fragmentNeedUpdateCallback(); }
 
     //=========================================
     // Fields
     //=========================================
+
+    private static final LatLng LATLNG_PARIS = new LatLng(48.8042, 2.3511);
 
     private GoogleMap mGMap;
     private WeakReference<MapFragmentListeners> mCallback;
@@ -97,6 +101,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         this.mGMap.setOnMarkerClickListener(this);
         this.mGMap.setMyLocationEnabled(true);
         this.mGMap.getUiSettings().setMyLocationButtonEnabled(false); // delete default button
+        this.mGMap.animateCamera(CameraUpdateFactory.newLatLng(LATLNG_PARIS));
         this.updateMarkerOnMap();
     }
 
@@ -104,16 +109,21 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     {
         if (this.mGMap == null || this.mOrigin) return;
         LatLng lastKnownLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-        this.mGMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastKnownLatLng, 19.0f));
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(lastKnownLatLng)
+                .zoom(19)
+                .tilt(30)
+                .build();
+        this.mGMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
     public void updateMapForAutocomplete(FormattedPlace place)
     {
         mGMap.clear();
         this.mMarkers = new HashMap<>();
-        this.addMarkerToMap(true, place);
+        this.addMarkerToMap(false, place);
         LatLng placeLatLng = new LatLng(place.getLocationLatitude(), place.getLocationLongitude());
-        this.mGMap.moveCamera(CameraUpdateFactory.newLatLngZoom(placeLatLng, 19.0f));
+        this.mGMap.animateCamera(CameraUpdateFactory.newLatLngZoom(placeLatLng, 19.0f));
         this.mOrigin = true;
     }
 
@@ -126,9 +136,10 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
             for (DocumentSnapshot snap : success)
             {
                 FormattedPlace place = snap.toObject(FormattedPlace.class);
-
-                // Todo update color of marker if there is at least one workmate interested (with boolean)
-                PlaceHelper.getUsersInterested(place.getId()).addOnSuccessListener(queryDocumentSnapshots -> addMarkerToMap(queryDocumentSnapshots.isEmpty(), place));
+                UserHelper.getUsersForMapFragment(place.getId())
+                        .addOnSuccessListener(queryDocumentSnapshots ->
+                                addMarkerToMap(!queryDocumentSnapshots.getDocuments().isEmpty(), place))
+                .addOnFailureListener(throwable -> Log.e("MapFragment", "updateMarkerOnMap: ", throwable));
             }
         }).addOnFailureListener(throwable -> Log.e("MapFragment : ", "An error occurred when downloading all places.", throwable));
         this.mOrigin = false;

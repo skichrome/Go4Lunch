@@ -22,6 +22,7 @@ import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.firestore.User;
 import com.skichrome.go4lunch.utils.FireStoreAuthentication;
 import com.skichrome.go4lunch.utils.ItemClickSupportOnRecyclerView;
+import com.skichrome.go4lunch.utils.firebase.PlaceHelper;
 import com.skichrome.go4lunch.utils.firebase.UserHelper;
 import com.skichrome.go4lunch.views.WorkmatesAdapter;
 
@@ -92,7 +93,6 @@ public class RestaurantDetailsActivity extends BaseActivity implements  FireStor
         if (mRestaurantDetails.getPhotoReference() != null)
         {
             String photoUrl = GLIDE_BASE_GOOGLE_URL + mRestaurantDetails.getPhotoReference() + "&key=" + getString(R.string.google_place_api_key);
-            Log.e(getClass().getSimpleName(), "updateUIElements : " + photoUrl);
             Glide.with(this).load(photoUrl).into(mImageViewPicture);
         }
         int rate = (int) Math.round(mRestaurantDetails.getRating()*3/5);
@@ -226,7 +226,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements  FireStor
 
     private void updateRatingOfRestaurant ()
     {
-        //todo change the way of rating a restaurant
+        PlaceHelper.updateRatingOfRestaurant(mRestaurantDetails.getId());
     }
 
     //=========================================

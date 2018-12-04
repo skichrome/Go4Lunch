@@ -38,10 +38,7 @@ public abstract class FireStoreAuthentication
     private static final int DELETE_USER_TASK = 200;
     public static final int RC_SIGN_IN = 1234;
 
-    public static final String ID_PLACE_RATED_CLOUD_FIRESTORE = "places_rated";
-    public static final String ID_PLACE_INTEREST_CLOUD_FIRESTORE = "places_interest";
     private static final String LOG_TAG = "FireStoreAuth : ";
-
     private static final int REQUEST_CHECK_SETTINGS = 12000;
 
     //=========================================

@@ -5,6 +5,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.firestore.User;
 
@@ -41,6 +42,11 @@ public class UserHelper
     public static Query getUsersInterestedByPlace(String placeId)
     {
         return UserHelper.getUsersCollection().whereEqualTo("selectedPlaceId", placeId);
+    }
+
+    public static Task<QuerySnapshot> getUsersForMapFragment(String placeId)
+    {
+        return getUsersInterestedByPlace(placeId).get();
     }
 
     // Get all users
