@@ -10,7 +10,7 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-        //multiDexEnabled true
+        multiDexEnabled true
 
         //Language traduction support for FirebaseUI
         resConfigs "en", "fr"
@@ -77,24 +77,31 @@ dependencies {
     implementation 'com.google.maps.android:android-maps-utils:0.4.4'
 
     // Google Map View support
-    implementation 'com.google.android.gms:play-services-maps:15.0.1'
+    implementation 'com.google.android.gms:play-services-maps:16.0.0'
 
     // Firebase implementation
-    implementation 'com.google.firebase:firebase-core:15.0.2'
+    implementation 'com.google.firebase:firebase-core:16.0.6'
 
-    // Firestore implementation
-    implementation 'com.firebaseui:firebase-ui-firestore:3.3.1'
+    // Cloud Firestore implementation
+    implementation'com.google.firebase:firebase-firestore:17.1.5'
 
-    // FirebaseUI (simplify usage of Firebase)
-    implementation 'com.firebaseui:firebase-ui-auth:3.3.1'
+    // Cloud-Firestore-UI implementation
+    implementation 'com.firebaseui:firebase-ui-firestore:4.3.1'
+
+    // Firebase Auth, works with FirebaseUI to avoid library version conflicts
+    implementation'com.google.firebase:firebase-auth:16.1.0'
+
+    // Firebase-Auth-UI (simplify usage of Firebase)
+    implementation 'com.firebaseui:firebase-ui-auth:4.3.1'
 
     //Firestore notification implementation
-    implementation 'com.google.firebase:firebase-messaging:15.0.2'
+    implementation 'com.google.firebase:firebase-messaging:17.3.4'
+
     // Google Play Service (module Places)
-    implementation 'com.google.android.gms:play-services-places:15.0.1'
+    implementation 'com.google.android.gms:play-services-places:16.0.0'
 
     // Google Play Service (module Location and activity recognition)
-    implementation 'com.google.android.gms:play-services-location:15.0.1'
+    implementation 'com.google.android.gms:play-services-location:16.0.0'
 
     // Facebook login support for Firebase
     implementation 'com.facebook.android:facebook-android-sdk:4.34.0'
@@ -116,7 +123,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
 
     // Multi-dex support (more than 64k methods)
-    //implementation 'com.android.support:multidex:1.0.3'
+    implementation 'com.android.support:multidex:1.0.3'
 
     // Leak Canary for Memory leaks
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.2'
@@ -124,3 +131,5 @@ dependencies {
 }
 // Firebase implementation
 apply plugin: 'com.google.gms.google-services'
+
+// To update FirebaseUI check this link : https://github.com/firebase/FirebaseUI-Android/releases

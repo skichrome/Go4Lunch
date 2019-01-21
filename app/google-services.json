@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "937477908563-h0lbsb2eo0al0cfj4ii9m1pmaitqtsgj.apps.googleusercontent.com",
+          "client_id": "937477908563-71k0usngsn4pjs7qnufbsa0o2nft8if2.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.skichrome.go4lunch",
-            "certificate_hash": "332edd7fca58bd386f3bad22a870a8b3a201eeff"
+            "certificate_hash": "5bd1bc5c08bdb72c75f6a6e11b52e745a6d13d79"
           }
         },
         {

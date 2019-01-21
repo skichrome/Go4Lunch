@@ -203,7 +203,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
             {
                 if (location != null)
                 {
-                    Log.d("BaseActivity : ", "You have a location request : " + location.toString());
+                    Log.d("MainActivity", "You have a location request : " + location.toString());
                     mLastKnownLocation = location;
                     locationUpdates(location);
                 } else
@@ -371,7 +371,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
 
     private void executeHttpRequest(Location location)
     {
-        this.mDisposable = GoogleApiStream.streamFetchPlaces(getString(R.string.google_api_key), location, 20).subscribeWith(new DisposableObserver<MainPlaceDetails>()
+        this.mDisposable = GoogleApiStream.streamFetchPlaces(getString(R.string.google_place_api_key), location, 20).subscribeWith(new DisposableObserver<MainPlaceDetails>()
         {
             @Override
             public void onNext(MainPlaceDetails mainPlaceDetails) { MapMethods.updateDetailsOnFirecloud(mainPlaceDetails.getResult(), mainPlaceDetails.getStatus()); }

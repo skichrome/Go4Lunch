@@ -19,6 +19,8 @@ import icepick.Icepick;
 import pub.devrel.easypermissions.EasyPermissions;
 import pub.devrel.easypermissions.PermissionRequest;
 
+// Default location for emulator : Paris : Latitude : 48.841810 Longitude : 2.325310
+
 /**
  * This abstract class is used to define common parts for Activities in this app
  */
@@ -106,10 +108,9 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
                             .setPositiveButtonText(R.string.permission_request_yes)
                             .setNegativeButtonText(R.string.permission_request_no)
                             .build());
-        } else
-            {
-                this.updateActivity();
-            }
+        }
+        else if (isCurrentUserLogged())
+            this.updateActivity();
     }
 
     /**
