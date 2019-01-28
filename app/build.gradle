@@ -124,10 +124,6 @@ dependencies {
 
     // Multi-dex support (more than 64k methods)
     implementation 'com.android.support:multidex:1.0.3'
-
-    // Leak Canary for Memory leaks
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.2'
-    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.2'
 }
 // Firebase implementation
 apply plugin: 'com.google.gms.google-services'

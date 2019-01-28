@@ -135,7 +135,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements  FireStor
     {
         String[] text = {getString(R.string.view_holder_is_joining)};
 
-        this.mAdapter = new WorkmatesAdapter(generateOptionsForAdapter(UserHelper.getUsersInterestedByPlace(mRestaurantDetails.getId())), Glide.with(this), mRestaurantDetails.getId(), text);
+        this.mAdapter = new WorkmatesAdapter(generateOptionsForAdapter(UserHelper.getUsersInterestedByPlaceQuery(mRestaurantDetails.getId())), Glide.with(this), mRestaurantDetails.getId(), text);
         this.mRecyclerView.setAdapter(mAdapter);
         this.mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }

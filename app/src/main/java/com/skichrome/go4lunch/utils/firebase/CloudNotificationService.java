@@ -5,16 +5,23 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.skichrome.go4lunch.R;
-import com.skichrome.go4lunch.controllers.activities.MainActivity;
 import com.skichrome.go4lunch.controllers.activities.RestaurantDetailsActivity;
+import com.skichrome.go4lunch.controllers.fragments.SettingFragment;
+import com.skichrome.go4lunch.models.FormattedPlace;
+import com.skichrome.go4lunch.models.firestore.User;
+
+import java.util.List;
 
 public class CloudNotificationService extends FirebaseMessagingService
 {
@@ -25,24 +32,54 @@ public class CloudNotificationService extends FirebaseMessagingService
     public void onMessageReceived(RemoteMessage remoteMessage)
     {
         super.onMessageReceived(remoteMessage);
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        if (!preferences.getBoolean(SettingFragment.SW_NOTIFICATION_KEY_PREF, false))
+            return;
+
         if (remoteMessage.getNotification() != null)
         {
-            String message = remoteMessage.getNotification().getBody();
             FirebaseMessaging.getInstance().unsubscribeFromTopic(RestaurantDetailsActivity.FIREBASE_TOPIC);
-            sendVisualNotification(message);
+            UserHelper.updateChosenPlace(FirebaseAuth.getInstance().getCurrentUser().getUid(), null);
+
+            String message = remoteMessage.getNotification().getBody();
+            this.getUserRestaurant(message);
         }
     }
 
-    private void sendVisualNotification(String messageBody)
+    private void getUserRestaurant(String message)
     {
-        Intent intent = new Intent(this, MainActivity.class);
+        UserHelper.getUser(FirebaseAuth.getInstance().getCurrentUser().getUid()).addOnSuccessListener(success ->
+        {
+            User user = success.toObject(User.class);
+            FormattedPlace selectedPlace = user.getSelectedPlace();
+
+            UserHelper.getUsersInterestedByPlace(selectedPlace.getId()).addOnSuccessListener(successList ->
+            {
+                List<User> userList = successList.toObjects(User.class);
+                sendVisualNotification(message, selectedPlace, userList);
+            });
+        });
+    }
+
+    private void sendVisualNotification(String messageBody, FormattedPlace place, List<User> userList)
+    {
+        String channelId = "Channel Id";
+        Intent intent = new Intent(this, RestaurantDetailsActivity.class);
+        intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, place);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
         NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
-        inboxStyle.setBigContentTitle(getString(R.string.app_name));
-        inboxStyle.addLine(messageBody);
+        inboxStyle.setBigContentTitle(messageBody);
+        inboxStyle.addLine(place.getName());
+        inboxStyle.addLine(place.getAddress());
 
-        String channelId = "Channel Id";
+        for (int i = 0; i < userList.size(); i++)
+        {
+            inboxStyle.addLine(userList.get(i).getUsername());
+            if (i >= 4)
+                break;
+        }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(R.mipmap.ic_launcher)

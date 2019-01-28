@@ -338,7 +338,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
             FormattedPlace place = user != null ? user.getSelectedPlace() : null;
             if (place != null)
             {
-                Intent intent = new Intent(getApplicationContext(), RestaurantDetailsActivity.class);
+                Intent intent = new Intent(this, RestaurantDetailsActivity.class);
                 intent.putExtra(RestaurantDetailsActivity.ACTIVITY_DETAILS_CODE, place);
                 startActivity(intent);
             }

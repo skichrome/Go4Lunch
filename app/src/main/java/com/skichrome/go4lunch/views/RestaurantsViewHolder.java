@@ -54,7 +54,7 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
         this.mTextViewAddress.setText(place.getAddress());
         this.mTextViewAperture.setText(place.getAperture());
 
-        UserHelper.getUsersInterestedByPlace(place.getId()).get().addOnSuccessListener(success ->
+        UserHelper.getUsersInterestedByPlaceQuery(place.getId()).get().addOnSuccessListener(success ->
         {
             String textToDisplay = "(" + success.size() + ")";
             mTextViewNumberOfWorkMates.setText(textToDisplay);

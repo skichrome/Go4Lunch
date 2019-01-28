@@ -39,14 +39,14 @@ public class UserHelper
     }
 
     // Get users that have subscribed to a place
-    public static Query getUsersInterestedByPlace(String placeId)
+    public static Query getUsersInterestedByPlaceQuery(String placeId)
     {
         return UserHelper.getUsersCollection().whereEqualTo("selectedPlaceId", placeId);
     }
 
-    public static Task<QuerySnapshot> getUsersForMapFragment(String placeId)
+    public static Task<QuerySnapshot> getUsersInterestedByPlace(String placeId)
     {
-        return getUsersInterestedByPlace(placeId).get();
+        return getUsersInterestedByPlaceQuery(placeId).get();
     }
 
     // Get all users

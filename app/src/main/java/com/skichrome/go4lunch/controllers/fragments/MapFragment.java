@@ -136,7 +136,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
             for (DocumentSnapshot snap : success)
             {
                 FormattedPlace place = snap.toObject(FormattedPlace.class);
-                UserHelper.getUsersForMapFragment(place.getId())
+                UserHelper.getUsersInterestedByPlace(place.getId())
                         .addOnSuccessListener(queryDocumentSnapshots ->
                                 addMarkerToMap(!queryDocumentSnapshots.getDocuments().isEmpty(), place))
                 .addOnFailureListener(throwable -> Log.e("MapFragment", "updateMarkerOnMap: ", throwable));
