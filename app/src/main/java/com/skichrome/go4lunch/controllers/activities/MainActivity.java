@@ -1,6 +1,7 @@
 package com.skichrome.go4lunch.controllers.activities;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
@@ -32,6 +33,7 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.google.firebase.auth.FirebaseUser;
 import com.skichrome.go4lunch.R;
 import com.skichrome.go4lunch.controllers.base.BaseActivity;
 import com.skichrome.go4lunch.controllers.fragments.ListFragment;
@@ -60,31 +62,114 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Fields
     //=========================================
 
+    /**
+     * Used to show SnackBar
+     */
     @BindView(R.id.main_activity_constraint_layout_container) ConstraintLayout mConstraintLayout;
+    /**
+     * Used to configure {@link BottomNavigationView}
+     */
     @BindView(R.id.activity_main_bottomNavigationView) BottomNavigationView mBottomNavigationView;
+    /**
+     * Toolbar of the app
+     */
     @BindView(R.id.activity_toolbar) Toolbar mToolbar;
+    /**
+     * Navigation Drawer of the app
+     */
     @BindView(R.id.activity_main_menu_drawer_layout) DrawerLayout mDrawerLayout;
+    /**
+     * Navigation View of the app, used for updates in Navigation Drawer.
+     */
     @BindView(R.id.activity_main_navigation_view) NavigationView mNavigationView;
+    /**
+     * <h1>Represent the current fragment displayed</h1>
+     * <p>
+     *     Used to save the current fragment displayed, to restore the last fragment displayed when the MainActivity is exited
+     * </p>
+     */
     @State int mFragmentDisplayed;
 
+    /**
+     * Instance of #MapFragment
+     */
     private MapFragment mMapFragment;
+    /**
+     * Instance of #ListFragment
+     */
     private ListFragment mListFragment;
+    /**
+     * Instance of #WorkmatesFragment
+     */
     private WorkmatesFragment mWorkmatesFragment;
+    /**
+     * <h1>Status of http request</h1>
+     * <p>
+     *     Value changed when an http request is launched, to avoid useless multiple calls on Google API.<br/>
+     *     Set to false again when user request position update, to relaunch http request for results update.
+     * </p>
+     */
     private boolean mIsHttpRequestAlreadyLaunched = false;
+    /**
+     * <h1>Fragment status</h1>
+     * <p>
+     *     Used to know if the #MapFragment location need to be updated, to avoid some useless updates.
+     * </p>
+     */
     private boolean mIsFragmentLocationUpdated = false;
+    /**
+     * <h1>Disposable for Http request</h1>
+     * <p>
+     *     Variable used for Http request, mainly for reset if the user exit the app before Http request finish.
+     * </p>
+     */
     private Disposable mDisposable;
+    /**
+     * <h1>LocationManager Service</h1>
+     * <p>
+     *     Used to get user position.
+     * </p>
+     */
     private LocationManager mLocationManager;
+    /**
+     * <h1>Callback for LocationManager</h1>
+     * <p>
+     *     Callback used for LocationManager, called each time a new location is available.
+     * </p>
+     */
     private LocationListener mLocationListener;
+    /**
+     * <h1>Last known position</h1>
+     * <p>
+     *     Last known position send by the callback. Used to update the location on the map, and launch the Http Request.
+     * </p>
+     */
     private Location mLastKnownLocation;
+    /**
+     * <h1>Code for Place AutoComplete in {@link #onActivityResult(int, int, Intent)}</h1>
+     * <p>
+     *     Used to identify the result of placeAutocomplete API, called with startActivityForResult method.
+     * </p>
+     */
     public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 4124;
 
     //=========================================
     // Superclass Methods
     //=========================================
 
+    /**
+     * @see BaseActivity#getActivityLayout()
+     */
     @Override
     protected int getActivityLayout() { return R.layout.activity_main; }
 
+    /**
+     * <h1>MainActivity initialisation</h1>
+     * <p>
+     *     Configuration of things that does not require location permission.
+     * </p>
+     * @see BaseActivity#configureActivity()
+     */
     @Override
     protected void configureActivity()
     {
@@ -94,6 +179,13 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         this.configureBottomNavigationView();
     }
 
+    /**
+     * <h1>MainActivity initialisation</h1>
+     * <p>
+     *     Used to configure things that needs location permission (crash without permission).
+     * </p>
+     * @see BaseActivity#updateActivity()
+     */
     @Override
     protected void updateActivity()
     {
@@ -108,6 +200,13 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         this.configureLocation();
     }
 
+    /**
+     * <h1>MainActivity initialisation</h1>
+     * <p>
+     *     Check if the user is identified with an account on Firebase Authentication.<br/>
+     *     If not, the app request the authentication screen, if yes, the app initialise the fields by calling {@link #updateDrawerFields()}
+     * </p>
+     */
     @Override
     protected void onResume()
     {
@@ -116,6 +215,13 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         else startActivityForResult(FireStoreAuthentication.startSignInActivity(), RC_SIGN_IN);
     }
 
+    /**
+     * <h1>MainActivity clean pause</h1>
+     * <p>
+     *     To avoid memory leaks, the location manager and it's callback needs to be canceled here.
+     *     The disposable is also canceled here, to avoid useless API call.
+     * </p>
+     */
     @Override
     protected void onPause()
     {
@@ -129,6 +235,17 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         if (this.mLocationListener != null) this.mLocationListener = null;
     }
 
+    /**
+     * <h1>Results from other activities</h1>
+     * <p>
+     *     Get the results from Place Autocomplete API and Firestore Authentication.
+     *     <ul>
+     *         <li>Place Autocomplete : if the place is not null an update of displayed fragment is requested (if not null).</li>
+     *         <li>Firestore Authentication : Forward results to FireStoreAuthentication class. Show a SnackBar message if used canceled login.</li>
+     *     </ul>
+     * </p>
+     * @see FireStoreAuthentication#onActivityResult(Activity, FirebaseUser, int, int, Intent)
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {

@@ -30,6 +30,9 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     // Fields
     //=========================================
 
+    /**
+     * Code used to identify location permission
+     */
     public static final int RC_LOCATION_CODE = 4123;
 
     //=========================================
@@ -54,6 +57,13 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     // Superclass Methods
     //=========================================
 
+    /**
+     * <h1>Activity initialisation</h1>
+     * <p>
+     *     Used to initialize the app by calling {@link #configureActivity()} method.<br/>
+     *     Icepick and Butterknife libraries initialisation.
+     * </p>
+     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState)
     {
@@ -64,6 +74,12 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
         this.configureActivity();
     }
 
+    /**
+     * <h1>Permission check in onResume, in all activities</h1>
+     * <p>
+     *     Because the app is useless without location, user must enable it to use the app.
+     * </p>
+     */
     @Override
     protected void onResume()
     {
@@ -71,6 +87,10 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
         this.configurePermissions();
     }
 
+    /**
+     * <h1>Used for Icepick to save variables states.</h1>
+     * @param outState
+     */
     @Override
     protected void onSaveInstanceState(Bundle outState)
     {
@@ -96,6 +116,13 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
+    /**
+     * <h1>Permission request with EasyPermission</h1>
+     * <p>
+     *     If the app doesn't have location permission, EasyPermission request this permission.<br/>
+     *     If the app has location permission, the method {@link #updateActivity()} is called.
+     * </p>
+     */
     public void configurePermissions()
     {
         String perms = Manifest.permission.ACCESS_FINE_LOCATION;
@@ -126,6 +153,12 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
             new AppSettingsDialog.Builder(this).build().show();
     }
 
+    /**
+     * <h1>EasyPermission callback</h1>
+     * <p>
+     *     Used to relaunch check of permission, and retry to launch activity with permissions granted.
+     * </p>
+     */
     @Override
     public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) { this.configurePermissions(); }
 

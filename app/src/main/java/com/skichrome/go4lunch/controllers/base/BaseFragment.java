@@ -41,8 +41,13 @@ public abstract class BaseFragment extends Fragment
     // Superclass Methods
     //=========================================
 
-    @Nullable
-    @Override
+    /**
+     * <h1>Fragments initialisation</h1>
+     * <p>
+     *     Used to initialise Butterknife library and initialise fragments with {@link #configureFragment()} method.
+     * </p>
+     */
+    @Nullable @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
         View view = inflater.inflate(getFragmentLayout(), container, false);
