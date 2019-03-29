@@ -54,6 +54,15 @@ import io.reactivex.observers.DisposableObserver;
 
 import static com.skichrome.go4lunch.utils.FireStoreAuthentication.RC_SIGN_IN;
 
+/**
+ * <h1>Main Activity Class</h1>
+ * <p>The main activity that is launched when the app is started.</p>
+ * <p>
+ *     This activity manage 3 fragments (a map, a list of places and a list of workmates).<br/>
+ *     It also get the user location and manage the firebase account system, and different api calls.
+ * </p>
+ *
+ */
 public class MainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener,
         NavigationView.OnNavigationItemSelectedListener,
         MapFragment.MapFragmentListeners
@@ -284,6 +293,9 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Configuration Methods
     //=========================================
 
+    /**
+     * <h1>Inflate the menu defined in xml</h1>
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -291,6 +303,12 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         return true;
     }
 
+    /**
+     * <h1>Attach toolbar to the activity</h1>
+     * <p>
+     *     Set the toolbar to the activity and set an elevation.
+     * </p>
+     */
     private void configureToolBar()
     {
         setSupportActionBar(mToolbar);
@@ -298,8 +316,20 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
             getSupportActionBar().setElevation(4);
     }
 
+    /**
+     * <h1>Attach listener to the navigationView</h1>
+     * <p>
+     *     Attach a listener to the navigationView, to be able to use the items defined into it.
+     * </p>
+     */
     private void configureNavigationView() { mNavigationView.setNavigationItemSelectedListener(this); }
 
+    /**
+     * <h1>Navigation Drawer configuration</h1>
+     * <p>
+     *     Add the navigation drawer to the toolbar.
+     * </p>
+     */
     private void configureMenuDrawer()
     {
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -307,8 +337,18 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         toggle.syncState();
     }
 
+    /**
+     * <h1>Bottom navigation View configuration</h1>
+     */
     private void configureBottomNavigationView() { mBottomNavigationView.setOnNavigationItemSelectedListener(this); }
 
+    /**
+     * <h1>Configure the location updates</h1>
+     * <p>
+     *     The LocationManager is initialised here, and a callback is linked to be notified when a new location is available.<br/>
+     *     When a new location is available, the method {@link #locationUpdates(Location)} is called.
+     * </p>
+     */
     @SuppressLint("MissingPermission")
     private void configureLocation()
     {
@@ -332,6 +372,15 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         this.mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this.mLocationListener);
     }
 
+    /**
+     * <h1>Location updates processing</h1>
+     * <p>
+     *     Here we need to update the location in the map fragment, and execute the httpRequest with the new location, but only if the {@link #mIsFragmentLocationUpdated} is set to false.<br/>
+     *     The fragment is updated only if he need to be updated.
+     * </p>
+     * @param location
+     *      The new location needed to update fragment and execute http request.
+     */
     private void locationUpdates(Location location)
     {
         if (!this.mIsFragmentLocationUpdated && this.mMapFragment != null && this.mMapFragment.isVisible())
@@ -350,6 +399,12 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Listeners Methods
     //=========================================
 
+    /**
+     * <h1>Toolbar search icon Listener</h1>
+     * <p>
+     *     The search button respond only on MapFragment and ListFragment, on WorkmatesFragment the feature isn't implemented (only show a toast)
+     * </p>
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
@@ -365,6 +420,12 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         }
     }
 
+    /**
+     * <h1>Navigation drawer and Bottom Navigation View Listener</h1>
+     * <p>
+     *     Change the fragment displayed according to where the user has clicked.
+     * </p>
+     */
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item)
     {
@@ -403,6 +464,9 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         return true;
     }
 
+    /**
+     * Navigation drawer configuration.
+     */
     @Override
     public void onBackPressed()
     {
@@ -414,6 +478,14 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Fragment Methods
     //=========================================
 
+    /**
+     * <h1>Replace current fragment</h1>
+     * <p>
+     *     Replace the current displayed fragment with the fragment in parameter, only if the fragment in parameter is another fragment.
+     * </p>
+     * @param fragment
+     *      The fragment that will be displayed.
+     */
     private void displayFragment(Fragment fragment)
     {
         if (!fragment.isVisible()) getSupportFragmentManager()
@@ -422,6 +494,13 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
                 .commit();
     }
 
+    /**
+     * <h1>MapFragment configuration</h1>
+     * <p>
+     *     If the Map Fragment has not been initialised, create a new instance of it and call {@link #displayFragment(Fragment)} method to display it.<br/>
+     *     Also set the ID {@link #mFragmentDisplayed} and request update of the fragment by changing the value of {@link #mIsFragmentLocationUpdated}
+     * /p>
+     */
     private void configureMapFragment()
     {
         if (mMapFragment == null) mMapFragment = MapFragment.newInstance();
@@ -430,6 +509,13 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         this.mFragmentDisplayed = 0;
     }
 
+    /**
+     * <h1>ListFragment configuration</h1>
+     * <p>
+     *     If the List Fragment has not been initialised, create a new instance of it and call {@link #displayFragment(Fragment)} method to display it.<br/>
+     *     Also set the ID {@link #mFragmentDisplayed}.
+     * /p>
+     */
     private void configureListFragment()
     {
         if (mListFragment == null) mListFragment = ListFragment.newInstance();
@@ -437,6 +523,13 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         this.mFragmentDisplayed = 1;
     }
 
+    /**
+     * <h1>WorkmatesFragment configuration</h1>
+     * <p>
+     *     If the Workmates Fragment has not been initialised, create a new instance of it and call {@link #displayFragment(Fragment)} method to display it.<br/>
+     *     Also set the ID {@link #mFragmentDisplayed}.
+     * /p>
+     */
     private void configureWorkmatesFragment()
     {
         if (mWorkmatesFragment == null) mWorkmatesFragment = WorkmatesFragment.newInstance();
@@ -444,8 +537,18 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         this.mFragmentDisplayed = 2;
     }
 
+    /**
+     * <h1>Launch Setting Activity</h1>
+     */
     private void launchSettingActivityAndFragment() { startActivity(new Intent(MainActivity.this, SettingsActivity.class)); }
 
+    /**
+     * <h1>Launch Restaurant Details Activity</h1>
+     * <p>
+     *     Launch the RestaurantDetailsActivity with the place selected by the user.<br/>
+     *     If the user hasn't selected a place, a toast is shown.
+     * </p>
+     */
     private void launchRestaurantDetailsActivity()
     {
         UserHelper.getUser(getCurrentUser().getUid()).addOnSuccessListener(mDocumentSnapshot ->
@@ -466,8 +569,16 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Update Method
     //=========================================
 
+    /**
+     * <h1>Show a message with a SnackBar</h1>
+     * @param message
+     *      THe message that need to be displayed.
+     */
     public void showSnackBarMessage(String message) { Snackbar.make(this.mConstraintLayout, message, Snackbar.LENGTH_SHORT).show(); }
 
+    /**
+     * <h1>Update the fields in the Navigation Drawer Header</h1>
+     */
     private void updateDrawerFields()
     {
         View headerView = mNavigationView.getHeaderView(0);
@@ -485,6 +596,15 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Http request Method
     //=========================================
 
+    /**
+     * <h1>Download all restaurant near the location of the user</h1>
+     * <p>
+     *     This method configure the field {@link #mDisposable}, to download all restaurant near the user.
+     *     When the Http Request is ended, the visible fragment is updated.
+     * </p>
+     * @param location
+     *      The location of the user.
+     */
     private void executeHttpRequest(Location location)
     {
         this.mDisposable = GoogleApiStream.streamFetchPlaces(getString(R.string.google_place_api_key), location, 20).subscribeWith(new DisposableObserver<MainPlaceDetails>()
@@ -506,6 +626,12 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         });
     }
 
+    /**
+     * <h1>Place Autocomplete API request</h1>
+     * <p>
+     *     Create a new request for PlaceAutocomplete API. We request results with startActivityForResult method.
+     * </p>
+     */
     private void launchPlaceAutocompleteActivity()
     {
         try
@@ -527,6 +653,12 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
     // Fragment Callbacks Method
     //=========================================
 
+    /**
+     * <h1>Fragment Callback</h1>
+     * <p>
+     *     This callback is called when the user has requested an update, in MapFragment or in ListFragment.
+     * </p>
+     */
     @Override
     public void fragmentNeedUpdateCallback() { this.mIsHttpRequestAlreadyLaunched = false; }
 }
