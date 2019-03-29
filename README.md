@@ -5,11 +5,7 @@ for more details.
 ## Google API configuration
 
 This app need a token on Google Map to work properly, you need to get one on Google Cloud Platform.
-Once you have a token, go to
-
-```
-(yourprojectsdirectory)\Go4Lunch\app\src\debug\res\values
-```
+Once you have a token, go to`(yourprojectsdirectory)\Go4Lunch\app\src\debug\res\values`
 and create a file named "google_place_api.xml" and add this to the new file created :
 
 ```xml
@@ -29,8 +25,9 @@ and create a file named "google_place_api.xml" and add this to the new file crea
 
 ## Firebase Configuration
 
-You will also need a Firebase project to be able to compile this project.
-After you have created the project you have to enable Authentication from email, google, twitter and facebook.
+You will also need a [Firebase](https://console.firebase.google.com/u/0/) project to be able to compile this project.
+After you have created the project you have to download google-services.json and replace the content in the project file with your version, 
+and you have to enable Authentication from email, google, twitter and facebook.
 You will also need to enable and configure Cloud Firestore
 And for facebook and twitter authentication you will also need tokens from these social networks.
 The tokens needs to be placed in file in `values/twitter_facebook_api.xml`
