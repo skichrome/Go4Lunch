@@ -10,31 +10,19 @@ import android.view.ViewGroup;
 
 import butterknife.ButterKnife;
 
-/**
- * This abstract class is used to define common parts for fragments in this app
- */
 public abstract class BaseFragment extends Fragment
 {
     //=========================================
     // Base Abstract Methods
     //=========================================
 
-    /**
-     * Used to get the layout file and bind it to the view
-     */
     protected abstract int getFragmentLayout();
-    /**
-     * Used to configure the design, for example here will be executed the http Request, the RecyclerView will be configured here
-     */
     protected abstract void configureFragment();
 
     //=========================================
     // Empty Constructor
     //=========================================
 
-    /**
-     * Empty constructor, needed for Fragment instantiation, not modifiable
-     */
     public BaseFragment() { }
 
     //=========================================

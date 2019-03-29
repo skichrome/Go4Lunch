@@ -21,9 +21,6 @@ import pub.devrel.easypermissions.PermissionRequest;
 
 // Default location for emulator : Paris : Latitude : 48.841810 Longitude : 2.325310
 
-/**
- * This abstract class is used to define common parts for Activities in this app
- */
 public abstract class BaseActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks
 {
     //=========================================
@@ -36,18 +33,8 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     // Base Abstract Methods
     //=========================================
 
-    /**
-     * Used to get layout of activity
-     */
     protected abstract int getActivityLayout();
-    /**
-     * Used to configure all things needed in activity
-     */
     protected abstract void configureActivity();
-    /**
-     * Used to update activities only when user has granted the requested permissions, without these permissions the user can't
-     * access to the app
-     */
     protected abstract void updateActivity();
 
     //=========================================
@@ -82,13 +69,6 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     // Permission Methods
     // ------------------------
 
-    /**
-     * Used to pass the management of permissions to EasyPermission library
-     *
-     * @param requestCode  Integer, identifier of the permission requested
-     * @param permissions  String, the list of requested permissions
-     * @param grantResults the result of user to the request
-     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
@@ -112,12 +92,7 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
             this.updateActivity();
     }
 
-    /**
-     * Used to close the app when the user deny the requested permissions
-     *
-     * @param requestCode Integer, identifier of the permission requested
-     * @param perms       String, the list of requested permissions
-     */
+
     @Override
     public void onPermissionsDenied(int requestCode, @NonNull List<String> perms)
     {
