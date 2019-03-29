@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -16,6 +15,7 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import icepick.Icepick;
+import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
 import pub.devrel.easypermissions.PermissionRequest;
 
@@ -108,8 +108,7 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
                             .setPositiveButtonText(R.string.permission_request_yes)
                             .setNegativeButtonText(R.string.permission_request_no)
                             .build());
-        }
-        else if (isCurrentUserLogged())
+        } else if (isCurrentUserLogged())
             this.updateActivity();
     }
 
@@ -123,8 +122,8 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     public void onPermissionsDenied(int requestCode, @NonNull List<String> perms)
     {
         Log.e("BaseActivity : ", "User has denied Location permission, this app doesn't work without location");
-        Toast.makeText(this, "You must enable location to use this app", Toast.LENGTH_LONG).show();
-        finish();
+        if (EasyPermissions.permissionPermanentlyDenied(this, Manifest.permission.ACCESS_FINE_LOCATION))
+            new AppSettingsDialog.Builder(this).build().show();
     }
 
     @Override

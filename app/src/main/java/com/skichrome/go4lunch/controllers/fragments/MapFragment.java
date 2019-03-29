@@ -43,7 +43,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     // Fields
     //=========================================
 
-    private static final LatLng LATLNG_PARIS = new LatLng(48.8042, 2.3511);
+    private static final LatLng LATLNG_PARIS = new LatLng(48.841810, 2.325310);
 
     private GoogleMap mGMap;
     private WeakReference<MapFragmentListeners> mCallback;
@@ -119,6 +119,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
 
     public void updateMapForAutocomplete(FormattedPlace place)
     {
+        if (mGMap == null) return;
         mGMap.clear();
         this.mMarkers = new HashMap<>();
         this.addMarkerToMap(false, place);
@@ -129,6 +130,7 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
 
     public void updateMarkerOnMap()
     {
+        if (mGMap == null) return;
         mGMap.clear();
         this.mMarkers = new HashMap<>();
         PlaceHelper.getAllPlaces().addOnSuccessListener(success ->

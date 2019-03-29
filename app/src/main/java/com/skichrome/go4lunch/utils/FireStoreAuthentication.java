@@ -38,7 +38,7 @@ public abstract class FireStoreAuthentication
     private static final int DELETE_USER_TASK = 200;
     public static final int RC_SIGN_IN = 1234;
 
-    private static final String LOG_TAG = "FireStoreAuth : ";
+    private static final String LOG_TAG = "FireStoreAuth";
     private static final int REQUEST_CHECK_SETTINGS = 12000;
 
     //=========================================
@@ -99,9 +99,9 @@ public abstract class FireStoreAuthentication
 
             case REQUEST_CHECK_SETTINGS :
                 if (resultCode == Activity.RESULT_OK)
-                    return "Google location updates granted";
+                    return activity.getString(R.string.location_permission_granted);
                 if (resultCode == Activity.RESULT_CANCELED)
-                    return "User has denied uses of location updates";
+                    return activity.getString(R.string.location_permission_denied);
 
             default:
                 return null;

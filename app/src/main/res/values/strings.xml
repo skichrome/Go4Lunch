@@ -34,7 +34,6 @@
     <string name="activity_main_menu_search">search</string>
 
     <!-- RecyclerView item strings -->
-    <string name="frag_list_item_icon_workmates_voted_for_this_restaurant">person represent users who have voted for this restaurant</string>
     <string name="fragment_list_item_restaurant_distance_string">distance</string>
     <string name="fragment_list_item_restaurant_name_string">Name</string>
     <string name="fragment_list_item_restaurant_address_string">address</string>
@@ -84,11 +83,18 @@
     <string name="error_unknown_error">An unknown error occurred</string>
     <string name="error_cancel_request">Request canceled</string>
 
-    <string name="notification_channel_name">When it\'s time to go eat</string>
-
     <!-- Permission request -->
     <string name="permission_request_rationale">This app can\'t work without location access, authorize ?</string>
     <string name="permission_request_yes">Yes</string>
     <string name="permission_request_no">No</string>
 
+    <string name="location_permission_granted">Google location updates granted</string>
+    <string name="location_permission_denied">User has denied uses of location updates</string>
+
+    <!-- Notification -->
+    <string name="notification_swipe_for_more">swipe for more details</string>
+    <string name="notification_big_title">Let\'s go eat !!</string>
+    <string name="notification_channel_name">Mid day notification</string>
+
+    <string name="frag_list_item_icon_workmates_voted_for_this_restaurant">A person who has rated the restaurant</string>
 </resources>

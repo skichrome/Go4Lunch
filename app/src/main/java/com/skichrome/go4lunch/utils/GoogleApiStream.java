@@ -1,4 +1,4 @@
-package com.skichrome.go4lunch.utils.rxjava;
+package com.skichrome.go4lunch.utils;
 
 import android.location.Location;
 import android.util.Log;

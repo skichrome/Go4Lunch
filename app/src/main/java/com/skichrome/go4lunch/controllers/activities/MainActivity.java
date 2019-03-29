@@ -41,9 +41,9 @@ import com.skichrome.go4lunch.models.FormattedPlace;
 import com.skichrome.go4lunch.models.firestore.User;
 import com.skichrome.go4lunch.models.googleplacedetails.MainPlaceDetails;
 import com.skichrome.go4lunch.utils.FireStoreAuthentication;
+import com.skichrome.go4lunch.utils.GoogleApiStream;
 import com.skichrome.go4lunch.utils.MapMethods;
 import com.skichrome.go4lunch.utils.firebase.UserHelper;
-import com.skichrome.go4lunch.utils.rxjava.GoogleApiStream;
 
 import butterknife.BindView;
 import icepick.State;
@@ -203,7 +203,6 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
             {
                 if (location != null)
                 {
-                    Log.d("MainActivity", "You have a location request : " + location.toString());
                     mLastKnownLocation = location;
                     locationUpdates(location);
                 } else

@@ -77,25 +77,28 @@ dependencies {
     implementation 'com.google.maps.android:android-maps-utils:0.4.4'
 
     // Google Map View support
-    implementation 'com.google.android.gms:play-services-maps:16.0.0'
+    implementation 'com.google.android.gms:play-services-maps:16.1.0'
 
     // Firebase implementation
-    implementation 'com.google.firebase:firebase-core:16.0.6'
+    implementation 'com.google.firebase:firebase-core:16.0.7'
 
     // Cloud Firestore implementation
-    implementation'com.google.firebase:firebase-firestore:17.1.5'
+    implementation'com.google.firebase:firebase-firestore:18.1.0'
 
     // Cloud-Firestore-UI implementation
     implementation 'com.firebaseui:firebase-ui-firestore:4.3.1'
 
     // Firebase Auth, works with FirebaseUI to avoid library version conflicts
-    implementation'com.google.firebase:firebase-auth:16.1.0'
+    implementation'com.google.firebase:firebase-auth:16.2.0'
 
     // Firebase-Auth-UI (simplify usage of Firebase)
     implementation 'com.firebaseui:firebase-ui-auth:4.3.1'
 
     //Firestore notification implementation
-    implementation 'com.google.firebase:firebase-messaging:17.3.4'
+//    implementation 'com.google.firebase:firebase-messaging:17.4.0'
+
+    // WorkManager for notifications
+    implementation'android.arch.work:work-runtime:1.0.0'
 
     // Google Play Service (module Places)
     implementation 'com.google.android.gms:play-services-places:16.0.0'

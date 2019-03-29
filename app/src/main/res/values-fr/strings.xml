@@ -5,7 +5,6 @@
 
     <!-- Images descriptions -->
     <string name="activity_main_nav_drawer_header_string_image_desc">image fond d\'écran du menu drawer</string>
-    <string name="nav_drawer_header_string_user_image_profile">user image profile</string>
 
     <string name="fragment_list_item_restaurant_image_description">image du restaurant</string>
     <string name="fragment_list_item_rate_img_description">étoile note du restaurant</string>
@@ -15,8 +14,6 @@
     <string name="activity_details_restaurant_content_desc_phone_icon">icône téléphone</string>
     <string name="activity_details_restaurant_content_desc_rate_icon"> icône noter</string>
     <string name="activity_details_restaurant_content_desc_website_icon">icône site web</string>
-
-    <string name="frag_list_item_icon_workmates_voted_for_this_restaurant">Représente le nombre de personnes qui ont votés pour ce restaurant</string>
 
     <!-- Menu strings -->
     <string name="navigation_drawer_open">Ouvrir le menu drawer</string>
@@ -30,6 +27,7 @@
     <string name="activity_main_menu_drawer_settings_string">Paramètres</string>
     <string name="activity_main_menu_drawer_logout_string">Déconnexion</string>
 
+    <string name="nav_drawer_header_string_user_image_profile">Photo de profil</string>
     <string name="nav_drawer_header_string_email">email</string>
     <string name="nav_drawer_header_string_name">nom</string>
 
@@ -84,11 +82,18 @@
     <string name="error_unknown_error">Une erreur inconnue s\'est produite</string>
     <string name="error_cancel_request">Requête annulée</string>
 
-    <string name="notification_channel_name">Quand il est l\'heure d\'aller manger</string>
-
     <!-- Permission request -->
     <string name="permission_request_rationale">Autoriser l\'accès à la position de l\'appareil ?</string>
     <string name="permission_request_yes">Oui</string>
     <string name="permission_request_no">Non</string>
 
+    <string name="location_permission_granted">L\'utilisateur a autorisé l\'accès à la localisation</string>
+    <string name="location_permission_denied">L\'utilisateur a refusé l\'accès à la localisation</string>
+
+    <!-- Notification -->
+    <string name="notification_swipe_for_more">swipe for more details</string>
+    <string name="notification_big_title">Il est l\'ore ! Monseignore !</string>
+    <string name="notification_channel_name">Notification à midi</string>
+
+    <string name="frag_list_item_icon_workmates_voted_for_this_restaurant">Représente le nombre de personnes qui ont votés pour ce restaurant</string>
 </resources>
