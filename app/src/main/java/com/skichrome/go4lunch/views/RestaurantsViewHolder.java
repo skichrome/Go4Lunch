@@ -13,22 +13,55 @@ import com.skichrome.go4lunch.utils.firebase.UserHelper;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * ViewHolder for restaurant in the RecyclerView.
+ */
 class RestaurantsViewHolder extends RecyclerView.ViewHolder
 {
     //=========================================
     // Fields
     //=========================================
 
+    /**
+     * The name of the restaurant.
+     */
     @BindView(R.id.fragment_list_item_restaurant_name) TextView mTextViewName;
+    /**
+     * The distance to the restaurant.
+     */
     @BindView(R.id.fragment_list_item_restaurant_distance) TextView mTextViewDistance;
+    /**
+     * The address of the restaurant.
+     */
     @BindView(R.id.fragment_list_item_restaurant_address) TextView mTextViewAddress;
+    /**
+     * The number of workmates that goes into the restaurant.
+     */
     @BindView(R.id.fragment_list_item_number_of_workmates_in_this_restaurant) TextView mTextViewNumberOfWorkMates;
+    /**
+     * The opening hours of the restaurant.
+     */
     @BindView(R.id.fragment_list_item_restaurant_aperture) TextView mTextViewAperture;
+    /**
+     * The first level of restaurant rating.
+     */
     @BindView(R.id.fragment_list_item_rate_1_star) ImageView mImageViewRate1;
+    /**
+     * The second level of restaurant rating.
+     */
     @BindView(R.id.fragment_list_item_rate_2_stars) ImageView mImageViewRate2;
+    /**
+     * The third level of restaurant rating.
+     */
     @BindView(R.id.fragment_list_item_rate_3_stars) ImageView mImageViewRate3;
+    /**
+     * The picture of the restaurant, downloaded from Google APIs.
+     */
     @BindView(R.id.fragment_list_item_restaurant_image) ImageView mImageViewRestaurantImg;
 
+    /**
+     * Google API key for Glide.
+     */
     private String MAP_API_KEY;
     private static final String GLIDE_BASE_GOOGLE_URL = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=";
 
@@ -36,6 +69,11 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
     // Constructor
     //=========================================
 
+    /**
+     * Holder fields initialisation.
+     * @param googleApiKey
+     *      {@link #MAP_API_KEY}
+     */
     RestaurantsViewHolder(View itemView, String googleApiKey)
     {
         super(itemView);
@@ -47,6 +85,13 @@ class RestaurantsViewHolder extends RecyclerView.ViewHolder
     // UI Methods
     //=========================================
 
+    /**
+     * Update all views in the holder.
+     * @param place
+     *      The place that will update the holder.
+     * @param glide
+     *      For imageView updates.
+     */
     void updateUI(FormattedPlace place, RequestManager glide)
     {
         this.mTextViewName.setText(place.getName());

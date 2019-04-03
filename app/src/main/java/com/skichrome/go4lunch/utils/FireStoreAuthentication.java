@@ -22,36 +22,68 @@ import com.skichrome.go4lunch.utils.firebase.UserHelper;
 
 import java.util.Arrays;
 
+/**
+ * <h1>Utils class, mainly for Firebase</h1>
+ */
 public abstract class FireStoreAuthentication
 {
     //=========================================
     // Callback
     //=========================================
 
+    /**
+     *
+     */
     public interface GetUserListener { void onSuccess(Intent intent);}
 
     //=========================================
     // Fields
     //=========================================
 
+    /**
+     * code to identify log out task.
+     */
     private static final int SIGN_OUT_TASK = 100;
+    /**
+     * code to identify delete user task.
+     */
     private static final int DELETE_USER_TASK = 200;
+    /**
+     * Sign in code
+     */
     public static final int RC_SIGN_IN = 1234;
 
+    /**
+     * <h1>Log tag</h1>
+     */
     private static final String LOG_TAG = "FireStoreAuth";
+    /**
+     * check settings code.
+     */
     private static final int REQUEST_CHECK_SETTINGS = 12000;
 
     //=========================================
     // Constructor
     //=========================================
 
+    /**
+     * <h1>Prevent class instantiation</h1>
+     */
     private FireStoreAuthentication() { }
 
     //=========================================
     // Methods
     //=========================================
 
-    // Launch sign-in activity
+    /**
+     * <h1>Launch log in activity</h1>
+     * <p>
+     *     Ask user to authenticate, by launching a Firebase Auth log in activity.<br/>
+     *     Email, Google, Facebook and Twitter log in is supported and activated on Firebase Authentication.
+     * </p>
+     * @return
+     *      Log in Intent.
+     */
     public static Intent startSignInActivity()
     {
         return AuthUI.getInstance()
@@ -67,7 +99,20 @@ public abstract class FireStoreAuthentication
                 .build();
     }
 
-    // manage activities results cases
+    /**
+     * <h1>onActivityResult results managements</h1>
+     * <p>
+     *
+     * </p>
+     * @param activity
+     *      where the method is called, for context.
+     * @param user
+     *      The user logged in
+     * @param data
+     *      Intent that contain the place fetched in PlaceAutocomplete API, and link to {@link RestaurantDetailsActivity}
+     * @return
+     *      String that contain a status message.
+     */
     @Nullable
     public static String onActivityResult(Activity activity, FirebaseUser user, int requestCode, int resultCode, Intent data)
     {
@@ -108,6 +153,16 @@ public abstract class FireStoreAuthentication
         }
     }
 
+    /**
+     * <h1>Create a new user in Firebase</h1>
+     * <p>
+     *     Create a new user in Firebase, with the user in parameter.
+     * </p>
+     * @param activity
+     *      where the method is called, for context.
+     * @param user
+     *      The user to create.
+     */
     private static void createUserInCloud(Activity activity, FirebaseUser user)
     {
         if (user != null)
@@ -124,6 +179,14 @@ public abstract class FireStoreAuthentication
     // Log out and delete methods
     //=========================================
 
+    /**
+     * <h1>Logout Method</h1>
+     * <p>
+     *     Log out from Firebase Auth.
+     * </p>
+     * @param activity
+     *      where the method is called, for context.
+     */
     public static void logout(Activity activity)
     {
         AuthUI.getInstance()
@@ -131,6 +194,16 @@ public abstract class FireStoreAuthentication
                 .addOnSuccessListener(activity, updateUIAfterRESTRequestsCompleted(activity, SIGN_OUT_TASK));
     }
 
+    /**
+     * <h1>Account deletion</h1>
+     * <p>
+     *     Delete the user from Firebase (FirebaseAuth).
+     * </p>
+     * @param activity
+     *      where the method is called, for context.
+     * @param user
+     *      The user to delete.
+     */
     public static void deleteAccount(Activity activity, FirebaseUser user)
     {
         if (user != null)
@@ -143,6 +216,19 @@ public abstract class FireStoreAuthentication
         }
     }
 
+    /**
+     * <h1>Actions after Firebase success tasks</h1>
+     * <p>
+     *     For sign out : restart the activity.
+     *     For delete account : close the activity.
+     * </p>
+     * @param activity
+     *      where the method is called, for context.
+     * @param origin
+     *      To know what to do according to the origin.
+     * @return
+     *      Success Listener
+     */
     private static OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(final Activity activity, final int origin)
     {
         return aVoid ->
@@ -165,6 +251,13 @@ public abstract class FireStoreAuthentication
         };
     }
 
+    /**
+     * <h1>Failure listener</h1>
+     * @param activity
+     *      For context.
+     * @return
+     *      Failure Listener.
+     */
     private static OnFailureListener onFailureListener(final Activity activity)
     {
         return mE -> Toast.makeText(activity.getApplicationContext(), activity.getString(R.string.fui_error_unknown), Toast.LENGTH_SHORT).show();
@@ -174,6 +267,19 @@ public abstract class FireStoreAuthentication
     // Update Methods
     //=========================================
 
+    /**
+     * <h1>Update the place selected by the user</h1>
+     * <p>
+     *     Connect to Cloud Firestore database and update the place selected by the user.
+     * </p>
+     *
+     * @param activity
+     *      where the method is called, for context.
+     * @param user
+     *      User that we need to update.
+     * @param placeInterest
+     *      The place that will be saved in Firebase.
+     */
     public static void updateChosenRestaurant(Activity activity, final FirebaseUser user, FormattedPlace placeInterest)
     {
         UserHelper.updateChosenPlace(user.getUid(), placeInterest)
@@ -181,6 +287,18 @@ public abstract class FireStoreAuthentication
                 .addOnFailureListener(onFailureListener(activity));
     }
 
+    /**
+     * <h1>Return the place selected by user</h1>
+     * <p>
+     *     Connect to cloud Firestore database and get the restaurant selected by the user.
+     * </p>
+     * @param callback
+     *      Listener for results
+     * @param activity
+     *      where the method is called, for context.
+     * @param user
+     *      The user that we need to get his selected place.
+     */
     public static void getUserPlace(final GetUserListener callback, final Activity activity, User user)
     {
         UserHelper.getUser(user.getUid()).addOnSuccessListener(mDocumentSnapshot ->

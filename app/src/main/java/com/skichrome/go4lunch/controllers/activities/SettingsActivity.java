@@ -1,5 +1,6 @@
 package com.skichrome.go4lunch.controllers.activities;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
@@ -20,17 +21,42 @@ import com.skichrome.go4lunch.utils.firebase.UserHelper;
 import butterknife.BindView;
 import butterknife.OnClick;
 
+/**
+ * Enable user to modify some options, delete his account and see his account informations.
+ */
 public class SettingsActivity extends BaseActivity
 {
+    /**
+     * App toolbar
+     */
     @BindView(R.id.activity_setting_toolbar_include) Toolbar mToolbar;
+    /**
+     * Profile image of the user.
+     */
     @BindView(R.id.activity_settings_profile_img) ImageView mImageViewProfile;
+    /**
+     * Name of user.
+     */
     @BindView(R.id.activity_settings_name) TextView mTextViewName;
+    /**
+     * Email of the user
+     */
     @BindView(R.id.activity_settings_email) TextView mTextViewEmail;
+    /**
+     * Enable account deletion
+     */
     @BindView(R.id.activity_settings_delete_account_btn) Button mBtn;
 
+    /**
+     * @see BaseActivity#getActivityLayout()
+     */
     @Override
     protected int getActivityLayout() { return R.layout.activity_settings; }
 
+    /**
+     * <h1>MainActivity initialisation</h1>
+     * @see BaseActivity#configureActivity()
+     */
     @Override
     protected void configureActivity()
     {
@@ -38,12 +64,19 @@ public class SettingsActivity extends BaseActivity
         this.updateUserInfo();
     }
 
+    /**
+     * <h1>MainActivity initialisation</h1>
+     * @see BaseActivity#updateActivity()
+     */
     @Override protected void updateActivity()
     {
         SettingFragment mSettingFragment = SettingFragment.newInstance(getCurrentUser().getUid());
         getFragmentManager().beginTransaction().replace(R.id.activity_settings_fragment_container, mSettingFragment).commit();
     }
 
+    /**
+     * Update fields on screen with user information
+     */
     private void updateUserInfo()
     {
         if (isCurrentUserLogged())
@@ -60,6 +93,9 @@ public class SettingsActivity extends BaseActivity
         }
     }
 
+    /**
+     * Toolbar initialisation.
+     */
     private void configureToolbar()
     {
         mToolbar.setTitle(R.string.toolbar_title_settings);
@@ -69,6 +105,10 @@ public class SettingsActivity extends BaseActivity
             bar.setDisplayHomeAsUpEnabled(true);
     }
 
+    /**
+     * Show an AlertDialog when the user click on the button, to confirm it's choice.
+     * If he choose yes, call {@link #deleteAccountFromFireBase()}
+     */
     @OnClick(R.id.activity_settings_delete_account_btn)
     public void onClickDeleteAccountBtn()
     {
@@ -79,6 +119,10 @@ public class SettingsActivity extends BaseActivity
                 .show();
     }
 
+    /**
+     * Ask to firebase to delete account.
+     * @see FireStoreAuthentication#deleteAccount(Activity, FirebaseUser)
+     */
     private void deleteAccountFromFireBase()
     {
         FireStoreAuthentication.deleteAccount(this, getCurrentUser());

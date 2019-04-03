@@ -12,18 +12,37 @@ import com.skichrome.go4lunch.utils.firebase.PlaceHelper;
 import java.util.Calendar;
 import java.util.List;
 
+/**
+ * Util class, for static methods.
+ */
 public abstract class MapMethods
 {
     //=========================================================
     // Constructor
     //=========================================================
 
+    /**
+     * Prevent class instantiation.
+     */
     private MapMethods() {}
 
     //=========================================================
     // Methods
     //=========================================================
 
+    /**
+     * <h1>Place Autocomplete conversion</h1>
+     * <p>
+     *     Place Autocomplete need a LatLngBounds object to fetch places around.
+     *     This method convert a location and a radius into a LatLngBounds.
+     * </p>
+     * @param location
+     *      The location of the user.
+     * @param radiusInMeters
+     *      The radius from the center (represented by the location).
+     * @return
+     *      LatLngBound object, ready to be used by PlaceAutocomplete API.
+     */
     public static LatLngBounds convertToBounds(Location location, double radiusInMeters)
     {
         LatLng center = new LatLng(location.getLatitude(), location.getLongitude());
@@ -33,6 +52,15 @@ public abstract class MapMethods
         return new LatLngBounds(southWest, northEast);
     }
 
+    /**
+     * <h1>Convert the opening hours of a place to a usable format</h1>
+     * @param openingHours
+     *      A list of opening hours of each day of week.
+     * @param dayCalendar
+     *      The current day index at runtime, need to be corrected.
+     * @return
+     *      A string of current day aperture.
+     */
     public static String convertAperture(List<String> openingHours, int dayCalendar)
     {
         int correctedIndex;
@@ -50,6 +78,13 @@ public abstract class MapMethods
         return currentOpeningHours.replaceAll("[a-zA-Z]+","").replace(": ", "");
     }
 
+    /**
+     * Add or update a place into Cloud Firestore database.
+     * @param result
+     *      The place fetched on Google Place API.
+     * @param statusCode
+     *      Status code, used if an error append.
+     */
     public static void updateDetailsOnFirecloud(Result result, String statusCode)
     {
         PlaceHelper.updateRestaurantDetails(

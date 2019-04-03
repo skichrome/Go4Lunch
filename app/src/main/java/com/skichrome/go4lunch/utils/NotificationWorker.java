@@ -27,16 +27,37 @@ import androidx.work.WorkerParameters;
 
 import static com.skichrome.go4lunch.controllers.fragments.SettingFragment.SW_NOTIFICATION_KEY_PREF;
 
+/**
+ * <h1>Worker class to launch a notification</h1>
+ * <p>
+ *     Worker class to create a notification with detailed information about the user selected restaurant.
+ * </p>
+ */
 public class NotificationWorker extends Worker
 {
+    /**
+     * Tag for the notification  manager.
+     */
     private static final String NOTIFICATION_TAG = "NOTIFICATION TAG";
+    /**
+     * Id for the notification manager.
+     */
     private static final int NOTIFICATION_ID = 12;
 
+    /**
+     * Default constructor, needed to compile but not used here.
+     */
     public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams)
     {
         super(context, workerParams);
     }
 
+    /**
+     * Main method of Worker class, here the background task is launched.<br/>
+     * We need to control if the user has enabled notifications before creating the notification.
+     * @return
+     *      Result status.
+     */
     @NonNull @Override
     public Result doWork()
     {
@@ -50,6 +71,12 @@ public class NotificationWorker extends Worker
         return Result.success();
     }
 
+    /**
+     * <h1>Download selected restaurant on Cloud Firestore</h1>
+     * <p>
+     *     Download the restaurant selected by the user, and also all workmates that join with you.
+     * </p>
+     */
     private void getUserRestaurant()
     {
         UserHelper.getUser(FirebaseAuth.getInstance().getCurrentUser().getUid())
@@ -67,6 +94,18 @@ public class NotificationWorker extends Worker
                 });
     }
 
+    /**
+     * <h1>Create and send a notification to the system</h1>
+     * <p>
+     *      Create a notification that will launch {@link RestaurantDetailsActivity} on click.
+     *      The notification is composed by a subhead (name of the map), a title (that indicates that it is time to go eat),
+     *      a field with the address of the restaurant and the rest of the space available is filled with some workmates.
+     * </p>
+     * @param selectedPlace
+     *      The restaurant selected by the user.
+     * @param users
+     * \        All workmates that will come into this restaurant.
+     */
     private void sendVisualNotification(FormattedPlace selectedPlace, List<User> users)
     {
         Context context = getApplicationContext();
@@ -113,6 +152,9 @@ public class NotificationWorker extends Worker
         }
     }
 
+    /**
+     * Reset of the selected place on Cloud Firestore database.
+     */
     private void updateSelectedPlaceStatus()
     {
         UserHelper.updateChosenPlace(FirebaseAuth.getInstance().getCurrentUser().getUid(), null)

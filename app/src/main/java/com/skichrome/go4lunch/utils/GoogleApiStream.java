@@ -19,11 +19,31 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
+/**
+ * Stream class for RxJava calls on Google APIs.
+ */
 public class GoogleApiStream
 {
+    /**
+     * Establishment filter, here we need only restaurants.
+     */
     private static final String PLACE_TYPE = "restaurants";
+    /**
+     * Filters for the call on second API call, we don't need all results of the second API.
+     */
     private static final String API_FILTERS = "name,rating,formatted_address,formatted_phone_number,opening_hours,website,place_id";
 
+    /**
+     * Call on first Google API, get nearby restaurants.
+     * @param key
+     *      Google API key.
+     * @param location
+     *      The location of the user.
+     * @param radius
+     *      The radius, to limit the API results
+     * @return
+     *      An observable.
+     */
     private static Observable<MainGooglePlaceAPI> streamGetNearbyPlaces (String key, String location, int radius)
     {
         GoogleApiService googleApiService = GoogleApiService.retrofit.create(GoogleApiService.class);
@@ -32,7 +52,15 @@ public class GoogleApiStream
                 .observeOn(AndroidSchedulers.mainThread())
                 .timeout(20, TimeUnit.SECONDS);
     }
-
+    /**
+     * Call on second Google API, get more details of a restaurant.
+     * @param key
+     *      Google API key.
+     * @param placeId
+     *      The id of the restaurant that we need more informations.
+     * @return
+     *      An observable.
+     */
     private static Observable<MainPlaceDetails> streamGetPlaceDetails (String key, String placeId)
     {
         GoogleApiService googleApiService = GoogleApiService.retrofit.create(GoogleApiService.class);
@@ -42,6 +70,18 @@ public class GoogleApiStream
                 .timeout(20, TimeUnit.SECONDS);
     }
 
+    /**
+     * Combine the {@link #streamGetNearbyPlaces(String, String, int)} and {@link #streamGetPlaceDetails(String, String)}
+     * methods in one, to have only one implementation in other classes.
+     * @param key
+     *      Google API key.
+     * @param location
+     *      The location of the user.
+     * @param radius
+     *      The radius, to limit the API results
+     * @return
+     *      An observable.
+     */
     public static Observable<MainPlaceDetails> streamFetchPlaces(final String key, final Location location, final int radius)
     {
         String locationStr = location.getLatitude() + "," + location.getLongitude();
@@ -59,6 +99,15 @@ public class GoogleApiStream
                 });
     }
 
+    /**
+     * Convert the results of the Google API to an exploitable format.
+     * @param result
+     *      Google API results.
+     * @param location
+     *      The location of the user, used to get the approximate distance between the user and the restaurant.
+     * @return
+     *      New FormattedPlace.
+     */
     private static FormattedPlace convertResults(Result result, Location location)
     {
         final Location placeLocation = new Location("placeLocation");
@@ -78,12 +127,24 @@ public class GoogleApiStream
         );
     }
 
+    /**
+     * Create or replace a restaurant in Cloud Firestore database.
+     * @param place
+     *      The place to upload.
+     */
     private static void updateFirecloudPlace(FormattedPlace place)
     {
         PlaceHelper.updateRestaurant(place).addOnSuccessListener(aVoid -> Log.d("RxJava : ", "Saved place " + place.getName() + " to Firebase ! "))
         .addOnFailureListener(throwable -> Log.e("RxJava", "Error when uploading place to Firebase; ", throwable));
     }
 
+    /**
+     * When all nearby places are downloaded, compare the Cloud Firestore restaurant list to the downloaded restuarant lists,
+     * update restaurants already available in the list (only fields that are different),
+     * and delete all places that are unavailable into the downloaded restaurants.
+     * @param apiResults
+     *      The restaurants downloaded.
+     */
     private static void updateFirebaseList(List<Result> apiResults)
     {
         List<String> fromApiFormattedPlaces = new ArrayList<>();

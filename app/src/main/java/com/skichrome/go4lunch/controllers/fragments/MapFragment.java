@@ -37,29 +37,61 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     // Callback interface
     //=========================================
 
+    /**
+     * Callback interface, when user request qn update.
+     */
     public interface MapFragmentListeners { void fragmentNeedUpdateCallback(); }
 
     //=========================================
     // Fields
     //=========================================
 
+    /**
+     * Default LatLng for the app.
+     */
     private static final LatLng LATLNG_PARIS = new LatLng(48.841810, 2.325310);
 
+    /**
+     * Google Map instance.
+     */
     private GoogleMap mGMap;
+    /**
+     * Callback to update the restaurant list when user refresh layout.
+     */
     private WeakReference<MapFragmentListeners> mCallback;
+    /**
+     * List of places, identified by a marker key.
+     */
     private Map<Marker, FormattedPlace> mMarkers;
+    /**
+     * True if the update origin id from place autocomplete, false if origin is from http request update.
+     */
     private boolean mOrigin = false;
 
     //=========================================
     // New Instance method
     //=========================================
 
+    /**
+     * NewInstance method.
+     * @return
+     *      New instance of this fragment.
+     */
     public static MapFragment newInstance() { return new MapFragment(); }
 
     //=========================================
     // Superclass Methods
     //=========================================
 
+    /**
+     * @see BaseFragment#getFragmentLayout()
+     */
+    @Override
+    protected int getFragmentLayout() { return R.layout.fragment_map; }
+
+    /**
+     * @see BaseFragment#configureFragment()
+     */
     @Override
     protected void configureFragment()
     {
@@ -67,13 +99,13 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         this.mCallback = new WeakReference<> ((MapFragmentListeners) getActivity());
     }
 
-    @Override
-    protected int getFragmentLayout() { return R.layout.fragment_map; }
-
     //=========================================
     // Floating action btn Method
     //=========================================
 
+    /**
+     * Button to update location and restaurant list. Ask MainActivity to update all data by calling callback.
+     */
     @OnClick(R.id.fragment_map_floating_action_btn)
     public void onClickFloatingActionBtn() { this.mCallback.get().fragmentNeedUpdateCallback(); }
 
@@ -81,6 +113,9 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     // Methods
     //=========================================
 
+    /**
+     * Configure the Map.
+     */
     private void configureMapApi()
     {
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.fragment_map_map_view);
@@ -91,6 +126,11 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
     // Callbacks Methods
     //=========================================
 
+    /**
+     * Google Map Android Callback, called when the map is ready to use.
+     * @param googleMap
+     *      Instance of Map.
+     */
     @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap)
@@ -105,6 +145,11 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         this.updateMarkerOnMap();
     }
 
+    /**
+     * Update the location on the map, don't do anything if the origin is from place autocomplete
+     * @param location
+     *      The location used to update map view position.
+     */
     public void updateLocation(Location location)
     {
         if (this.mGMap == null || this.mOrigin) return;
@@ -117,6 +162,11 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         this.mGMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
+    /**
+     * Update restaurant on the map with the result of Place Autocomplete.
+     * @param place
+     *      The fetched place.
+     */
     public void updateMapForAutocomplete(FormattedPlace place)
     {
         if (mGMap == null) return;
@@ -128,6 +178,9 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         this.mOrigin = true;
     }
 
+    /**
+     * Get all places stored in Cloud Firestore Database.
+     */
     public void updateMarkerOnMap()
     {
         if (mGMap == null) return;
@@ -147,6 +200,14 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         this.mOrigin = false;
     }
 
+    /**
+     * Add a marker to the map and to the restaurant list. Change the color of the marker if on workmate
+     * go into the restaurant.
+     * @param someoneIsJoining
+     *      True if there is almost one person that go into this restaurant, else false.
+     * @param place
+     *      The Place that will be displayed and stored in the list.
+     */
     private void addMarkerToMap(boolean someoneIsJoining, FormattedPlace place)
     {
         LatLng location = new LatLng(place.getLocationLatitude(), place.getLocationLongitude());
@@ -157,6 +218,12 @@ public class MapFragment extends BaseFragment implements OnMapReadyCallback, Goo
         this.mMarkers.put(marker, place);
     }
 
+    /**
+     * Google Map Android API callback, when user click on a marker, {@link RestaurantDetailsActivity} is launched
+     * with corresponding restaurant in bundle.
+     * @param marker
+     *      The marker clicked by the user.
+     */
     @Override
     public boolean onMarkerClick(Marker marker)
     {

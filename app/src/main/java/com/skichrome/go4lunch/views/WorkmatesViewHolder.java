@@ -14,14 +14,38 @@ import com.skichrome.go4lunch.utils.firebase.UserHelper;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * This is an item in the Workmates RecyclerView.
+ */
 class WorkmatesViewHolder extends RecyclerView.ViewHolder
 {
+    /**
+     * The profile image of the user.
+     */
     @BindView(R.id.fragment_workmates_item_profile_image) ImageView mProfileImage;
+    /**
+     * Text to set if the user is joining, or not, to the place.
+     */
     @BindView(R.id.fragment_workmates_item_join_or_not_text_view) TextView mTextView;
 
+    /**
+     * The place selected id.
+     */
     private String mOrigin;
+    /**
+     * text template for {@link #mTextView}
+     */
     private String[] mTexts;
 
+    /**
+     * Constructor for this class, init fields and Butterknife.
+     * @param itemView
+     *      The view.
+     * @param origin
+     *      the place id.
+     * @param texts
+     *      strings template.
+     */
     WorkmatesViewHolder(View itemView, String origin, String... texts)
     {
         super(itemView);
@@ -30,6 +54,13 @@ class WorkmatesViewHolder extends RecyclerView.ViewHolder
         this.mTexts = texts;
     }
 
+    /**
+     * Update the viewHolder with parameters.
+     * @param user
+     *      The user that will be displayed.
+     * @param glide
+     *      For imageView.
+     */
     void updateUI(User user, RequestManager glide)
     {
         UserHelper.getUser(user.getUid()).addOnSuccessListener(mDocumentSnapshot ->

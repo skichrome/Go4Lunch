@@ -20,14 +20,36 @@ import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
+/**
+ * Settings screen, to modify username and enable / disable notifications.
+ */
 public class SettingFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener
 {
+    /**
+     * Id for notification switch in sharedPreferences.
+     */
     public static final String SW_NOTIFICATION_KEY_PREF = "switch_preference_1";
+    /**
+     * Id for username field in sharedPreferences.
+     */
     private static final String EDIT_TEXT_KEY_PREF = "edit_text_preference_1";
+    /**
+     * Id for data in bundle.
+     */
     private static final String BUNDLE_STR_ARG = "user_id";
 
+    /**
+     * Default empty constructor for fragment.
+     */
     public SettingFragment() { }
 
+    /**
+     * Create a new instance of this fragment, with a string in bundle that represent the user id logged in.
+     * @param userId
+     *      The id of the user logged in.
+     * @return
+     *      New instance of this fragment.
+     */
     public static SettingFragment newInstance(String userId)
     {
         SettingFragment frag = new SettingFragment();
@@ -37,6 +59,9 @@ public class SettingFragment extends PreferenceFragment implements SharedPrefere
         return frag;
     }
 
+    /**
+     * Add preferences fields from xml.
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
@@ -44,6 +69,9 @@ public class SettingFragment extends PreferenceFragment implements SharedPrefere
         addPreferencesFromResource(R.xml.preferences);
     }
 
+    /**
+     * Set listener on sharedPreferences.
+     */
     @Override
     public void onResume()
     {
@@ -51,6 +79,9 @@ public class SettingFragment extends PreferenceFragment implements SharedPrefere
         getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
     }
 
+    /**
+     * Disable listener on sharedPreferences.
+     */
     @Override
     public void onPause()
     {
@@ -58,6 +89,11 @@ public class SettingFragment extends PreferenceFragment implements SharedPrefere
         super.onPause();
     }
 
+    /**
+     *
+     * @param sharedPreferences
+     * @param key
+     */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
     {
@@ -80,6 +116,15 @@ public class SettingFragment extends PreferenceFragment implements SharedPrefere
         }
     }
 
+    /**
+     * <h1>SharedPreferences modification callback</h1>
+     * <p>
+     *     Get the selected place for logged in user, and if not null and if switch is on,
+     *     enable WorkManager to show a notification at 12h, else disable WorkManager.
+     * </p>
+     * @param isEnabled
+     *      True if the switch is on true, false in the other case.
+     */
     private void configureNotification(final Boolean isEnabled)
     {
         UserHelper.getUser(FirebaseAuth.getInstance().getCurrentUser().getUid())
@@ -108,6 +153,21 @@ public class SettingFragment extends PreferenceFragment implements SharedPrefere
                 });
     }
 
+    /**
+     * <h1>Delta to 12h calculation</h1>
+     * <p>
+     *     <ul>
+     *         <li>Morning : The method return the difference between now and 12h of today.</li>
+     *         <li>Afternoon : The method return the time between now and 12h of the next day.</li>
+     *     </ul>
+     * </p>
+     * @param calendarNow
+     *      Time at execution
+     * @param calendarMidDay
+     *      time at 12h
+     * @return
+     *      Long, the difference between two Calendar instances.
+     */
     public static long getDeltaCalendar(Calendar calendarNow, Calendar calendarMidDay)
     {
         long delta = calendarMidDay.getTimeInMillis() - calendarNow.getTimeInMillis();
@@ -120,6 +180,11 @@ public class SettingFragment extends PreferenceFragment implements SharedPrefere
         return delta;
     }
 
+    /**
+     * <h1>Get the calendar instance and set it to 12h</h1>
+     * @return
+     *      corrected calendar instance to 12h.
+     */
     public static Calendar configureMidDayCalendar()
     {
         Calendar calendar = Calendar.getInstance();
