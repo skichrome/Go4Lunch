@@ -90,9 +90,8 @@ public class SettingFragment extends PreferenceFragment implements SharedPrefere
     }
 
     /**
-     *
-     * @param sharedPreferences
-     * @param key
+     * Listen when a preference is changed, and apply changes asked by user.
+     * He can change it's username or enable / disable notifications.
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
@@ -176,7 +175,7 @@ public class SettingFragment extends PreferenceFragment implements SharedPrefere
             calendarMidDay.set(Calendar.DAY_OF_MONTH, calendarMidDay.get(Calendar.DAY_OF_MONTH) + 1);
             delta = calendarMidDay.getTimeInMillis() - calendarNow.getTimeInMillis();
         }
-        Log.e("DeltaCalendar", "Time to the next notification in minuts : " + delta / 1000 / 60);
+//        Log.e("DeltaCalendar", "Time to the next notification in minuts : " + delta / 1000 / 60);
         return delta;
     }
 
