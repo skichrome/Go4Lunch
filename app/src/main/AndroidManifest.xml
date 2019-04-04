@@ -35,15 +35,15 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_place_api_key" />
+            android:value="@string/key_google_api" />
 
         <!-- Firestore notification service -->
-        <service
-            android:name=".utils.firebase.CloudNotificationService">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-            </intent-filter>
-        </service>
+        <!--<service-->
+            <!--android:name=".utils.firebase.CloudNotificationService">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.google.firebase.MESSAGING_EVENT"/>-->
+            <!--</intent-filter>-->
+        <!--</service>-->
 
         <uses-library
             android:name="org.apache.http.legacy"

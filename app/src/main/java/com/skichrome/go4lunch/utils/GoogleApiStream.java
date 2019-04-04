@@ -21,7 +21,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class GoogleApiStream
 {
-    private static final String PLACE_TYPE = "restaurants";
+    private static final String PLACE_TYPE = "restaurant";
     private static final String API_FILTERS = "name,rating,formatted_address,formatted_phone_number,opening_hours,website,place_id";
 
     private static Observable<MainGooglePlaceAPI> streamGetNearbyPlaces (String key, String location, int radius)

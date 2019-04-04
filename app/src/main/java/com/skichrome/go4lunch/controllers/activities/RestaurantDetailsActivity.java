@@ -97,7 +97,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements  FireStor
 
         if (mRestaurantDetails.getPhotoReference() != null)
         {
-            String photoUrl = GLIDE_BASE_GOOGLE_URL + mRestaurantDetails.getPhotoReference() + "&key=" + getString(R.string.google_place_api_key);
+            String photoUrl = GLIDE_BASE_GOOGLE_URL + mRestaurantDetails.getPhotoReference() + "&key=" + getString(R.string.key_google_api);
             Glide.with(this).load(photoUrl).into(mImageViewPicture);
         }
         int rate = (int) Math.round(mRestaurantDetails.getRating()*3/5);

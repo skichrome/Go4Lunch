@@ -66,7 +66,7 @@ public class ListFragment extends BaseFragment
     private void configureRecyclerView()
     {
         this.mPlacesList = new ArrayList<>();
-        this.mAdapter = new RestaurantsAdapter(mPlacesList, Glide.with(this), getString(R.string.google_place_api_key));
+        this.mAdapter = new RestaurantsAdapter(mPlacesList, Glide.with(this), getString(R.string.key_google_api));
         this.mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         this.mRecyclerView.setAdapter(mAdapter);
     }
