@@ -28,6 +28,9 @@ import java.util.Map;
 
 import butterknife.OnClick;
 
+/**
+ * This Fragment is used to display a mapView with map api, it will display some restaurants around the user mainly
+ */
 public class MapFragment extends BaseFragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener
 {
     //=========================================
