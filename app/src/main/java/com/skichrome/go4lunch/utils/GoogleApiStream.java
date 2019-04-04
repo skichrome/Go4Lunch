@@ -27,7 +27,7 @@ public class GoogleApiStream
     /**
      * Establishment filter, here we need only restaurants.
      */
-    private static final String PLACE_TYPE = "restaurants";
+    private static final String PLACE_TYPE = "restaurant";
     /**
      * Filters for the call on second API call, we don't need all results of the second API.
      */
